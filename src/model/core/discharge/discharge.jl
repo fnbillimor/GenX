@@ -17,21 +17,23 @@ function discharge!(EP::Model, inputs::Dict, setup::Dict)
 
 	G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
 	T = inputs["T"]     # Number of time steps
-	Z = inputs["Z"]     # Number of zones
+	Z = inputs["Z"]	     # Number of zones
+	SC = inputs["SC"]     # Number of scenarios
 	### Variables ###
 
 	# Energy injected into the grid by resource "y" at hour "t"
-	@variable(EP, vP[y=1:G,t=1:T] >=0);
+	@variable(EP, vP[y=1:G,t=1:T, sc=1:SC] >=0);
 
 	### Expressions ###
 
 	## Objective Function Expressions ##
 
 	# Variable costs of "generation" for resource "y" during hour "t" = variable O&M plus fuel cost
-	@expression(EP, eCVar_out[y=1:G,t=1:T], (inputs["omega"][t]*(dfGen[y,:Var_OM_Cost_per_MWh]+inputs["C_Fuel_per_MWh"][y,t])*vP[y,t]))
+	@expression(EP, eCVar_out[y=1:G,t=1:T,sc=1:SC], (inputs["scenprob"][sc]*inputs["omega"][t]*(dfGen[y,sc,:Var_OM_Cost_per_MWh]+inputs["C_Fuel_per_MWh"][y,t,sc])*vP[y,t,sc]))
 	#@expression(EP, eCVar_out[y=1:G,t=1:T], (round(inputs["omega"][t]*(dfGen[y,:Var_OM_Cost_per_MWh]+inputs["C_Fuel_per_MWh"][y,t]), digits=RD)*vP[y,t]))
 	# Sum individual resource contributions to variable discharging costs to get total variable discharging costs
-	@expression(EP, eTotalCVarOutT[t=1:T], sum(eCVar_out[y,t] for y in 1:G))
+	@expression(EP, eTotalCVarOutTSC[t=1:T,sc=1:SC], sum(eCVar_out[y,t,sc] for y in 1:G))
+	@expression(EP, eTotalCVarOutT[t=1:T], sum(eTotalCVarOutTSC[t,sc] for sc in 1:SC))
 	@expression(EP, eTotalCVarOut, sum(eTotalCVarOutT[t] for t in 1:T))
 
 	# Add total variable discharging cost contribution to the objective function
