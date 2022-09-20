@@ -75,6 +75,7 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 
 	T = inputs["T"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
+	SC = inputs["SC"]   # Number of scenarios
 
 	## Start pre-solve timer
 	presolver_start_time = time()
@@ -88,17 +89,17 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 
 	# Initialize Power Balance Expression
 	# Expression for "baseline" power balance constraint
-	@expression(EP, ePowerBalance[t=1:T, z=1:Z], 0)
+	@expression(EP, ePowerBalance[t=1:T, z=1:Z, sc=1:SC], 0)
 
 	# Initialize Objective Function Expression
 	@expression(EP, eObj, 0)
 
 
 	#@expression(EP, :eCO2Cap[cap=1:inputs["NCO2Cap"]], 0)
-	@expression(EP, eGenerationByZone[z=1:Z, t=1:T], 0)
+	@expression(EP, eGenerationByZone[z=1:Z, t=1:T, sc=1:SC], 0)
 	# Initialize Capacity Reserve Margin Expression
 	if setup["CapacityReserveMargin"] > 0
-		@expression(EP, eCapResMarBalance[res=1:inputs["NCapacityReserveMargin"], t=1:T], 0)
+		@expression(EP, eCapResMarBalance[res=1:inputs["NCapacityReserveMargin"], t=1:T, sc=1:SC], 0)
 	end
 
 	# Energy Share Requirement
@@ -211,7 +212,7 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	## Power balance constraints
 	# demand = generation + storage discharge - storage charge - demand deferral + deferred demand satisfaction - demand curtailment (NSE)
 	#          + incoming power flows - outgoing power flows - flow losses - charge of heat storage + generation from NACC
-	@constraint(EP, cPowerBalance[t=1:T, z=1:Z], EP[:ePowerBalance][t,z] == inputs["pD"][t,z])
+	@constraint(EP, cPowerBalance[t=1:T, z=1:Z, sc=1:SC], EP[:ePowerBalance][t,z,sc] == inputs["pD"][t,z,sc])
 
 	## Record pre-solver time
 	presolver_time = time() - presolver_start_time
