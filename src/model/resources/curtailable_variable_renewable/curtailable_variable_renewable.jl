@@ -42,7 +42,7 @@ function curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict)
 	T = inputs["T"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
 	G = inputs["G"] 	# Number of generators
-
+	SC = inputs["SC"]   # Number of scenarios
 	VRE = inputs["VRE"]
 
 	VRE_POWER_OUT = intersect(dfGen[dfGen.Num_VRE_Bins.>=1,:R_ID], VRE)
@@ -52,8 +52,8 @@ function curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict)
 
 	## Power Balance Expressions ##
 
-	@expression(EP, ePowerBalanceDisp[t=1:T, z=1:Z],
-	sum(EP[:vP][y,t] for y in intersect(VRE, dfGen[dfGen[!,:Zone].==z,:R_ID])))
+	@expression(EP, ePowerBalanceDisp[t=1:T, z=1:Z, sc=1:SC],
+	sum(EP[:vP][y,t,sc] for y in intersect(VRE, dfGen[dfGen[!,:Zone].==z,:R_ID])))
 
 	EP[:ePowerBalance] += ePowerBalanceDisp
 
