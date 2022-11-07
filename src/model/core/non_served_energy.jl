@@ -39,22 +39,23 @@ function non_served_energy!(EP::Model, inputs::Dict, setup::Dict)
 	T = inputs["T"]     # Number of time steps
 	Z = inputs["Z"]     # Number of zones
 	SEG = inputs["SEG"] # Number of load curtailment segments
-
+	SC = inputs["SC"]   # Number of scenarios
 	### Variables ###
 
 	# Non-served energy/curtailed demand in the segment "s" at hour "t" in zone "z"
-	@variable(EP, vNSE[s=1:SEG,t=1:T,z=1:Z] >= 0);
+	@variable(EP, vNSE[s=1:SEG,t=1:T,z=1:Z,sc=1:SC] >= 0);
 
 	### Expressions ###
 
 	## Objective Function Expressions ##
 
 	# Cost of non-served energy/curtailed demand at hour "t" in zone "z"
-	@expression(EP, eCNSE[s=1:SEG,t=1:T,z=1:Z], (inputs["omega"][t]*inputs["pC_D_Curtail"][s]*vNSE[s,t,z]))
+	@expression(EP, eCNSE[s=1:SEG,t=1:T,z=1:Z,sc=1:SC], (inputs["scenprob"][sc]*inputs["omega"][t]*inputs["pC_D_Curtail"][s]*vNSE[s,t,z,sc]))
 
 	# Sum individual demand segment contributions to non-served energy costs to get total non-served energy costs
 	# Julia is fastest when summing over one row one column at a time
-	@expression(EP, eTotalCNSETS[t=1:T,z=1:Z], sum(eCNSE[s,t,z] for s in 1:SEG))
+	@expression(EP, eTotalCNSETSSC[t=1:T,z=1:Z,s=1:SEG], sum(eCNSE[s,t,z,sc] for sc in 1:SC))
+	@expression(EP, eTotalCNSETS[t=1:T,z=1:Z], sum(eCNSETSSC[s,t,z] for s in 1:SEG))
 	@expression(EP, eTotalCNSET[t=1:T], sum(eTotalCNSETS[t,z] for z in 1:Z))
 	@expression(EP, eTotalCNSE, sum(eTotalCNSET[t] for t in 1:T))
 
