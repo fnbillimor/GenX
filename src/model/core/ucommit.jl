@@ -48,27 +48,28 @@ function ucommit!(EP::Model, inputs::Dict, setup::Dict)
 	T = inputs["T"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
 	COMMIT = inputs["COMMIT"] # For not, thermal resources are the only ones eligible for Unit Committment
-
+	SC = inputs["SC"]   # Number of scenarios
 	### Variables ###
 
 	## Decision variables for unit commitment
 	# commitment state variable
-	@variable(EP, vCOMMIT[y in COMMIT, t=1:T] >= 0)
+	@variable(EP, vCOMMIT[y in COMMIT, t=1:T, sc=1:SC] >= 0)
 	# startup event variable
-	@variable(EP, vSTART[y in COMMIT, t=1:T] >= 0)
+	@variable(EP, vSTART[y in COMMIT, t=1:T, sc=1:SC] >= 0)
 	# shutdown event variable
-	@variable(EP, vSHUT[y in COMMIT, t=1:T] >= 0)
+	@variable(EP, vSHUT[y in COMMIT, t=1:T, sc=1:SC] >= 0)
 
 	### Expressions ###
 
 	## Objective Function Expressions ##
 
 	# Startup costs of "generation" for resource "y" during hour "t"
-	@expression(EP, eCStart[y in COMMIT, t=1:T],(inputs["omega"][t]*inputs["C_Start"][y]*vSTART[y,t]))
+	@expression(EP, eCStart[y in COMMIT, t=1:T, sc=1:SC],(inputs["omega"][t]*inputs["C_Start"][y]*vSTART[y,t,sc]))
 
 	# Julia is fastest when summing over one row one column at a time
-	@expression(EP, eTotalCStartT[t=1:T], sum(eCStart[y,t] for y in COMMIT))
-	@expression(EP, eTotalCStart, sum(eTotalCStartT[t] for t=1:T))
+	@expression(EP, eTotalCStartT[t=1:T, sc=1:SC], sum(eCStart[y,t,sc] for y in COMMIT))
+	@expression(EP, eTotalCStartTSC[t=1:T], sum(eTotalCStartT[t,sc] for sc=1:SC))
+	@expression(EP, eTotalCStart, sum(eTotalCStartTSC[t] for t=1:T))
 
 	EP[:eObj] += eTotalCStart
 
