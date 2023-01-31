@@ -63,8 +63,8 @@ function non_served_energy!(EP::Model, inputs::Dict, setup::Dict)
 	EP[:eObj] += eTotalCNSE
 
 	## Power Balance Expressions ##
-	@expression(EP, ePowerBalanceNse[t=1:T, z=1:Z],
-	sum(vNSE[s,t,z] for s=1:SEG))
+	@expression(EP, ePowerBalanceNse[t=1:T, z=1:Z, sc=1:SC],
+	sum(vNSE[s,t,z,sc] for s=1:SEG))
 
 	# Add non-served energy/curtailed demand contribution to power balance expression
 	EP[:ePowerBalance] += ePowerBalanceNse
@@ -72,7 +72,7 @@ function non_served_energy!(EP::Model, inputs::Dict, setup::Dict)
 	# Capacity Reserves Margin policy
 	if setup["CapacityReserveMargin"] > 0
 		if SEG >=2
-			@expression(EP, eCapResMarBalanceNSE[res=1:inputs["NCapacityReserveMargin"], t=1:T], sum(EP[:vNSE][s,t,z] for s in 2:SEG, z in findall(x->x!=0,inputs["dfCapRes"][:,res])))
+			@expression(EP, eCapResMarBalanceNSE[res=1:inputs["NCapacityReserveMargin"], t=1:T, sc=1:SC], sum(EP[:vNSE][s,t,z,sc] for s in 2:SEG, z in findall(x->x!=0,inputs["dfCapRes"][:,res])))
 			EP[:eCapResMarBalance] += eCapResMarBalanceNSE
 		end
 	end
@@ -80,9 +80,9 @@ function non_served_energy!(EP::Model, inputs::Dict, setup::Dict)
 	### Constratints ###
 
 	# Demand curtailed in each segment of curtailable demands cannot exceed maximum allowable share of demand
-	@constraint(EP, cNSEPerSeg[s=1:SEG, t=1:T, z=1:Z], vNSE[s,t,z] <= inputs["pMax_D_Curtail"][s]*inputs["pD"][t,z])
+	@constraint(EP, cNSEPerSeg[s=1:SEG, t=1:T, z=1:Z, sc=1:SC], vNSE[s,t,z,sc] <= inputs["pMax_D_Curtail"][s]*inputs["pD"][t,z,sc])
 
 	# Total demand curtailed in each time step (hourly) cannot exceed total demand
-	@constraint(EP, cMaxNSE[t=1:T, z=1:Z], sum(vNSE[s,t,z] for s=1:SEG) <= inputs["pD"][t,z])
+	@constraint(EP, cMaxNSE[t=1:T, z=1:Z, sc=1:SC], sum(vNSE[s,t,z,sc] for s=1:SEG) <= inputs["pD"][t,z,sc])
 
 end
