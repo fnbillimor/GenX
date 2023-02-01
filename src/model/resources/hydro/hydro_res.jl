@@ -64,44 +64,44 @@ function hydro_res!(EP::Model, inputs::Dict, setup::Dict)
 
 	T = inputs["T"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
-
+	SC = inputs["SC"]   # Number of scenarios
 	p = inputs["hours_per_subperiod"] 	# total number of hours per subperiod
 
 	HYDRO_RES = inputs["HYDRO_RES"]	# Set of all reservoir hydro resources, used for common constraints
 	HYDRO_RES_KNOWN_CAP = inputs["HYDRO_RES_KNOWN_CAP"] # Reservoir hydro resources modeled with unknown reservoir energy capacity
 
-    # These variables are used in the ramp-up and ramp-down expressions
-    reserves_term = @expression(EP, [y in HYDRO_RES, t in 1:T], 0)
-    regulation_term = @expression(EP, [y in HYDRO_RES, t in 1:T], 0)
+    	# These variables are used in the ramp-up and ramp-down expressions
+    	reserves_term = @expression(EP, [y in HYDRO_RES, t in 1:T], 0)
+    	regulation_term = @expression(EP, [y in HYDRO_RES, t in 1:T], 0)
 
-    if setup["Reserves"] > 0
-        HYDRO_RES_REG = intersect(HYDRO_RES, inputs["REG"]) # Set of reservoir hydro resources with regulation reserves
-        HYDRO_RES_RSV = intersect(HYDRO_RES, inputs["RSV"]) # Set of reservoir hydro resources with spinning reserves
-        regulation_term = @expression(EP, [y in HYDRO_RES, t in 1:T],
+    	if setup["Reserves"] > 0
+        	HYDRO_RES_REG = intersect(HYDRO_RES, inputs["REG"]) # Set of reservoir hydro resources with regulation reserves
+        	HYDRO_RES_RSV = intersect(HYDRO_RES, inputs["RSV"]) # Set of reservoir hydro resources with spinning reserves
+        	regulation_term = @expression(EP, [y in HYDRO_RES, t in 1:T],
                            y ∈ HYDRO_RES_REG ? EP[:vREG][y,t] - EP[:vREG][y, hoursbefore(p, t, 1)] : 0)
-        reserves_term = @expression(EP, [y in HYDRO_RES, t in 1:T],
+        	reserves_term = @expression(EP, [y in HYDRO_RES, t in 1:T],
                            y ∈ HYDRO_RES_RSV ? EP[:vRSV][y,t] : 0)
-    end
+    	end
 
 	### Variables ###
 
 	# Reservoir hydro storage level of resource "y" at hour "t" [MWh] on zone "z" - unbounded
-	@variable(EP, vS_HYDRO[y in HYDRO_RES, t=1:T] >= 0);
+	@variable(EP, vS_HYDRO[y in HYDRO_RES, t=1:T, sc=1:SC] >= 0);
 
 	# Hydro reservoir overflow (water spill) variable
-	@variable(EP, vSPILL[y in HYDRO_RES, t=1:T] >= 0)
+	@variable(EP, vSPILL[y in HYDRO_RES, t=1:T, sc=1:SC] >= 0)
 
 	### Expressions ###
 
 	## Power Balance Expressions ##
-	@expression(EP, ePowerBalanceHydroRes[t=1:T, z=1:Z],
-		sum(EP[:vP][y,t] for y in intersect(HYDRO_RES, dfGen[(dfGen[!,:Zone].==z),:R_ID])))
+	@expression(EP, ePowerBalanceHydroRes[t=1:T, z=1:Z, sc=1:SC],
+		sum(EP[:vP][y,t,sc] for y in intersect(HYDRO_RES, dfGen[(dfGen[!,:Zone].==z),:R_ID])))
 
 	EP[:ePowerBalance] += ePowerBalanceHydroRes
 
 	# Capacity Reserves Margin policy
 	if setup["CapacityReserveMargin"] > 0
-		@expression(EP, eCapResMarBalanceHydro[res=1:inputs["NCapacityReserveMargin"], t=1:T], sum(dfGen[y,Symbol("CapRes_$res")] * EP[:vP][y,t]  for y in HYDRO_RES))
+		@expression(EP, eCapResMarBalanceHydro[res=1:inputs["NCapacityReserveMargin"], t=1:T, sc=1:SC], sum(dfGen[y,Symbol("CapRes_$res")] * EP[:vP][y,t,sc]  for y in HYDRO_RES))
 		EP[:eCapResMarBalance] += eCapResMarBalanceHydro
 	end
 
@@ -115,35 +115,34 @@ function hydro_res!(EP::Model, inputs::Dict, setup::Dict)
 		# DEV NOTE: Last inputs["pP_Max"][y,t] term above is inflows; currently part of capacity factors inputs in Generators_variability.csv but should be moved to its own Hydro_inflows.csv input in future.
 
 		# Constraints for reservoir hydro
-		cHydroReservoir[y in HYDRO_RES, t in 1:T], EP[:vS_HYDRO][y,t] == (EP[:vS_HYDRO][y, hoursbefore(p,t,1)]
-				- (1/dfGen[y,:Eff_Down]*EP[:vP][y,t]) - vSPILL[y,t] + inputs["pP_Max"][y,t]*EP[:eTotalCap][y])
+		cHydroReservoir[y in HYDRO_RES, t in 1:T, sc in 1:SC], EP[:vS_HYDRO][y,t,sc] == (EP[:vS_HYDRO][y, hoursbefore(p,t,1), sc]
+				- (1/dfGen[y,:Eff_Down]*EP[:vP][y,t,sc]) - vSPILL[y,t,sc] + inputs["pP_Max"][y,t,sc]*EP[:eTotalCap][y])
 
 		# Maximum ramp up and down
-        cRampUp[y in HYDRO_RES, t in 1:T], EP[:vP][y,t] + regulation_term[y,t] + reserves_term[y,t] - EP[:vP][y, hoursbefore(p,t,1)] <= dfGen[y,:Ramp_Up_Percentage]*EP[:eTotalCap][y]
-        cRampDown[y in HYDRO_RES, t in 1:T], EP[:vP][y, hoursbefore(p,t,1)] - EP[:vP][y,t] - regulation_term[y,t] + reserves_term[y, hoursbefore(p,t,1)] <= dfGen[y,:Ramp_Dn_Percentage]*EP[:eTotalCap][y]
+        	cRampUp[y in HYDRO_RES, t in 1:T, sc in 1:SC], EP[:vP][y,t,sc] + regulation_term[y,t,sc] + reserves_term[y,t,sc] - EP[:vP][y, hoursbefore(p,t,1),sc] <= dfGen[y,:Ramp_Up_Percentage]*EP[:eTotalCap][y]
+        	cRampDown[y in HYDRO_RES, t in 1:T, sc in 1:SC], EP[:vP][y, hoursbefore(p,t,1),sc] - EP[:vP][y,t,sc] - regulation_term[y,t,sc] + reserves_term[y, hoursbefore(p,t,1),sc] <= dfGen[y,:Ramp_Dn_Percentage]*EP[:eTotalCap][y]
 		# Minimum streamflow running requirements (power generation and spills must be >= min value) in all hours
-		cHydroMinFlow[y in HYDRO_RES, t in 1:T], EP[:vP][y,t] + EP[:vSPILL][y,t] >= dfGen[y,:Min_Power]*EP[:eTotalCap][y]
+		cHydroMinFlow[y in HYDRO_RES, t in 1:T, sc in 1:SC], EP[:vP][y,t,sc] + EP[:vSPILL][y,t,sc] >= dfGen[y,:Min_Power]*EP[:eTotalCap][y]
 		# DEV NOTE: When creating new hydro inputs, should rename Min_Power with Min_flow or similar for clarity since this includes spilled water as well
 
 		# Maximum discharging rate must be less than power rating OR available stored energy at start of hour, whichever is less
 		# DEV NOTE: We do not currently account for hydro power plant outages - leave it for later to figure out if we should.
 		# DEV NOTE (CONTD): If we defin pPMax as hourly availability of the plant and define inflows as a separate parameter, then notation will be consistent with its use for other resources
-		cHydroMaxPower[y in HYDRO_RES, t in 1:T], EP[:vP][y,t] <= EP[:eTotalCap][y]
-		cHydroMaxOutflow[y in HYDRO_RES, t in 1:T], EP[:vP][y,t] <= EP[:vS_HYDRO][y, hoursbefore(p,t,1)]
+		cHydroMaxPower[y in HYDRO_RES, t in 1:T, sc in 1:SC], EP[:vP][y,t,sc] <= EP[:eTotalCap][y]
+		cHydroMaxOutflow[y in HYDRO_RES, t in 1:T, sc in 1:SC], EP[:vP][y,t,sc] <= EP[:vS_HYDRO][y, hoursbefore(p,t,1),scenarios]
 	end)
 
 	### Constraints to limit maximum energy in storage based on known limits on reservoir energy capacity (only for HYDRO_RES_KNOWN_CAP)
 	# Maximum energy stored in reservoir must be less than energy capacity in all hours - only applied to HYDRO_RES_KNOWN_CAP
-	@constraint(EP, cHydroMaxEnergy[y in HYDRO_RES_KNOWN_CAP, t in 1:T], EP[:vS_HYDRO][y,t] <= dfGen[y,:Hydro_Energy_to_Power_Ratio]*EP[:eTotalCap][y])
+	@constraint(EP, cHydroMaxEnergy[y in HYDRO_RES_KNOWN_CAP, t in 1:T, sc in 1:SC], EP[:vS_HYDRO][y,t,sc] <= dfGen[y,:Hydro_Energy_to_Power_Ratio]*EP[:eTotalCap][y])
 
 	if setup["Reserves"] == 1
 		### Reserve related constraints for reservoir hydro resources (y in HYDRO_RES), if used
 		hydro_res_reserves!(EP, inputs)
 	end
 	##CO2 Polcy Module Hydro Res Generation by zone
-	@expression(EP, eGenerationByHydroRes[z=1:Z, t=1:T], # the unit is GW
-		sum(EP[:vP][y,t] for y in intersect(HYDRO_RES, dfGen[dfGen[!,:Zone].==z,:R_ID]))
-	)
+	@expression(EP, eGenerationByHydroRes[z=1:Z, t=1:T, sc in 1:SC], # the unit is GW
+		sum(EP[:vP][y,t,sc] for y in intersect(HYDRO_RES, dfGen[dfGen[!,:Zone].==z,:R_ID])))
 	EP[:eGenerationByZone] += eGenerationByHydroRes
 
 end
@@ -183,6 +182,7 @@ function hydro_res_reserves!(EP::Model, inputs::Dict)
 	dfGen = inputs["dfGen"]
 
 	T = inputs["T"]     # Number of time steps (hours)
+	SC = inputs["SC"]   # Number of scenarios
 
 	HYDRO_RES = inputs["HYDRO_RES"]
 
@@ -197,32 +197,32 @@ function hydro_res_reserves!(EP::Model, inputs::Dict)
 	if !isempty(HYDRO_RES_REG_RSV)
 		@constraints(EP, begin
 			# Maximum storage contribution to reserves is a specified fraction of installed capacity
-			cRegulation[y in HYDRO_RES_REG_RSV, t in 1:T], EP[:vREG][y,t] <= dfGen[y,:Reg_Max]*EP[:eTotalCap][y]
-			cReserve[y in HYDRO_RES_REG_RSV, t in 1:T], EP[:vRSV][y,t] <= dfGen[y,:Rsv_Max]*EP[:eTotalCap][y]
+			cRegulation[y in HYDRO_RES_REG_RSV, t in 1:T, sc in 1:SC], EP[:vREG][y,t,sc] <= dfGen[y,:Reg_Max]*EP[:eTotalCap][y]
+			cReserve[y in HYDRO_RES_REG_RSV, t in 1:T, sc in 1:SC], EP[:vRSV][y,t,sc] <= dfGen[y,:Rsv_Max]*EP[:eTotalCap][y]
 			# Maximum discharging rate and contribution to reserves up must be less than power rating
-			cMaxReservesUp[y in HYDRO_RES_REG_RSV, t in 1:T], EP[:vP][y,t]+EP[:vREG][y,t]+EP[:vRSV][y,t] <= EP[:eTotalCap][y]
+			cMaxReservesUp[y in HYDRO_RES_REG_RSV, t in 1:T, sc in 1:SC], EP[:vP][y,t,sc]+EP[:vREG][y,t,sc]+EP[:vRSV][y,t,sc] <= EP[:eTotalCap][y]
 			# Maximum discharging rate and contribution to regulation down must be greater than zero
-			cMaxReservesDown[y in HYDRO_RES_REG_RSV, t in 1:T], EP[:vP][y,t]-EP[:vREG][y,t] >= 0
+			cMaxReservesDown[y in HYDRO_RES_REG_RSV, t in 1:T, sc in 1:SC], EP[:vP][y,t,sc]-EP[:vREG][y,t,sc] >= 0
 		end)
 	end
 
 	if !isempty(HYDRO_RES_REG_ONLY)
 		@constraints(EP, begin
 			# Maximum storage contribution to reserves is a specified fraction of installed capacity
-			cRegulation[y in HYDRO_RES_REG_ONLY, t in 1:T], EP[:vREG][y,t] <= dfGen[y,:Reg_Max]*EP[:eTotalCap][y]
+			cRegulation[y in HYDRO_RES_REG_ONLY, t in 1:T, sc in 1:SC], EP[:vREG][y,t,sc] <= dfGen[y,:Reg_Max]*EP[:eTotalCap][y]
 			# Maximum discharging rate and contribution to reserves up must be less than power rating
-			cMaxReservesUp[y in HYDRO_RES_REG_ONLY, t in 1:T], EP[:vP][y,t]+EP[:vREG][y,t] <= EP[:eTotalCap][y]
+			cMaxReservesUp[y in HYDRO_RES_REG_ONLY, t in 1:T, sc in 1:SC], EP[:vP][y,t,sc]+EP[:vREG][y,t,sc] <= EP[:eTotalCap][y]
 			# Maximum discharging rate and contribution to regulation down must be greater than zero
-			cMaxReservesDown[y in HYDRO_RES_REG_ONLY, t in 1:T], EP[:vP][y,t]-EP[:vREG][y,t] >= 0
+			cMaxReservesDown[y in HYDRO_RES_REG_ONLY, t in 1:T, sc in 1:SC], EP[:vP][y,t,sc]-EP[:vREG][y,t,sc] >= 0
 		end)
 	end
 
 	if !isempty(HYDRO_RES_RSV_ONLY)
 		@constraints(EP, begin
 			# Maximum storage contribution to reserves is a specified fraction of installed capacity
-			cReserve[y in HYDRO_RES_RSV_ONLY, t in 1:T], EP[:vRSV][y,t] <= dfGen[y,:Rsv_Max]*EP[:eTotalCap][y]
+			cReserve[y in HYDRO_RES_RSV_ONLY, t in 1:T, sc in 1:SC], EP[:vRSV][y,t,sc] <= dfGen[y,:Rsv_Max]*EP[:eTotalCap][y]
 			# Maximum discharging rate and contribution to reserves up must be less than power rating
-			cMaxReservesUp[y in HYDRO_RES_RSV_ONLY, t in 1:T], EP[:vP][y,t]+EP[:vRSV][y,t] <= EP[:eTotalCap][y]
+			cMaxReservesUp[y in HYDRO_RES_RSV_ONLY, t in 1:T, sc in 1:SC], EP[:vP][y,t,sc]+EP[:vRSV][y,t,sc] <= EP[:eTotalCap][y]
 		end)
 	end
 
