@@ -13,7 +13,7 @@ function storage_all!(EP::Model, inputs::Dict, setup::Dict)
 	G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
 	T = inputs["T"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
-
+	SC = inputs["SC"]   # Number of scenarios
 	STOR_ALL = inputs["STOR_ALL"]
 	STOR_SHORT_DURATION = inputs["STOR_SHORT_DURATION"]
 	representative_periods = inputs["REP_PERIOD"]
@@ -26,31 +26,32 @@ function storage_all!(EP::Model, inputs::Dict, setup::Dict)
 	### Variables ###
 
 	# Storage level of resource "y" at hour "t" [MWh] on zone "z" - unbounded
-	@variable(EP, vS[y in STOR_ALL, t=1:T] >= 0);
+	@variable(EP, vS[y in STOR_ALL, t=1:T, sc=1:SC] >= 0);
 
 	# Energy withdrawn from grid by resource "y" at hour "t" [MWh] on zone "z"
-	@variable(EP, vCHARGE[y in STOR_ALL, t=1:T] >= 0);
+	@variable(EP, vCHARGE[y in STOR_ALL, t=1:T, sc=1:SC] >= 0);
 
 	### Expressions ###
 
 	# Energy losses related to technologies (increase in effective demand)
-	@expression(EP, eELOSS[y in STOR_ALL], sum(inputs["omega"][t]*EP[:vCHARGE][y,t] for t in 1:T) - sum(inputs["omega"][t]*EP[:vP][y,t] for t in 1:T))
+	@expression(EP, eELOSS[y in STOR_ALL, sc in 1:SC], sum(inputs["scenprob"][sc]*inputs["omega"][t]*EP[:vCHARGE][y,t,sc] for t in 1:T) - sum(inputs["scenprob"][sc]*inputs["omega"][t]*EP[:vP][y,t,sc] for t in 1:T))
 
 	## Objective Function Expressions ##
 
 	#Variable costs of "charging" for technologies "y" during hour "t" in zone "z"
-	@expression(EP, eCVar_in[y in STOR_ALL,t=1:T], inputs["omega"][t]*dfGen[y,:Var_OM_Cost_per_MWh_In]*vCHARGE[y,t])
+	@expression(EP, eCVar_in[y in STOR_ALL,t=1:T, sc=1:SC], inputs["scenprob"][sc]*inputs["omega"][t]*dfGen[y,:Var_OM_Cost_per_MWh_In]*vCHARGE[y,t,sc])
 
 	# Sum individual resource contributions to variable charging costs to get total variable charging costs
-	@expression(EP, eTotalCVarInT[t=1:T], sum(eCVar_in[y,t] for y in STOR_ALL))
-	@expression(EP, eTotalCVarIn, sum(eTotalCVarInT[t] for t in 1:T))
-	EP[:eObj] += eTotalCVarIn
+	@expression(EP, eTotalCVarInT[t=1:T, sc=1:SC], sum(eCVar_in[y,t,sc] for y in STOR_ALL))
+	@expression(EP, eTotalCVarIn[sc=1:SC], sum(eTotalCVarInT[t,sc] for t in 1:T))
+	@expression(EP, eTotalCVarInSC, sum(eTotalCVarInT[sc] for sc in 1:SC))
+	EP[:eObj] += eTotalCVarInSC
 
 	## Power Balance Expressions ##
 
 	# Term to represent net dispatch from storage in any period
-	@expression(EP, ePowerBalanceStor[t=1:T, z=1:Z],
-		sum(EP[:vP][y,t]-EP[:vCHARGE][y,t] for y in intersect(dfGen[dfGen.Zone.==z,:R_ID],STOR_ALL)))
+	@expression(EP, ePowerBalanceStor[t=1:T, z=1:Z, sc=1:SC],
+		sum(EP[:vP][y,t,sc]-EP[:vCHARGE][y,t,sc] for y in intersect(dfGen[dfGen.Zone.==z,:R_ID],STOR_ALL)))
 
 	EP[:ePowerBalance] += ePowerBalanceStor
 
@@ -103,7 +104,7 @@ function storage_all_reserves!(EP::Model, inputs::Dict)
 
 	dfGen = inputs["dfGen"]
 	T = inputs["T"]
-
+	SC = inputs["SC"]   # Number of scenarios
 	START_SUBPERIODS = inputs["START_SUBPERIODS"]
 	INTERIOR_SUBPERIODS = inputs["INTERIOR_SUBPERIODS"]
 	p = inputs["hours_per_subperiod"]

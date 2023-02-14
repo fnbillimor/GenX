@@ -104,9 +104,9 @@ function storage!(EP::Model, inputs::Dict, setup::Dict)
 	T = inputs["T"]
 	STOR_ALL = inputs["STOR_ALL"]
 
-    p = inputs["hours_per_subperiod"]
-    rep_periods = inputs["REP_PERIOD"]
-
+    	p = inputs["hours_per_subperiod"]
+    	rep_periods = inputs["REP_PERIOD"]
+	SC = inputs["SC"]   # Number of scenarios
 	Reserves = setup["Reserves"]
 	EnergyShareRequirement = setup["EnergyShareRequirement"]
 	CapacityReserveMargin = setup["CapacityReserveMargin"]
@@ -142,7 +142,7 @@ function storage!(EP::Model, inputs::Dict, setup::Dict)
 
 	# Capacity Reserves Margin policy
 	if CapacityReserveMargin > 0
-		@expression(EP, eCapResMarBalanceStor[res=1:inputs["NCapacityReserveMargin"], t=1:T], sum(dfGen[y,Symbol("CapRes_$res")] * (EP[:vP][y,t] - EP[:vCHARGE][y,t])  for y in STOR_ALL))
+		@expression(EP, eCapResMarBalanceStor[res=1:inputs["NCapacityReserveMargin"], t=1:T, sc=1:SC], sum(dfGen[y,Symbol("CapRes_$res")] * (EP[:vP][y,t,sc] - EP[:vCHARGE][y,t,sc])  for y in STOR_ALL))
 		EP[:eCapResMarBalance] += eCapResMarBalanceStor
 	end
 
