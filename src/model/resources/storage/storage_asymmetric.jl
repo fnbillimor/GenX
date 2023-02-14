@@ -30,7 +30,7 @@ function storage_asymmetric!(EP::Model, inputs::Dict, setup::Dict)
 	Reserves = setup["Reserves"]
 
 	T = inputs["T"]     # Number of time steps (hours)
-
+	SC = inputs["SC"]   # Number of scenarios
 	STOR_ASYMMETRIC = inputs["STOR_ASYMMETRIC"]
 
 	### Constraints ###
@@ -40,7 +40,7 @@ function storage_asymmetric!(EP::Model, inputs::Dict, setup::Dict)
 		storage_asymmetric_reserves!(EP, inputs)
 	else
 		# Maximum charging rate must be less than charge power rating
-		@constraint(EP, [y in STOR_ASYMMETRIC, t in 1:T], EP[:vCHARGE][y,t] <= EP[:eTotalCapCharge][y])
+		@constraint(EP, [y in STOR_ASYMMETRIC, t in 1:T, sc in 1:SC], EP[:vCHARGE][y,t,sc] <= EP[:eTotalCapCharge][y])
 	end
 
 end
@@ -54,7 +54,7 @@ function storage_asymmetric_reserves!(EP::Model, inputs::Dict)
 
 	dfGen = inputs["dfGen"]
 	T = inputs["T"]
-
+	SC = inputs["SC"]   # Number of scenarios
 	STOR_ASYMMETRIC = inputs["STOR_ASYMMETRIC"]
 
 	STOR_ASYM_REG = intersect(STOR_ASYMMETRIC, inputs["REG"]) # Set of asymmetric storage resources with REG reserves
@@ -63,11 +63,11 @@ function storage_asymmetric_reserves!(EP::Model, inputs::Dict)
 	if !isempty(STOR_ASYM_REG)
 		# Storage units charging can charge faster to provide reserves down and charge slower to provide reserves up
 		# Maximum charging rate plus contribution to regulation down must be less than charge power rating
-		@constraint(EP, [y in STOR_ASYM_REG, t in 1:T], EP[:vCHARGE][y,t]+EP[:vREG_charge][y,t] <= EP[:eTotalCapCharge][y])
+		@constraint(EP, [y in STOR_ASYM_REG, t in 1:T, sc in 1:SC], EP[:vCHARGE][y,t,sc]+EP[:vREG_charge][y,t,sc] <= EP[:eTotalCapCharge][y])
 	else
 		# Storage units charging can charge faster to provide reserves down and charge slower to provide reserves up
 		# Maximum charging rate plus contribution to regulation down must be less than charge power rating
-		@constraint(EP, [y in STOR_ASYM_NO_REG, t in 1:T], EP[:vCHARGE][y,t] <= EP[:eTotalCapCharge][y])
+		@constraint(EP, [y in STOR_ASYM_NO_REG, t in 1:T, sc in 1:SC], EP[:vCHARGE][y,t,sc] <= EP[:eTotalCapCharge][y])
 	end
 
 end
