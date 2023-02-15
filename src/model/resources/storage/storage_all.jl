@@ -79,13 +79,13 @@ function storage_all!(EP::Model, inputs::Dict, setup::Dict)
 	# We use a modified formulation of this constraint (cSoCBalLongDurationStorageStart) when operations wrapping and long duration storage are being modeled
 	
 	if OperationWrapping ==1 && !isempty(inputs["STOR_LONG_DURATION"])
-		@constraint(EP, cSoCBalStart[t in START_SUBPERIODS, y in STOR_SHORT_DURATION], EP[:vS][y,t] ==
-			EP[:vS][y,t+hours_per_subperiod-1]-(1/dfGen[y,:Eff_Down]*EP[:vP][y,t])
-			+(dfGen[y,:Eff_Up]*EP[:vCHARGE][y,t])-(dfGen[y,:Self_Disch]*EP[:vS][y,t+hours_per_subperiod-1]))
+		@constraint(EP, cSoCBalStart[t in START_SUBPERIODS, y in STOR_SHORT_DURATION,sc=1:SC], EP[:vS][y,t,sc] ==
+			EP[:vS][y,t+hours_per_subperiod-1,sc]-(1/dfGen[y,:Eff_Down]*EP[:vP][y,t,sc])
+			+(dfGen[y,:Eff_Up]*EP[:vCHARGE][y,t,sc])-(dfGen[y,:Self_Disch]*EP[:vS][y,t+hours_per_subperiod-1,sc]))
 	else
-		@constraint(EP, cSoCBalStart[t in START_SUBPERIODS, y in STOR_ALL], EP[:vS][y,t] ==
-			EP[:vS][y,t+hours_per_subperiod-1]-(1/dfGen[y,:Eff_Down]*EP[:vP][y,t])
-			+(dfGen[y,:Eff_Up]*EP[:vCHARGE][y,t])-(dfGen[y,:Self_Disch]*EP[:vS][y,t+hours_per_subperiod-1]))
+		@constraint(EP, cSoCBalStart[t in START_SUBPERIODS, y in STOR_ALL,sc=1:SC], EP[:vS][y,t,sc] ==
+			EP[:vS][y,t+hours_per_subperiod-1,sc]-(1/dfGen[y,:Eff_Down]*EP[:vP][y,t,sc])
+			+(dfGen[y,:Eff_Up]*EP[:vCHARGE][y,t,sc])-(dfGen[y,:Self_Disch]*EP[:vS][y,t+hours_per_subperiod-1,sc]))
 	end
 	
 
@@ -96,11 +96,11 @@ function storage_all!(EP::Model, inputs::Dict, setup::Dict)
 		[y in STOR_ALL], EP[:eTotalCapEnergy][y] <= dfGen[y,:Max_Duration] * EP[:eTotalCap][y]
 
 		# Maximum energy stored must be less than energy capacity
-		[y in STOR_ALL, t in 1:T], EP[:vS][y,t] <= EP[:eTotalCapEnergy][y]
+		[y in STOR_ALL, t in 1:T,sc=1:SC], EP[:vS][y,t,sc] <= EP[:eTotalCapEnergy][y]
 
 		# energy stored for the next hour
-		cSoCBalInterior[t in INTERIOR_SUBPERIODS, y in STOR_ALL], EP[:vS][y,t] ==
-			EP[:vS][y,t-1]-(1/dfGen[y,:Eff_Down]*EP[:vP][y,t])+(dfGen[y,:Eff_Up]*EP[:vCHARGE][y,t])-(dfGen[y,:Self_Disch]*EP[:vS][y,t-1])
+		cSoCBalInterior[t in INTERIOR_SUBPERIODS, y in STOR_ALL,sc=1:SC], EP[:vS][y,t,sc] ==
+			EP[:vS][y,t-1,sc]-(1/dfGen[y,:Eff_Down]*EP[:vP][y,t,sc])+(dfGen[y,:Eff_Up]*EP[:vCHARGE][y,t,sc])-(dfGen[y,:Self_Disch]*EP[:vS][y,t-1,sc])
 	end)
 
 	# Storage discharge and charge power (and reserve contribution) related constraints:
@@ -113,14 +113,14 @@ function storage_all!(EP::Model, inputs::Dict, setup::Dict)
 		# Maximum discharging rate must be less than power rating OR available stored energy in the prior period, whichever is less
 		# wrapping from end of sample period to start of sample period for energy capacity constraint
 		@constraints(EP, begin
-			[y in STOR_ALL, t=1:T], EP[:vP][y,t] <= EP[:eTotalCap][y]
-			[y in STOR_ALL, t in INTERIOR_SUBPERIODS], EP[:vP][y,t] <= EP[:vS][y,t-1]*dfGen[y,:Eff_Down]
-			[y in STOR_ALL, t in START_SUBPERIODS], EP[:vP][y,t] <= EP[:vS][y,t+hours_per_subperiod-1]*dfGen[y,:Eff_Down]
+			[y in STOR_ALL, t=1:T,sc=1:SC], EP[:vP][y,t,sc] <= EP[:eTotalCap][y]
+			[y in STOR_ALL, t in INTERIOR_SUBPERIODS,sc=1:SC], EP[:vP][y,t,sc] <= EP[:vS][y,t-1,sc]*dfGen[y,:Eff_Down]
+			[y in STOR_ALL, t in START_SUBPERIODS,sc=1:SC], EP[:vP][y,t,sc] <= EP[:vS][y,t+hours_per_subperiod-1,sc]*dfGen[y,:Eff_Down]
 		end)
 	end
 	#From co2 Policy module
-	@expression(EP, eELOSSByZone[z=1:Z],
-		sum(EP[:eELOSS][y] for y in intersect(inputs["STOR_ALL"], dfGen[dfGen[!,:Zone].==z,:R_ID]))
+	@expression(EP, eELOSSByZone[z=1:Z,sc=1:SC],
+		sum(EP[:eELOSS][y,sc] for y in intersect(inputs["STOR_ALL"], dfGen[dfGen[!,:Zone].==z,:R_ID]))
 	)
 end
 
@@ -149,95 +149,95 @@ function storage_all_reserves!(EP::Model, inputs::Dict)
 		# Storage units charging can charge faster to provide reserves down and charge slower to provide reserves up
 		@constraints(EP, begin
 			# Maximum storage contribution to reserves is a specified fraction of installed discharge power capacity
-			[y in STOR_REG_RSV, t=1:T], EP[:vREG][y,t] <= dfGen[y,:Reg_Max]*EP[:eTotalCap][y]
-			[y in STOR_REG_RSV, t=1:T], EP[:vRSV][y,t] <= dfGen[y,:Rsv_Max]*EP[:eTotalCap][y]
+			[y in STOR_REG_RSV, t=1:T, sc=1:SC], EP[:vREG][y,t,sc] <= dfGen[y,:Reg_Max]*EP[:eTotalCap][y]
+			[y in STOR_REG_RSV, t=1:T, sc=1:SC], EP[:vRSV][y,t,sc] <= dfGen[y,:Rsv_Max]*EP[:eTotalCap][y]
 
 			# Actual contribution to regulation and reserves is sum of auxilary variables for portions contributed during charging and discharging
-			[y in STOR_REG_RSV, t=1:T], EP[:vREG][y,t] == EP[:vREG_charge][y,t]+EP[:vREG_discharge][y,t]
-			[y in STOR_REG_RSV, t=1:T], EP[:vRSV][y,t] == EP[:vRSV_charge][y,t]+EP[:vRSV_discharge][y,t]
+			[y in STOR_REG_RSV, t=1:T, sc=1:SC], EP[:vREG][y,t,sc] == EP[:vREG_charge][y,t,sc]+EP[:vREG_discharge][y,t,sc]
+			[y in STOR_REG_RSV, t=1:T, sc=1:SC], EP[:vRSV][y,t,sc] == EP[:vRSV_charge][y,t,sc]+EP[:vRSV_discharge][y,t,sc]
 
 			# Maximum charging rate plus contribution to reserves up must be greater than zero
 			# Note: when charging, reducing charge rate is contributing to upwards reserve & regulation as it drops net demand
-			[y in STOR_REG_RSV, t=1:T], EP[:vCHARGE][y,t]-EP[:vREG_charge][y,t]-EP[:vRSV_charge][y,t] >= 0
+			[y in STOR_REG_RSV, t=1:T, sc=1:SC], EP[:vCHARGE][y,t,sc]-EP[:vREG_charge][y,t,sc]-EP[:vRSV_charge][y,t,sc] >= 0
 
 			# Maximum discharging rate and contribution to reserves down must be greater than zero
 			# Note: when discharging, reducing discharge rate is contributing to downwards regulation as it drops net supply
-			[y in STOR_REG_RSV, t=1:T], EP[:vP][y,t]-EP[:vREG_discharge][y,t] >= 0
+			[y in STOR_REG_RSV, t=1:T, sc=1:SC], EP[:vP][y,t,sc]-EP[:vREG_discharge][y,t,sc] >= 0
 
 			# Maximum charging rate plus contribution to regulation down must be less than available storage capacity
 			## Made change to let the model run and not have key error issue for time -Sam (04/20/2021)
-			[y in STOR_REG_RSV, t in START_SUBPERIODS], EP[:vCHARGE][y,t]+EP[:vREG_charge][y,t] <= EP[:eTotalCapEnergy][y]-EP[:vS][y,t+hours_per_subperiod-1]
-			[y in STOR_REG_RSV, t in INTERIOR_SUBPERIODS], EP[:vCHARGE][y,t]+EP[:vREG_charge][y,t] <= EP[:eTotalCapEnergy][y]-EP[:vS][y,t-1]
+			[y in STOR_REG_RSV, t in START_SUBPERIODS, sc=1:SC], EP[:vCHARGE][y,t,sc]+EP[:vREG_charge][y,t,sc] <= EP[:eTotalCapEnergy][y]-EP[:vS][y,t+hours_per_subperiod-1,sc]
+			[y in STOR_REG_RSV, t in INTERIOR_SUBPERIODS, sc=1:SC], EP[:vCHARGE][y,t,sc]+EP[:vREG_charge][y,t,sc] <= EP[:eTotalCapEnergy][y]-EP[:vS][y,t-1,sc]
 			# Note: maximum charge rate is also constrained by maximum charge power capacity, but as this differs by storage type,
 			# this constraint is set in functions below for each storage type
 
 			# Maximum discharging rate and contribution to reserves up must be less than power rating OR available stored energy in prior period, whichever is less
 			# wrapping from end of sample period to start of sample period for energy capacity constraint
-			[y in STOR_REG_RSV, t=1:T], EP[:vP][y,t]+EP[:vREG_discharge][y,t]+EP[:vRSV_discharge][y,t] <= EP[:eTotalCap][y]
-			[y in STOR_REG_RSV, t in INTERIOR_SUBPERIODS], EP[:vP][y,t]+EP[:vREG_discharge][y,t]+EP[:vRSV_discharge][y,t] <= EP[:vS][y,t-1]
-			[y in STOR_REG_RSV, t in START_SUBPERIODS], EP[:vP][y,t]+EP[:vREG_discharge][y,t]+EP[:vRSV_discharge][y,t] <= EP[:vS][y,t+hours_per_subperiod-1]
+			[y in STOR_REG_RSV, t=1:T, sc=1:SC], EP[:vP][y,t,sc]+EP[:vREG_discharge][y,t,sc]+EP[:vRSV_discharge][y,t,sc] <= EP[:eTotalCap][y]
+			[y in STOR_REG_RSV, t in INTERIOR_SUBPERIODS, sc=1:SC], EP[:vP][y,t,sc]+EP[:vREG_discharge][y,t,sc]+EP[:vRSV_discharge][y,t,sc] <= EP[:vS][y,t-1,sc]
+			[y in STOR_REG_RSV, t in START_SUBPERIODS, sc=1:SC], EP[:vP][y,t,sc]+EP[:vREG_discharge][y,t,sc]+EP[:vRSV_discharge][y,t,sc] <= EP[:vS][y,t+hours_per_subperiod-1,sc]
 		end)
 	end
 	if !isempty(STOR_REG_ONLY)
 		# Storage units charging can charge faster to provide reserves down and charge slower to provide reserves up
 		@constraints(EP, begin
 			# Maximum storage contribution to reserves is a specified fraction of installed capacity
-			[y in STOR_REG_ONLY, t=1:T], EP[:vREG][y,t] <= dfGen[y,:Reg_Max]*EP[:eTotalCap][y]
+			[y in STOR_REG_ONLY, t=1:T, sc=1:SC], EP[:vREG][y,t,sc] <= dfGen[y,:Reg_Max]*EP[:eTotalCap][y]
 
 			# Actual contribution to regulation and reserves is sum of auxilary variables for portions contributed during charging and discharging
-			[y in STOR_REG_ONLY, t=1:T], EP[:vREG][y,t] == EP[:vREG_charge][y,t]+EP[:vREG_discharge][y,t]
+			[y in STOR_REG_ONLY, t=1:T, sc=1:SC], EP[:vREG][y,t,sc] == EP[:vREG_charge][y,t,sc]+EP[:vREG_discharge][y,t,sc]
 
 			# Maximum charging rate plus contribution to reserves up must be greater than zero
 			# Note: when charging, reducing charge rate is contributing to upwards reserve & regulation as it drops net demand
-			[y in STOR_REG_ONLY, t=1:T], EP[:vCHARGE][y,t]-EP[:vREG_charge][y,t] >= 0
+			[y in STOR_REG_ONLY, t=1:T, sc=1:SC], EP[:vCHARGE][y,t,sc]-EP[:vREG_charge][y,t,sc] >= 0
 
 			# Maximum discharging rate and contribution to reserves down must be greater than zero
 			# Note: when discharging, reducing discharge rate is contributing to downwards regulation as it drops net supply
-			[y in STOR_REG_ONLY, t=1:T], EP[:vP][y,t] - EP[:vREG_discharge][y,t] >= 0
+			[y in STOR_REG_ONLY, t=1:T, sc=1:SC], EP[:vP][y,t,sc] - EP[:vREG_discharge][y,t,sc] >= 0
 
 			# Maximum charging rate plus contribution to regulation down must be less than available storage capacity
-			[y in STOR_REG_ONLY, t in START_SUBPERIODS], EP[:vCHARGE][y,t]+EP[:vREG_charge][y,t] <= EP[:eTotalCapEnergy][y]-EP[:vS][y,t+hours_per_subperiod-1]
-			[y in STOR_REG_ONLY, t in INTERIOR_SUBPERIODS], EP[:vCHARGE][y,t]+EP[:vREG_charge][y,t] <= EP[:eTotalCapEnergy][y]-EP[:vS][y,t-1]
+			[y in STOR_REG_ONLY, t in START_SUBPERIODS, sc=1:SC], EP[:vCHARGE][y,t,sc]+EP[:vREG_charge][y,t,sc] <= EP[:eTotalCapEnergy][y]-EP[:vS][y,t+hours_per_subperiod-1,sc]
+			[y in STOR_REG_ONLY, t in INTERIOR_SUBPERIODS, sc=1:SC], EP[:vCHARGE][y,t,sc]+EP[:vREG_charge][y,t,sc] <= EP[:eTotalCapEnergy][y]-EP[:vS][y,t-1,sc]
 			# Note: maximum charge rate is also constrained by maximum charge power capacity, but as this differs by storage type,
 			# this constraint is set in functions below for each storage type
 
 			# Maximum discharging rate and contribution to reserves up must be less than power rating OR available stored energy in prior period, whichever is less
 			# wrapping from end of sample period to start of sample period for energy capacity constraint
-			[y in STOR_REG_ONLY, t=1:T], EP[:vP][y,t] + EP[:vREG_discharge][y,t] <= EP[:eTotalCap][y]
-			[y in STOR_REG_ONLY, t in INTERIOR_SUBPERIODS], EP[:vP][y,t]+EP[:vREG_discharge][y,t] <= EP[:vS][y,t-1]
-			[y in STOR_REG_ONLY, t in START_SUBPERIODS], EP[:vP][y,t]+EP[:vREG_discharge][y,t]<= EP[:vS][y,t+hours_per_subperiod-1]
+			[y in STOR_REG_ONLY, t=1:T, sc=1:SC], EP[:vP][y,t,sc] + EP[:vREG_discharge][y,t,sc] <= EP[:eTotalCap][y]
+			[y in STOR_REG_ONLY, t in INTERIOR_SUBPERIODS, sc=1:SC], EP[:vP][y,t,sc]+EP[:vREG_discharge][y,t,sc] <= EP[:vS][y,t-1,sc]
+			[y in STOR_REG_ONLY, t in START_SUBPERIODS, sc=1:SC], EP[:vP][y,t,sc]+EP[:vREG_discharge][y,t,sc]<= EP[:vS][y,t+hours_per_subperiod-1,sc]
 		end)
 	end
 	if !isempty(STOR_RSV_ONLY)
 		# Storage units charging can charge faster to provide reserves down and charge slower to provide reserves up
 		@constraints(EP, begin
 			# Maximum storage contribution to reserves is a specified fraction of installed capacity
-			[y in STOR_RSV_ONLY, t=1:T], EP[:vRSV][y,t] <= dfGen[y,:Rsv_Max]*EP[:eTotalCap][y]
+			[y in STOR_RSV_ONLY, t=1:T, sc=1:SC], EP[:vRSV][y,t,sc] <= dfGen[y,:Rsv_Max]*EP[:eTotalCap][y]
 
 			# Actual contribution to regulation and reserves is sum of auxilary variables for portions contributed during charging and discharging
-			[y in STOR_RSV_ONLY, t=1:T], EP[:vRSV][y,t] == EP[:vRSV_charge][y,t]+EP[:vRSV_discharge][y,t]
+			[y in STOR_RSV_ONLY, t=1:T, sc=1:SC], EP[:vRSV][y,t,sc] == EP[:vRSV_charge][y,t,sc]+EP[:vRSV_discharge][y,t,sc]
 
 			# Maximum charging rate plus contribution to reserves up must be greater than zero
 			# Note: when charging, reducing charge rate is contributing to upwards reserve & regulation as it drops net demand
-			[y in STOR_RSV_ONLY, t=1:T], EP[:vCHARGE][y,t]-EP[:vRSV_charge][y,t] >= 0
+			[y in STOR_RSV_ONLY, t=1:T, sc=1:SC], EP[:vCHARGE][y,t,sc]-EP[:vRSV_charge][y,t,sc] >= 0
 
 			# Note: maximum charge rate is also constrained by maximum charge power capacity, but as this differs by storage type,
 			# this constraint is set in functions below for each storage type
 
 			# Maximum discharging rate and contribution to reserves up must be less than power rating OR available stored energy in prior period, whichever is less
 			# wrapping from end of sample period to start of sample period for energy capacity constraint
-			[y in STOR_RSV_ONLY, t=1:T], EP[:vP][y,t]+EP[:vRSV_discharge][y,t] <= EP[:eTotalCap][y]
-			[y in STOR_RSV_ONLY, t in INTERIOR_SUBPERIODS], EP[:vP][y,t]+EP[:vRSV_discharge][y,t] <= EP[:vS][y,t-1]
-			[y in STOR_RSV_ONLY, t in START_SUBPERIODS], EP[:vP][y,t]+EP[:vRSV_discharge][y,t] <= EP[:vS][y,t+hours_per_subperiod-1]
+			[y in STOR_RSV_ONLY, t=1:T, sc=1:SC], EP[:vP][y,t,sc]+EP[:vRSV_discharge][y,t,sc] <= EP[:eTotalCap][y]
+			[y in STOR_RSV_ONLY, t in INTERIOR_SUBPERIODS, sc=1:SC], EP[:vP][y,t,sc]+EP[:vRSV_discharge][y,t,sc] <= EP[:vS][y,t-1,sc]
+			[y in STOR_RSV_ONLY, t in START_SUBPERIODS, sc=1:SC], EP[:vP][y,t,sc]+EP[:vRSV_discharge][y,t,sc] <= EP[:vS][y,t+hours_per_subperiod-1,sc]
 		end)
 	end
 	if !isempty(STOR_NO_RES)
 		# Maximum discharging rate must be less than power rating OR available stored energy in prior period, whichever is less
 		# wrapping from end of sample period to start of sample period for energy capacity constraint
 		@constraints(EP, begin
-			[y in STOR_NO_RES, t=1:T], EP[:vP][y,t] <= EP[:eTotalCap][y]
-			[y in STOR_NO_RES, t in INTERIOR_SUBPERIODS], EP[:vP][y,t] <= EP[:vS][y,t-1]
-			[y in STOR_NO_RES, t in START_SUBPERIODS], EP[:vP][y,t] <= EP[:vS][y,t+hours_per_subperiod-1]
+			[y in STOR_NO_RES, t=1:T, sc=1:SC], EP[:vP][y,t,sc] <= EP[:eTotalCap][y]
+			[y in STOR_NO_RES, t in INTERIOR_SUBPERIODS, sc=1:SC], EP[:vP][y,t,sc] <= EP[:vS][y,t-1,sc]
+			[y in STOR_NO_RES, t in START_SUBPERIODS, sc=1:SC], EP[:vP][y,t,sc] <= EP[:vS][y,t+hours_per_subperiod-1,sc]
 		end)
 	end
 end
