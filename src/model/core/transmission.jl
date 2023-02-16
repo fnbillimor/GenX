@@ -211,7 +211,11 @@ function transmission!(EP::Model, inputs::Dict, setup::Dict)
 			EP[:eObj] += eTotalCNetworkExp
 		end
 	end
-
+### FNB: do not add to objective function here. We need to modify this to add it to eSCS
+###	for sc in 1:SC		
+###		EP[:eSCS[sc]] += eTotalCNetworkExp
+###	end
+	
 	## End Objective Function Expressions ##
 
 	## Power Balance Expressions ##
