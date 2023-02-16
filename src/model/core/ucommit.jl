@@ -73,6 +73,14 @@ function ucommit!(EP::Model, inputs::Dict, setup::Dict)
 
 	EP[:eObj] += eTotalCStart
 
+	
+###	FNB: need to amend 
+###	@expression(EP, eTotalCStartT[t=1:T, sc=1:SC], sum(eCStart[y,t,sc] for y in COMMIT))
+###	@expression(EP, eTotalCStart[sc=1:SC], sum(eTotalCStartT[t,sc] for t=1:T))
+###	for sc in 1:SC		
+###		EP[:eSCS[sc]] += eTotalCStart[sc]
+###	end
+	
 	### Constratints ###
 	## Declaration of integer/binary variables
 	if setup["UCommit"] == 1 # Integer UC constraints
