@@ -54,7 +54,15 @@ function discharge!(EP::Model, inputs::Dict, setup::Dict)
 
 	# Add total variable discharging cost contribution to the objective function
 	EP[:eObj] += eTotalCVarOut
-
+	
+### FNB	Similar comment as per prior files, we need to revise the objective function additions.  Proposed code:
+### 	@expression(EP, eTotalCVarOutTSC[t=1:T,sc=1:SC], sum(eCVar_out[y,t,sc] for y in 1:G))
+###	@expression(EP, eTotalCVarOut[sc=1:SC], sum(eTotalCVarOutTSC[t,sc] for t in 1:T))
+###	for sc in 1:SC		
+###		EP[:eSCS[sc]] += eTotalCVarOut[sc]
+###	end 
+	
+	
 	# ESR Policy
 	if setup["EnergyShareRequirement"] >= 1
 
@@ -64,4 +72,6 @@ function discharge!(EP::Model, inputs::Dict, setup::Dict)
 		EP[:eESR] += eESRDischarge
 	end
 
+### FNB - should we not index ESR policy by scenario too.
+	
 end
