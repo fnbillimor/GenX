@@ -159,7 +159,11 @@ function investment_discharge!(EP::Model, inputs::Dict, setup::Dict)
 	else
 		EP[:eObj] += eTotalCFix
 	end
-
+### FNB as per prior, we should replace EP[:eObj] by
+###	for sc in 1:SC		
+###		EP[:eSCS[sc]] += eTotalCFix[sc]
+###	end
+										
 	### Constratints ###
 
 	if MultiStage == 1
