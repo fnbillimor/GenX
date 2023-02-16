@@ -214,7 +214,24 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 
 	## Define the objective function
 	@objective(EP,Min,EP[:eObj])
-### FNB: The objective function will have to be modified to reflect the weighted minimization expected value and CVAR
+	
+### FNB: 	The objective function will have to be modified to reflect the weighted minimization expected value and CVAR. As currently stands it may not be the
+###		best structure for a mean-CVAR optimization.
+### 		Instead I suggest we create a new expression called eSCS -> system cost per scenario. This would equate to the summation of total system
+###		costs for the scenario.  I.e. it would sum generation varaible costs + capital costs + network investment costs + etc for each scenario.
+###		We would then define two expressions eMSC (the mean system cost) and eCVARSC (the CVAR of system costs)
+### 		We would need to have two additional auxillary variables (vVar) and constraints to define the CVAR.
+###		The objective function would then be defined as weighted combination of eMSC and eCVARSC.   Proposed code is below.
+	
+### 		@variable(EP, vVAR)
+### 		@variable(EP, vCVARaux[sc=1:SC] >= 0)
+###		@expression(EP, eSCS[sc=1:SC], 0)
+###		@expression(EP, eMSC, sum(inputs["scenprob"][sc]*eSCS[sc] for sc in sc=1:S) )
+###		@expression(EP, eCVARSC, vVAR + (1/alpha)sum(inputs["scenprob"][sc]*vCVARaux[sc] for sc in sc=1:S) )
+###		@objective(EP,Min,(1-beta)*eMSC + beta*eCVARSC )
+###		@constraint(EP,cCVAR2[sc=1:SC],vCVARaux[sc]>= eSCS[sc] - vVAR)
+	
+
 	
 	## Power balance constraints
 	# demand = generation + storage discharge - storage charge - demand deferral + deferred demand satisfaction - demand curtailment (NSE)
