@@ -74,13 +74,21 @@ function non_served_energy!(EP::Model, inputs::Dict, setup::Dict)
 	@expression(EP, eTotalCNSETS[t=1:T,z=1:Z], sum(eCNSETSSC[s,t,z] for s in 1:SEG))
 	@expression(EP, eTotalCNSET[t=1:T], sum(eTotalCNSETS[t,z] for z in 1:Z))
 	@expression(EP, eTotalCNSE, sum(eTotalCNSET[t] for t in 1:T))
-
-### FNB:	Currently we appear to be summating overs scenarios, then demand, then region, then time.  
-### 		1. We should not summate over scenario.
-###		The expression eTOTALCNSE	
 	
 	# Add total cost contribution of non-served energy/curtailed demand to the objective function
 	EP[:eObj] += eTotalCNSE
+	
+### FNB:	Currently we appear to be summating overs scenarios, then demand, then region, then time.  
+### 		Proposed revisions in line with the revised objective function.
+###	
+###	@expression(EP, eTotalCNSETS[t=1:T,z=1:Z,sc in 1:SC], sum(eCNSE[s,t,z,sc] for s in 1:SEG))
+###	@expression(EP, eTotalCNSET[t=1:T,sc in 1:SC], sum(eTotalCNSETS[t,z,sc] for z in 1:Z))
+###	@expression(EP, eTotalCNSE[sc in 1:SC], sum(eTotalCNSET[t,sc] for t in 1:T))
+###
+###	for sc in 1:SC		
+###		EP[:eSCS[sc]] += eTotalCNSE[sc]
+###	end
+
 
 	## Power Balance Expressions ##
 	@expression(EP, ePowerBalanceNse[t=1:T, z=1:Z, sc=1:SC],
