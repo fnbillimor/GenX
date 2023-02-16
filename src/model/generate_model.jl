@@ -123,6 +123,7 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 		@expression(EP, eESR[ESR=1:inputs["nESR"]], 0)
 	end
 
+	#Minimum Cpacity Requirement
 	if (setup["MinCapReq"] == 1)
 		@expression(EP, eMinCapRes[mincap = 1:inputs["NumberOfMinCapReqs"]], 0)
 	end
