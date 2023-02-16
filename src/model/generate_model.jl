@@ -214,7 +214,8 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 
 	## Define the objective function
 	@objective(EP,Min,EP[:eObj])
-
+### FNB: The objective function will have to be modified to reflect the weighted minimization expected value and CVAR
+	
 	## Power balance constraints
 	# demand = generation + storage discharge - storage charge - demand deferral + deferred demand satisfaction - demand curtailment (NSE)
 	#          + incoming power flows - outgoing power flows - flow losses - charge of heat storage + generation from NACC
