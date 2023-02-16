@@ -258,6 +258,15 @@ function reserves_core!(EP::Model, inputs::Dict, setup::Dict)
 		sum(dfGen[y,:Reg_Cost]*vRSV[y,t,sc] for y in RSV, t=1:T) +
 		sum(dfGen[y,:Rsv_Cost]*vREG[y,t,sc] for y in REG, t=1:T) )
 	EP[:eObj] += eTotalCRsvPen
+### Proposed new code, remove eOBJ
+###	
+###	for sc in 1:SC		
+###		EP[:eSCS[sc]] += eTotalCRsvPen[sc]
+###	end
+###
+###
+
+
 
 	### Constraints ###
 
@@ -267,5 +276,7 @@ function reserves_core!(EP::Model, inputs::Dict, setup::Dict)
 	@constraint(EP, cReg[t=1:T,sc=1:SC], sum(vREG[y,t,sc] for y in REG) >= EP[:eRegReq][t])
 
 	@constraint(EP, cRsvReq[t=1:T,sc=1:SC], sum(vRSV[y,t,sc] for y in RSV) + vUNMET_RSV[t,sc] >= EP[:eRsvReq][t])
+
+### Should these not be indexed with sc
 
 end
