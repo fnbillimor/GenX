@@ -51,18 +51,31 @@ function storage_all!(EP::Model, inputs::Dict, setup::Dict)
 
 	# Energy losses related to technologies (increase in effective demand)
 	@expression(EP, eELOSS[y in STOR_ALL, sc in 1:SC], sum(inputs["scenprob"][sc]*inputs["omega"][t]*EP[:vCHARGE][y,t,sc] for t in 1:T) - sum(inputs["scenprob"][sc]*inputs["omega"][t]*EP[:vP][y,t,sc] for t in 1:T))
-
+### FNB:  I dont think we be suming across all of the scenario probabilities here. We should remove the reference to inputs["scenprob"][sc]  
+	
+	
 	## Objective Function Expressions ##
 
 	#Variable costs of "charging" for technologies "y" during hour "t" in zone "z"
 	@expression(EP, eCVar_in[y in STOR_ALL,t=1:T, sc=1:SC], inputs["scenprob"][sc]*inputs["omega"][t]*dfGen[y,:Var_OM_Cost_per_MWh_In]*vCHARGE[y,t,sc])
-
+### FNB: Similarly here we should not be summing across scenprob.  We should remove "inputs["scenprob"][sc]" from the equation as per above. 	
+	
 	# Sum individual resource contributions to variable charging costs to get total variable charging costs
 	@expression(EP, eTotalCVarInT[t=1:T, sc=1:SC], sum(eCVar_in[y,t,sc] for y in STOR_ALL))
 	@expression(EP, eTotalCVarIn[sc=1:SC], sum(eTotalCVarInT[t,sc] for t in 1:T))
 	@expression(EP, eTotalCVarInSC, sum(eTotalCVarInT[sc] for sc in 1:SC))
 	EP[:eObj] += eTotalCVarInSC
-
+### FNB: Same issue with respect to objective function.
+###	proposed code below:
+###	@expression(EP, eTotalCVarInT[t=1:T, sc=1:SC], sum(eCVar_in[y,t,sc] for y in STOR_ALL))
+###	@expression(EP, eTotalCVarIn[sc=1:SC], sum(eTotalCVarInT[t,sc] for t in 1:T))
+###	for sc in 1:SC		
+###		EP[:eSCS[sc]] += eTotalCVarIn[sc]
+###	end 
+###
+###
+	
+	
 	## Power Balance Expressions ##
 
 	# Term to represent net dispatch from storage in any period
@@ -87,6 +100,7 @@ function storage_all!(EP::Model, inputs::Dict, setup::Dict)
 			EP[:vS][y,t+hours_per_subperiod-1]-(1/dfGen[y,:Eff_Down]*EP[:vP][y,t])
 			+(dfGen[y,:Eff_Up]*EP[:vCHARGE][y,t])-(dfGen[y,:Self_Disch]*EP[:vS][y,t+hours_per_subperiod-1]))
 	end
+### FNB: The scenarios should be added to this section.
 	
 
 	@constraints(EP, begin
@@ -103,6 +117,8 @@ function storage_all!(EP::Model, inputs::Dict, setup::Dict)
 			EP[:vS][y,t-1]-(1/dfGen[y,:Eff_Down]*EP[:vP][y,t])+(dfGen[y,:Eff_Up]*EP[:vCHARGE][y,t])-(dfGen[y,:Self_Disch]*EP[:vS][y,t-1])
 	end)
 
+### FNB: The scenarios should be added to this section.
+	
 	# Storage discharge and charge power (and reserve contribution) related constraints:
 	if Reserves == 1
 		storage_all_reserves!(EP, inputs)
@@ -118,14 +134,22 @@ function storage_all!(EP::Model, inputs::Dict, setup::Dict)
 			[y in STOR_ALL, t in START_SUBPERIODS], EP[:vP][y,t] <= EP[:vS][y,t+hours_per_subperiod-1]*dfGen[y,:Eff_Down]
 		end)
 	end
+### FNB: The scenarios should be added to this section.	
+	
+	
 	#From co2 Policy module
 	@expression(EP, eELOSSByZone[z=1:Z],
 		sum(EP[:eELOSS][y] for y in intersect(inputs["STOR_ALL"], dfGen[dfGen[!,:Zone].==z,:R_ID]))
 	)
+	
+### FNB: The scenarios should be added to this section.
+	
 end
 
 function storage_all_reserves!(EP::Model, inputs::Dict)
 
+### FNB: The scenarios should be added to all of these sections below.
+	
 	dfGen = inputs["dfGen"]
 	T = inputs["T"]
 	SC = inputs["SC"]   # Number of scenarios
