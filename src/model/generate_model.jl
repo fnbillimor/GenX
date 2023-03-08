@@ -109,7 +109,16 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 
 	# Initialize Objective Function Expression
 	@expression(EP, eObj, 0)
-
+	
+	###RISK MEASURES
+	@variable(EP, vVAR)
+	@variable(EP, vCVARaux[sc=1:SC] >= 0)
+	@expression(EP, eSCS[sc=1:SC], 0)
+	@expression(EP, eMSC, sum(inputs["scenprob"][sc]*eSCS[sc] for sc in sc=1:S) )
+	@expression(EP, eCVARSC, vVAR + (1/alpha)sum(inputs["scenprob"][sc]*vCVARaux[sc] for sc in sc=1:S) )
+	@objective(EP,Min,(1-beta)*eMSC + beta*eCVARSC )
+	@constraint(EP,cCVAR2[sc=1:SC],vCVARaux[sc]>= eSCS[sc] - vVAR)
+	###RISK MEASURES
 
 	#@expression(EP, :eCO2Cap[cap=1:inputs["NCO2Cap"]], 0)
 	@expression(EP, eGenerationByZone[z=1:Z, t=1:T, sc=1:SC], 0)
