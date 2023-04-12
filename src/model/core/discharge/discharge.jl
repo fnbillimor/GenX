@@ -49,11 +49,12 @@ function discharge!(EP::Model, inputs::Dict, setup::Dict)
 	#@expression(EP, eCVar_out[y=1:G,t=1:T], (round(inputs["omega"][t]*(dfGen[y,:Var_OM_Cost_per_MWh]+inputs["C_Fuel_per_MWh"][y,t]), digits=RD)*vP[y,t]))
 	# Sum individual resource contributions to variable discharging costs to get total variable discharging costs
 	@expression(EP, eTotalCVarOutTSC[t=1:T,sc=1:SC], sum(eCVar_out[y,t,sc] for y in 1:G))
-	@expression(EP, eTotalCVarOutT[t=1:T], sum(eTotalCVarOutTSC[t,sc] for sc in 1:SC))
-	@expression(EP, eTotalCVarOut, sum(eTotalCVarOutT[t] for t in 1:T))
+	@expression(EP, eTotalCVarOutT[sc=1:SC], sum(eTotalCVarOutTSC[t,sc] for t in 1:T))
 
 	# Add total variable discharging cost contribution to the objective function
-	EP[:eObj] += eTotalCVarOut
+	for sc in 1:SC
+		EP[:eSCS][sc] += eTotalCVarOutT[sc]
+	end
 
 	# ESR Policy
 	if setup["EnergyShareRequirement"] >= 1

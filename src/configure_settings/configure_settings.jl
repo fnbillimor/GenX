@@ -63,7 +63,9 @@ function configure_settings(settings_path::String)
     set_default_if_absent!(settings, "ModelingtoGenerateAlternativeSlack", 0.1)
     # Multistage expansion; 0 = Single-stage GenX; 1 = Multi-stage GenX
     set_default_if_absent!(settings, "MultiStage", 0)
+    # Stochastic scenario generation by Cartesian Product; 1=generate scenarios, 0= does not generate (for running deterministic cases)
+    set_default_if_absent!(settings, "StochasticScenarioGeneration", 0)
 
 
-return settings
+    return settings
 end

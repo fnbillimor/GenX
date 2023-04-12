@@ -76,7 +76,7 @@ function investment_discharge!(EP::Model, inputs::Dict, setup::Dict)
 	# Retired capacity of resource "y" from existing capacity
 	@variable(EP, vRETCAP[y in RET_CAP] >= 0);
 
-    # New installed capacity of resource "y"
+    	# New installed capacity of resource "y"
 	@variable(EP, vCAP[y in NEW_CAP] >= 0);
 
 	if MultiStage == 1

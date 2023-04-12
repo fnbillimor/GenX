@@ -107,8 +107,17 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	# Expression for "baseline" power balance constraint
 	@expression(EP, ePowerBalance[t=1:T, z=1:Z, sc=1:SC], 0)
 
+	##The objective function is modified to reflect the weighted minimization expected value and CVAR for a mean-CVAR optimization.
+	### We would then define two expressions eMSC  and eCVARSC ()
+	### We would need to have two additional auxillary variables (vVar) and constraints to define the CVAR.
+	       
+	@variable(EP, vVAR)
+	@variable(EP, vCVARaux[sc=1:SC] >= 0)
+	@expression(EP, eSCS[sc=1:SC], 0) #system cost per scenario. This would equate to the summation of total system
+	@expression(EP, sSIC, 0) #System Investment cost
+
 	# Initialize Objective Function Expression
-	@expression(EP, eObj, 0)
+	#@expression(EP, eObj, 0)
 
 
 	#@expression(EP, :eCO2Cap[cap=1:inputs["NCO2Cap"]], 0)
@@ -213,14 +222,18 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 		minimum_capacity_requirement!(EP, inputs, setup)
 	end
 
-	## Define the objective function
-	@objective(EP,Min,EP[:eObj])
+	###costs for the scenario.  I.e. it would sum generation varaible costs + capital costs + network investment costs + etc for each scenario.
+	@expression(EP, eMSC, sum(inputs["scenprob"][sc]*EP[:eSCS][sc] for sc in sc=1:S) ) #the mean system cost
+	@expression(EP, eCVARSC, vVAR + (1/alpha)sum(inputs["scenprob"][sc]*EP[:vCVARaux][sc] for sc in sc=1:S) ) #the CVAR of system costs
 
+	## The objective function is defined as weighted combination of eMSC and eCVARSC
+	#@objective(EP,Min,EP[:eObj])
+	@objective(EP,Min,(1-beta)*EP[:eMSC] + beta*EP[:eCVARSC] )
 	## Power balance constraints
 	# demand = generation + storage discharge - storage charge - demand deferral + deferred demand satisfaction - demand curtailment (NSE)
 	#          + incoming power flows - outgoing power flows - flow losses - charge of heat storage + generation from NACC
 	@constraint(EP, cPowerBalance[t=1:T, z=1:Z, sc=1:SC], EP[:ePowerBalance][t,z,sc] == inputs["pD"][t,z,sc])
-
+	@constraint(EP,cCVAR2[sc=1:SC],EP[:vCVARaux][sc]>= EP[:eSCS][sc] - EP[:vVAR])
 	## Record pre-solver time
 	presolver_time = time() - presolver_start_time
 	if setup["PrintModel"] == 1
