@@ -52,10 +52,11 @@ function ucommit!(EP::Model, inputs::Dict, setup::Dict)
 
 	# Julia is fastest when summing over one row one column at a time
 	@expression(EP, eTotalCStartT[t=1:T, sc=1:SC], sum(eCStart[y,t,sc] for y in COMMIT))
-	@expression(EP, eTotalCStartTSC[t=1:T], sum(eTotalCStartT[t,sc] for sc=1:SC))
-	@expression(EP, eTotalCStart, sum(eTotalCStartTSC[t] for t=1:T))
+	@expression(EP, eTotalCStartTSC[sc=1:SC], sum(eTotalCStartT[t,sc] for t=1:T))
 
-	EP[:eObj] += eTotalCStart
+	for sc in 1:SC
+		EP[:eSCS][sc] += eTotalCStartTSC[sc]
+	end
 
 	### Constratints ###
 	## Declaration of integer/binary variables

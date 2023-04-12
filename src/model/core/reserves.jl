@@ -242,7 +242,9 @@ function reserves_core!(EP::Model, inputs::Dict, setup::Dict)
 		sum(dfGen[y,:Reg_Cost]*vRSV[y,t,sc] for y in RSV, t=1:T) +
 		sum(dfGen[y,:Rsv_Cost]*vREG[y,t,sc] for y in REG, t=1:T) )
 	EP[:eObj] += eTotalCRsvPen
-
+	for sc in 1:SC		
+		EP[:eSCS][sc] += eTotalCRsvPen[sc]
+	end
 	### Constraints ###
 
 	## Total system reserve constraints

@@ -35,6 +35,9 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
     inputs_path = case
     settings_path = get_settings_path(case)
 
+    if mysetup["StochasticScenarioGeneration"] == 1
+        generate_scenarios(inputs_path, settings_path, mysetup)
+    end
     ### Cluster time series inputs if necessary and if specified by the user
     TDRpath = joinpath(case, mysetup["TimeDomainReductionFolder"])
 
