@@ -1,4 +1,4 @@
-Voll,Demand_Segment,Cost_of_Demand_Curtailment_per_MW,Max_Demand_Curtailment,Rep_Periods,Timesteps_per_Rep_Period,Sub_Weights,Time_Index,Load_MW
+Voll,Demand_Segment,Cost_of_Demand_Curtailment_per_MW,Max_Demand_Curtailment,Rep_Periods,Timesteps_per_Rep_Period,Sub_Weights,Time_Index,Load_MW_z1_scenario_3
 50000,1,1,1,1,168,1,1,10045.8
 ,,,,,,,2,9500.4
 ,,,,,,,3,9094.5

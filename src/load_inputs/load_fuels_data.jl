@@ -22,36 +22,52 @@ Function for reading input parameters related to fuel costs and CO$_2$ content o
 function load_fuels_data(setup::Dict, path::AbstractString, inputs_fuel::Dict)
 
 	# Fuel related inputs - read in different files depending on if time domain reduction is activated or not
-	#data_directory = chop(replace(path, pwd() => ""), head = 1, tail = 0)
 	data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-	if setup["TimeDomainReduction"] == 1  && isfile(joinpath(data_directory,"Load_data.csv")) && isfile(joinpath(data_directory,"Generators_variability.csv")) && isfile(joinpath(data_directory,"Fuels_data.csv")) # Use Time Domain Reduced data for GenX
-		fuels_in = DataFrame(CSV.File(joinpath(data_directory,"Fuels_data.csv"), header=true), copycols=true)
-	else  # Run without Time Domain Reduction OR Getting original input data for Time Domain Reduction
-		fuels_in = DataFrame(CSV.File(joinpath(path,"Fuels_data.csv"), header=true), copycols=true)
+	if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory)
+		my_dir = data_directory
+	else
+		my_dir = path
 	end
-
-	# Fuel costs .&  CO2 emissions rate for each fuel type (stored in dictionary objects)
-	fuels = names(fuels_in)[2:end] # fuel type indexes
-	costs = Matrix(fuels_in[2:end,2:end])
-	# New addition for variable fuel price
-	CO2_content = fuels_in[1,2:end] # tons CO2/MMBtu
-	fuel_costs = Dict{AbstractString,Array{Float64}}()
-	fuel_CO2 = Dict{AbstractString,Float64}()
-	for i = 1:length(fuels)
-		if setup["ParameterScale"] ==1
-			fuel_costs[string(fuels[i])] = costs[:,i]/ModelScalingFactor
-			fuel_CO2[string(fuels[i])] = CO2_content[i]/ModelScalingFactor # kton/MMBTU
-		else
-			fuel_costs[string(fuels[i])] = costs[:,i]
-			fuel_CO2[string(fuels[i])] = CO2_content[i] # ton/MMBTU
+	filename = "Fuels_data_scenario_*.csv"
+	fuels_files = glob(filename, my_dir)
+	fuels_in = DataFrame.(CSV.File.(fuels_files))
+	
+	
+	for i in 1:length(fuels_in)
+		existing_fuels = names(fuels_in[i])
+		for nonfuel in ("None",)
+			if nonfuel ∉ existing_fuels
+		    		ensure_column!(fuels_in[i], nonfuel, 0.0)
+			end
 		end
+
+	    	# Fuel costs & CO2 emissions rate for each fuel type
+	    	fuels = names(fuels_in[i])[2:end]
+	    	costs = Matrix(fuels_in[i][2:end, 2:end])
+	    	CO2_content = fuels_in[i][1, 2:end] # tons CO2/MMBtu
+	    	fuel_costs = Dict{AbstractString, Array{Float64}}()
+	    	fuel_CO2 = Dict{AbstractString, Float64}()
+	
+	    	scale_factor = setup["ParameterScale"] == 1 ? ModelScalingFactor : 1
+	
+	    	for j = 1:length(fuels)
+		    fuel_costs[fuels[j]] = costs[:,j] / scale_factor
+		    # fuel_CO2 is kton/MMBTU with scaling, or ton/MMBTU without scaling.
+		    fuel_CO2[fuels[j]] = CO2_content[j] / scale_factor
+	    	end
+	
+	    	inputs["fuels_scenario_$i"] = fuels
+	    	inputs["fuel_costs_scenario_$i"] = fuel_costs
+	    	inputs["fuel_CO2_scenario_$i"] = fuel_CO2
+	
+	    	println(filename * " Successfully Read!")
+	
+	    	return fuel_costs, fuel_CO2
 	end
-
-	inputs_fuel["fuels"] = fuels
-	inputs_fuel["fuel_costs"] = fuel_costs
-	inputs_fuel["fuel_CO2"] = fuel_CO2
-
-	println("Fuels_data.csv Successfully Read!")
-
-	return inputs_fuel, fuel_costs, fuel_CO2
+end
+	
+function ensure_column!(df::DataFrame, col::AbstractString, fill_element)
+	if col ∉ names(df)
+		df[!, col] = fill(fill_element, nrow(df))
+	end
 end

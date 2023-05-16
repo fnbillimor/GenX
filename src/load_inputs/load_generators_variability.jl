@@ -15,28 +15,43 @@ received this license file.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 @doc raw"""
-	load_generators_variability(setup::Dict, path::AbstractString, inputs_genvar::Dict)
+	load_generators_variability!(setup::Dict, path::AbstractString, inputs::Dict)
 
 Function for reading input parameters related to hourly maximum capacity factors for all generators (plus storage and flexible demand resources)
 """
-function load_generators_variability(setup::Dict, path::AbstractString, inputs_genvar::Dict)
+function load_generators_variability!(setup::Dict, path::AbstractString, inputs::Dict)
 
 	# Hourly capacity factors
-	#data_directory = chop(replace(path, pwd() => ""), head = 1, tail = 0)
 	data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-	if setup["TimeDomainReduction"] == 1  && isfile(joinpath(data_directory,"Load_data.csv")) && isfile(joinpath(data_directory,"Generators_variability.csv")) && isfile(joinpath(data_directory,"Fuels_data.csv")) # Use Time Domain Reduced data for GenX
-		gen_var = DataFrame(CSV.File(joinpath(data_directory,"Generators_variability.csv"), header=true), copycols=true)
-	else # Run without Time Domain Reduction OR Getting original input data for Time Domain Reduction
-		gen_var = DataFrame(CSV.File(joinpath(path,"Generators_variability.csv"), header=true), copycols=true)
+    	if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory)
+        	my_dir = data_directory
+	else
+        	my_dir = path
 	end
 
-	# Reorder DataFrame to R_ID order (order provided in Generators_data.csv)
-	select!(gen_var, [:Time_Index; Symbol.(inputs_genvar["RESOURCES"]) ])
+    	filename = "Generators_variability_scenario_*.csv"
+    	gen_var_files = glob(filename, my_dir)
+	gen_var = DataFrame.(CSV.File.(gen_var_files))
 
-	# Maximum power output and variability of each energy resource
-	inputs_genvar["pP_Max"] = transpose(Matrix{Float64}(gen_var[1:inputs_genvar["T"],2:(inputs_genvar["G"]+1)]))
+	all_resources = inputs["RESOURCES"]
 
-	println("Generators_variability.csv Successfully Read!")
+	
+	for i in 1:length(gen_var)
+		existing_variability = names(gen_var[i])
+		for r in all_resources
+			if r ∉ existing_variability
+				@info "assuming availability of 1.0 for resource $r."
+				ensure_column!(gen_var[i], r, 1.0)
+	    		end
+		end
+		# Reorder DataFrame to R_ID order (order provided in Generators_data.csv)
+		select!(gen_var[i], [:Time_Index; Symbol.(all_resources) ])
+    
+		# Maximum power output and variability of each energy resource
+		inputs["pP_Max_scenario_$i"] = transpose(Matrix{Float64}(gen_var[i][1:inputs["T"],2:(inputs["G"]+1)]))
+	end
 
-	return inputs_genvar
+    
+	println(filename * " Successfully Read!")
+
 end
