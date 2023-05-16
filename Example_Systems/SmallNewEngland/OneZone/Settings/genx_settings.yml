@@ -20,4 +20,6 @@ ModelingtoGenerateAlternativeSlack: 0.1 # Slack value as a fraction of least-cos
 ModelingToGenerateAlternativeIterations: 3 # Number of MGA iterations with maximization and minimization objective
 MethodofMorris: 0 #Flag for turning on the Method of Morris analysis
 StochasticScenarioGeneration: 1 #Turn this to 0 for running deterministic simulations
+Alpha: 0.9 #Tail-probability for the measurement of CVAR; Range of value is between 0 and 1; Alpha of 0.05 implies lowest 5%
+Beta: 0 #Risk Aversion parameter that weights between expected value and CVAR; Higher Beta implies higher risk aversion; Range of value is between 0 and 1
 

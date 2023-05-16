@@ -90,18 +90,19 @@ end
 # and that the number of subperiods equals the list of provided weights
 function validatetimebasis(inputs::Dict)
 	println("Validating time basis")
-	demand_length = size(inputs["pD"], 1)
-	generators_variability_length = size(inputs["pP_Max"], 2)
+	for i in 1:SC
+		demand_length = size(inputs["pD_scenario_$i"], 1)
+		generators_variability_length = size(inputs["pP_Max_scenario_$i"], 2)
     
-	typical_fuel = first(inputs["fuels"])
-	fuel_costs_length = size(inputs["fuel_costs"][typical_fuel], 1)
+		typical_fuel = first(inputs["fuels_scenario_$i"])
+		fuel_costs_length = size(inputs["fuel_costs_scenario_$i"][typical_fuel], 1)
     
 	T = inputs["T"]
-	hours_per_subperiod = inputs["hours_per_subperiod"]
-	number_of_representative_periods = inputs["REP_PERIOD"]
+	hours_per_subperiod = inputs["hours_per_subperio_scenario_$i"]
+	number_of_representative_periods = inputs["REP_PERIOD_scenario_$i"]
 	expected_length_1 = hours_per_subperiod * number_of_representative_periods
     
-	H = inputs["H"]
+	H = inputs["H_scenario_$i"]
 	expected_length_2 = H * number_of_representative_periods
     
 	check_equal = [T,
@@ -141,7 +142,7 @@ function validatetimebasis(inputs::Dict)
 	end
     
 	if "Weights" in keys(inputs)
-	    weights = inputs["Weights"]
+	    weights = inputs["Weights_scenario_$i"]
 	    num_weights = length(weights)
 	    if num_weights != number_of_representative_periods
 		error("""Critical error in time series construction:
