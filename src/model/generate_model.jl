@@ -216,11 +216,11 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	end
 	###costs for the scenario.  I.e. it would sum generation varaible costs + capital costs + network investment costs + etc for each scenario.
 	@expression(EP, eMSC, sum(inputs["scenprob"][sc]*EP[:eSCS][sc] for sc in sc=1:S) ) #the mean system cost
-	@expression(EP, eCVARSC, vVAR + (1/alpha)sum(inputs["scenprob"][sc]*EP[:vCVARaux][sc] for sc in sc=1:S) ) #the CVAR of system costs
+	@expression(EP, eCVARSC, vVAR + (1/setup["Alpha"])sum(inputs["scenprob"][sc]*EP[:vCVARaux][sc] for sc in sc=1:S) ) #the CVAR of system costs
 
 	## The objective function is defined as weighted combination of eMSC and eCVARSC
 	#@objective(EP,Min,EP[:eObj])
-	@objective(EP,Min,(1-beta)*EP[:eMSC] + beta*EP[:eCVARSC] )
+	@objective(EP,Min,(1-setup["Beta"])*EP[:eMSC] + setup["Beta"]*EP[:eCVARSC] )
 	## Power balance constraints
 	# demand = generation + storage discharge - storage charge - demand deferral + deferred demand satisfaction - demand curtailment (NSE)
 	#          + incoming power flows - outgoing power flows - flow losses - charge of heat storage + generation from NACC
