@@ -32,7 +32,7 @@ function load_inputs(setup::Dict,path::AbstractString)
 	# Read in generator/resource availability profiles
 	load_generators_variability!(setup, path, inputs)
 
-    validatetimebasis(inputs)
+    	validatetimebasis(inputs)
 
 	if setup["CapacityReserveMargin"]==1
 		load_cap_reserve_margin!(setup, path, inputs)
@@ -76,7 +76,7 @@ function is_period_map_necessary(inputs::Dict)
 	multiple_rep_periods = inputs["REP_PERIOD"] > 1
 	has_stor_lds = !isempty(inputs["STOR_LONG_DURATION"])
 	has_hydro_lds = !isempty(inputs["STOR_HYDRO_LONG_DURATION"])
-    multiple_rep_periods && (has_stor_lds || has_hydro_lds)
+    	multiple_rep_periods && (has_stor_lds || has_hydro_lds)
 end
 
 function is_period_map_exist(setup::Dict, path::AbstractString, inputs::Dict)
