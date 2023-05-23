@@ -68,7 +68,7 @@ function load_load_data(setup::Dict, path::AbstractString, inputs_load::Dict)
 
 		# Demand in MW for each zone
 		#println(names(load_in))
-		start = findall(s -> s == "Load_MW_z1", names(load_in[i]))[1] #gets the starting column number of all the columns, with header "Load_MW_z1"
+		start = findall(s -> s == "Load_MW_z1_scenario_1", names(load_in[i]))[1] #gets the starting column number of all the columns, with header "Load_MW_z1"
     		scale_factor = setup["ParameterScale"] == 1 ? ModelScalingFactor : 1
     		# Max value of non-served energy
     		inputs["Voll_scenario_$i"] = as_vector(:Voll) / scale_factor # convert from $/MWh $ million/GWh (assuming objective is divided by 1000)

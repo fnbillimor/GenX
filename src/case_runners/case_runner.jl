@@ -40,27 +40,33 @@ function run_genx_case!(case::AbstractString)
     end
 end
 
-function time_domain_reduced_files_exist(tdrpath)
-    tdr_load = isfile(joinpath(tdrpath,"Load_data.csv"))
-    tdr_genvar = isfile(joinpath(tdrpath,"Generators_variability.csv"))
-    tdr_fuels = isfile(joinpath(tdrpath,"Fuels_data.csv"))
-    return (tdr_load && tdr_genvar && tdr_fuels)
+function time_domain_reduced_files_exist(tdrpath, number_of_scenarios)
+    tdr_dict=Dict()
+    tdr_true_false = true
+    for i in 1:number_of_scenarios
+        tdr_load = isfile(joinpath(tdrpath,"Load_data", "Load_data_scenario_$i.csv"))
+        tdr_genvar = isfile(joinpath(tdrpath,"Generators_variability", "Generators_variability_scenario_$i.csv"))
+        tdr_fuels = isfile(joinpath(tdrpath,"Fuels_data", "Fuels_data_scenario_$i.csv"))
+        tdr_dict[i]=tdr_load && tdr_genvar && tdr_fuels
+        tdr_true_false = tdr_true_false && tdr_dict[i]
+    end
+    return (tdr_true_false)
 end
 
 function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
-    inputs_path = case
     settings_path = get_settings_path(case)
 
     if mysetup["StochasticScenarioGeneration"] == 1
-        generate_scenarios(inputs_path, settings_path, mysetup)
+        number_of_scenarios = generate_scenarios(case, settings_path, mysetup)
     end
     ### Cluster time series inputs if necessary and if specified by the user
     TDRpath = joinpath(case, mysetup["TimeDomainReductionFolder"])
 
     if mysetup["TimeDomainReduction"] == 1
-        if !time_domain_reduced_files_exist(TDRpath)
+        prevent_doubled_timedomainreduction(case)
+        if !time_domain_reduced_files_exist(TDRpath,number_of_scenarios)
             println("Clustering Time Series Data (Grouped)...")
-            cluster_inputs(inputs_path, settings_path, mysetup)
+            cluster_inputs(case, settings_path, mysetup)
         else
             println("Time Series Data Already Clustered.")
         end
@@ -77,7 +83,9 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
     myinputs = load_inputs(mysetup, case)
 
     println("Generating the Optimization Model")
-    EP = generate_model(mysetup, myinputs, OPTIMIZER)
+    time_elapsed = @elapsed EP = generate_model(mysetup, myinputs, OPTIMIZER)
+    println("Time elapsed for model building is")
+    println(time_elapsed)
 
     println("Solving Model")
     EP, solve_time = solve_model(EP, mysetup)
@@ -96,7 +104,7 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
 
     if mysetup["MethodofMorris"] == 1
         println("Starting Global sensitivity analysis with Method of Morris")
-        morris(EP, inputs_path, mysetup, myinputs, outputs_path, OPTIMIZER)
+        morris(EP, case, mysetup, myinputs, outputs_path, OPTIMIZER)
     end
 end
 
@@ -109,9 +117,12 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
     ### Cluster time series inputs if necessary and if specified by the user
     tdr_settings = get_settings_path(case, "time_domain_reduction_settings.yml") # Multi stage settings YAML file path
     TDRSettingsDict = YAML.load(open(tdr_settings))
-    TDRpath = joinpath(case, "Inputs", "Inputs_p1", mysetup["TimeDomainReductionFolder"])
+
+    first_stage_path = joinpath(case, "Inputs", "Inputs_p1")
+    TDRpath = joinpath(first_stage_path, mysetup["TimeDomainReductionFolder"])
     if mysetup["TimeDomainReduction"] == 1
-        if !time_domain_reduced_files_exist(TDRpath)
+        prevent_doubled_timedomainreduction(first_stage_path)
+        if !time_domain_reduced_files_exist(TDRpath,number_of_scenarios)
             if (mysetup["MultiStage"] == 1) && (TDRSettingsDict["MultiStageConcatenate"] == 0)
                 println("Clustering Time Series Data (Individually)...")
                 for stage_id in 1:mysetup["MultiStageSettingsDict"]["NumStages"]
@@ -160,7 +171,7 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
 
     outpath = get_default_output_folder(case)
 
-    if !haskey(mysetup, "OverwriteResults") || mysetup["OverwriteResults"] == 1
+    if mysetup["OverwriteResults"] == 1
         # Overwrite existing results if dir exists
         # This is the default behaviour when there is no flag, to avoid breaking existing code
         if !(isdir(outpath))
