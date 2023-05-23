@@ -24,19 +24,24 @@ function run_genx_case!(case::AbstractString)
     end
 end
 
-function time_domain_reduced_files_exist(tdrpath)
-    tdr_load = isfile(joinpath(tdrpath,"Load_data.csv"))
-    tdr_genvar = isfile(joinpath(tdrpath,"Generators_variability.csv"))
-    tdr_fuels = isfile(joinpath(tdrpath,"Fuels_data.csv"))
-    return (tdr_load && tdr_genvar && tdr_fuels)
+function time_domain_reduced_files_exist(tdrpath, number_of_scenarios)
+    tdr_dict=Dict()
+    tdr_true_false = true
+    for i in 1:number_of_scenarios
+        tdr_load = isfile(joinpath(tdrpath,"Load_data", "Load_data_scenario_$i.csv"))
+        tdr_genvar = isfile(joinpath(tdrpath,"Generators_variability", "Generators_variability_scenario_$i.csv"))
+        tdr_fuels = isfile(joinpath(tdrpath,"Fuels_data", "Fuels_data_scenario_$i.csv"))
+        tdr_dict[i]=tdr_load && tdr_genvar && tdr_fuels
+        tdr_true_false = tdr_true_false && tdr_dict[i]
+    end
+    return (tdr_true_false)
 end
 
 function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
-    inputs_path = case
     settings_path = get_settings_path(case)
 
     if mysetup["StochasticScenarioGeneration"] == 1
-        generate_scenarios(inputs_path, settings_path, mysetup)
+        number_of_scenarios = generate_scenarios(case, settings_path, mysetup)
     end
     ### Cluster time series inputs if necessary and if specified by the user
     TDRpath = joinpath(case, mysetup["TimeDomainReductionFolder"])
@@ -45,7 +50,7 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
         prevent_doubled_timedomainreduction(case)
         if !time_domain_reduced_files_exist(TDRpath)
             println("Clustering Time Series Data (Grouped)...")
-            cluster_inputs(inputs_path, settings_path, mysetup)
+            cluster_inputs(case, settings_path, mysetup)
         else
             println("Time Series Data Already Clustered.")
         end
@@ -83,7 +88,7 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
 
     if mysetup["MethodofMorris"] == 1
         println("Starting Global sensitivity analysis with Method of Morris")
-        morris(EP, inputs_path, mysetup, myinputs, outputs_path, OPTIMIZER)
+        morris(EP, case, mysetup, myinputs, outputs_path, OPTIMIZER)
     end
 end
 
