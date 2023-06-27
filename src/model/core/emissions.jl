@@ -1,11 +1,11 @@
 @doc raw"""
-	emissions(EP::Model, inputs::Dict)
+	emissions!(EP::Model, inputs::Dict)
 
 This function creates expression to add the CO2 emissions by plants in each zone, which is subsequently added to the total emissions
 """
 function emissions!(EP::Model, inputs::Dict)
 
-	println("Emissions Module (for CO2 Policy modularization")
+	println("Emissions Module (for CO2 Policy modularization)")
 
 	dfGen = inputs["dfGen"]
 
