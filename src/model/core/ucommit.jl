@@ -7,16 +7,16 @@ This function creates decision variables and cost expressions associated with th
 
 This function defines the following decision variables:
 
-$\nu_{y,t,z}$ designates the commitment state of generator cluster $y$ in zone $z$ at time $t$;
-$\chi_{y,t,z}$ represents number of startup decisions in cluster $y$ in zone $z$ at time $t$;
-$\zeta_{y,t,z}$ represents number of shutdown decisions in cluster $y$ in zone $z$ at time $t$.
+$\nu_{y,t,z,sc}$ designates the commitment state of generator cluster $y$ in zone $z$ at time $t$ in scenario $sc$;
+$\chi_{y,t,z,sc}$ represents number of startup decisions in cluster $y$ in zone $z$ at time $t$ in scenario $sc$;
+$\zeta_{y,t,z,sc}$ represents number of shutdown decisions in cluster $y$ in zone $z$ at time $t$ in scenario $sc$.
 
 **Cost expressions:**
 
-The total cost of start-ups across all generators subject to unit commitment ($y \in UC$) and all time periods, t is expressed as:
+The total cost of start-ups across all generators subject to unit commitment ($y \in UC$) and all time periods, $t$ and for each scenario, $sc$ is expressed as:
 ```math
 \begin{aligned}
-	C^{start} = \sum_{y \in UC, t \in T} \omega_t \times start\_cost_{y,t} \times \chi_{y,t}
+	C_{sc}^{start} = \sum_{y \in UC, t \in T} \omega_{t,sc} \times start\_cost_{y,t,sc} \times \chi_{y,t,sc}
 \end{aligned}
 ```
 
@@ -62,9 +62,9 @@ function ucommit!(EP::Model, inputs::Dict, setup::Dict)
 	## Declaration of integer/binary variables
 	if setup["UCommit"] == 1 # Integer UC constraints
 		for y in COMMIT
-			set_integer.(vCOMMIT[y,:])
-			set_integer.(vSTART[y,:])
-			set_integer.(vSHUT[y,:])
+			set_integer.(vCOMMIT[y,:,:])
+			set_integer.(vSTART[y,:,:])
+			set_integer.(vSHUT[y,:,:])
 			if y in inputs["RET_CAP"]
 				set_integer(EP[:vRETCAP][y])
 			end

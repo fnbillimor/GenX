@@ -1,59 +1,78 @@
 @doc raw"""
 	thermal_commit!(EP::Model, inputs::Dict, setup::Dict)
 
-This function defines the operating constraints for thermal power plants subject to unit commitment constraints on power plant start-ups and shut-down decision ($y \in UC$).
+This function defines the operating constraints for thermal power plants subject to unit commitment constraints on power plant start-ups and shut-down 
+decision ($y \in UC$).
 
-We model capacity investment decisions and commitment and cycling (start-up, shut-down) of thermal generators using the integer clustering technique developed in [Palmintier, 2011](https://pennstate.pure.elsevier.com/en/publications/impact-of-unit-commitment-constraints-on-generation-expansion-pla), [Palmintier, 2013](https://dspace.mit.edu/handle/1721.1/79147), and [Palmintier, 2014](https://ieeexplore.ieee.org/document/6684593). In a typical binary unit commitment formulation, each unit is either on or off. With the clustered unit commitment formulation, one or more cluster(s) of similar generators are clustered by type and zone (typically using heat rate and fixed O\&M cost to create clusters), and the integer commitment state variable for each cluster varies from zero to the number of units in the cluster, $\frac{\Delta^{total}_{y,z}}{\Omega^{size}_{y,z}}$. As discussed in \cite{Palmintier2014}, this approach replaces the large set of binary commitment decisions and associated constraints, which scale directly with the number of individual units, with a smaller set of integer commitment states and  constraints, one for each cluster $y$. The dimensionality of the problem thus scales with the number of units of a given type in each zone, rather than by the number of discrete units, significantly improving computational efficiency. However, this method entails the simplifying assumption that all clustered units have identical parameters (e.g., capacity size, ramp rates, heat rate) and that all committed units in a given time step $t$ are operating at the same power output per unit.
+We model capacity investment decisions and commitment and cycling (start-up, shut-down) of thermal generators using the integer clustering technique 
+developed in [Palmintier, 2011](https://pennstate.pure.elsevier.com/en/publications/impact-of-unit-commitment-constraints-on-generation-expansion-pla), 
+[Palmintier, 2013](https://dspace.mit.edu/handle/1721.1/79147), and [Palmintier, 2014](https://ieeexplore.ieee.org/document/6684593). 
+In a typical binary unit commitment formulation, each unit is either on or off. With the clustered unit commitment formulation, one or more cluster(s) 
+of similar generators are created by type and zone (typically using heat rate and fixed O\&M cost to create clusters), and the integer commitment state 
+variable for each cluster varies from zero to the number of units in the cluster, $\frac{\Delta^{total}_{y,z}}{\Omega^{size}_{y,z}}$. As discussed 
+in \cite{Palmintier2014}, this approach replaces the large set of binary commitment decisions and associated constraints, which scale directly with 
+the number of individual units, with a smaller set of integer commitment states and  constraints, one for each cluster $y$. The dimensionality of the 
+problem thus scales with the number of units of a given type in each zone, rather than by the number of discrete units, significantly improving 
+computational efficiency. However, this method entails the simplifying assumption that all clustered units have identical parameters (e.g., capacity size, 
+ramp rates, heat rate) and that all committed units in a given time step $t$ are operating at the same power output per unit.
 
 **Power balance expression**
 
-This function adds the sum of power generation from thermal units subject to unit commitment ($\Theta_{y \in UC,t \in T,z \in Z}$) to the power balance expression.
+This function adds the sum of power generation from thermal units subject to unit commitment ($\Theta_{y \in UC,t \in T,sc \in SC,z \in Z}$) to the 
+power balance expression.
 
 **Startup and shutdown events (thermal plant cycling)**
 
 *Capacitated limits on unit commitment decision variables*
 
-Thermal resources subject to unit commitment ($y \in \mathcal{UC}$) adhere to the following constraints on commitment states, startup events, and shutdown events, which limit each decision to be no greater than the maximum number of discrete units installed (as per the following three constraints):
+Thermal resources subject to unit commitment ($y \in \mathcal{UC}$) adhere to the following constraints on commitment states, startup events, 
+and shutdown events, which limit each decision to be no greater than the maximum number of discrete units installed 
+(as per the following three constraints):
 
 ```math
 \begin{aligned}
-\nu_{y,z,t} \leq \frac{\Delta^{\text{total}}_{y,z}}{\Omega^{size}_{y,z}}
-	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}
+\nu_{y,z,t,sc} \leq \frac{\Delta^{\text{total}}_{y,z}}{\Omega^{size}_{y,z}}
+	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 
 ```math
 \begin{aligned}
-\chi_{y,z,t} \leq \frac{\Delta^{\text{total}}_{y,z}}{\Omega^{size}_{y,z}}
-	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}
+\chi_{y,z,t,sc} \leq \frac{\Delta^{\text{total}}_{y,z}}{\Omega^{size}_{y,z}}
+	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 
 ```math
 \begin{aligned}
-\zeta_{y,z,t} \leq \frac{\Delta^{\text{total}}_{y,z}}{\Omega^{size}_{y,z}}
-	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}
+\zeta_{y,z,t,sc} \leq \frac{\Delta^{\text{total}}_{y,z}}{\Omega^{size}_{y,z}}
+	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 (See Constraints 1-3 in the code)
 
-where decision $\nu_{y,z,t}$ designates the commitment state of generator cluster $y$ in zone $z$ at time $t$, decision $\chi_{y,z,t}$ represents number of startup decisions, decision $\zeta_{y,z,t}$ represents number of shutdown decisions, $\Delta^{\text{total}}_{y,z}$ is the total installed capacity, and parameter $\Omega^{size}_{y,z}$ is the unit size.
+where decision $\nu_{y,z,t,sc}$ designates the commitment state of generator cluster $y$ in zone $z$ at time $t$ and scenario $sc$, 
+decision $\chi_{y,z,t,sc}$ represents number of startup decisions, decision $\zeta_{y,z,t,sc}$ represents number of shutdown decisions, 
+$\Delta^{\text{total}}_{y,z}$ is the total installed capacity, and parameter $\Omega^{size}_{y,z}$ is the unit size.
 
 *Commitment state constraint linking start-up and shut-down decisions*
 
-Additionally, the following constarint maintains the commitment state variable across time, $\nu_{y,z,t}$, as the sum of the commitment state in the prior, $\nu_{y,z,t-1}$, period plus the number of units started in the current period, $\chi_{y,z,t}$, less the number of units shut down in the current period, $\zeta_{y,z,t}$:
+Additionally, the following constraint maintains the commitment state variable across time, $\nu_{y,z,t,sc}$, as the sum of the commitment state 
+in the prior, $\nu_{y,z,t-1,sc}$, period plus the number of units started in the current period, $\chi_{y,z,t,sc}$, less the number of units 
+shut down in the current period, $\zeta_{y,z,t,sc}$:
 
 ```math
 \begin{aligned}
-&\nu_{y,z,t} =\nu_{y,z,t-1} + \chi_{y,z,t} - \zeta_{y,z,t}
-	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}^{interior} \\
-&\nu_{y,z,t} =\nu_{y,z,t +\tau^{period}-1} + \chi_{y,z,t} - \zeta_{y,z,t}
-	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}^{start}
+&\nu_{y,z,t,sc} =\nu_{y,z,t-1,sc} + \chi_{y,z,t,sc} - \zeta_{y,z,t,sc}
+	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}^{interior}, \forall sc \in \mathcal{SC} \\
+&\nu_{y,z,t,sc} =\nu_{y,z,t +\tau^{period}-1,sc} + \chi_{y,z,t,sc} - \zeta_{y,z,t,sc}
+	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}^{start}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 (See Constraint 4 in the code)
 
-Like other time-coupling constraints, this constraint wraps around to link the commitment state in the first time step of the year (or each representative period), $t \in \mathcal{T}^{start}$, to the last time step of the year (or each representative period), $t+\tau^{period}-1$.
+Like other time-coupling constraints, this constraint wraps around to link the commitment state in the first time step of the year 
+(or each representative period), $t \in \mathcal{T}^{start}$, to the last time step of the year (or each representative period), $t+\tau^{period}-1$.
 
 **Ramping constraints**
 
@@ -61,7 +80,7 @@ Thermal resources subject to unit commitment ($y \in UC$) adhere to the followin
 
 ```math
 \begin{aligned}
-	\Theta_{y,z,t-1} + f_{y, z, t-1}+r_{y, z, t-1} - \Theta_{y,z,t}-f_{y, z, t}&\leq  \kappa^{down}_{y,z} \cdot \Omega^{size}_{y,z} \cdot (\nu_{y,z,t} - \chi_{y,z,t}) & \\[6pt]
+	\Theta_{y,z,t-1,sc} + f_{y, z, t-1,sc}+r_{y, z, t-1,sc} - \Theta_{y,z,t,sc}-f_{y, z, t,sc}&\leq  \kappa^{down}_{y,z} \cdot \Omega^{size}_{y,z} \cdot (\nu_{y,z,t,sc} - \chi_{y,z,t,sc}) & \\[6pt]
 	\qquad & - \: \rho^{min}_{y,z} \cdot \Omega^{size}_{y,z} \cdot \chi_{y,z,t} & \hspace{0.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}  \\[6pt]
 	\qquad & + \: \text{min}( \rho^{max}_{y,z,t}, \text{max}( \rho^{min}_{y,z}, \kappa^{down}_{y,z} ) ) \cdot \Omega^{size}_{y,z} \cdot \zeta_{y,z,t} &
 \end{aligned}
@@ -69,30 +88,35 @@ Thermal resources subject to unit commitment ($y \in UC$) adhere to the followin
 
 ```math
 \begin{aligned}
-	\Theta_{y,z,t}+f_{y, z, t}+r_{y, z, t} - \Theta_{y,z,t-1}- f_{y, z, t-1} &\leq  \kappa^{up}_{y,z} \cdot \Omega^{size}_{y,z} \cdot (\nu_{y,z,t} - \chi_{y,z,t}) & \\[6pt]
-	\qquad & + \: \text{min}( \rho^{max}_{y,z,t}, \text{max}( \rho^{min}_{y,z}, \kappa^{up}_{y,z} ) ) \cdot \Omega^{size}_{y,z} \cdot \chi_{y,z,t} & \hspace{0.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T} \\[6pt]
-	\qquad & - \: \rho^{min}_{y,z} \cdot \Omega^{size}_{y,z} \cdot \zeta_{y,z,t} &
+	\Theta_{y,z,t,sc}+f_{y, z, t,sc}+r_{y, z, t,sc} - \Theta_{y,z,t-1,sc}- f_{y, z, t-1,sc} &\leq  \kappa^{up}_{y,z} \cdot \Omega^{size}_{y,z} \cdot (\nu_{y,z,t,sc} - \chi_{y,z,t,sc}) & \\[6pt]
+	\qquad & + \: \text{min}( \rho^{max}_{y,z,t,sc}, \text{max}( \rho^{min}_{y,z}, \kappa^{up}_{y,z} ) ) \cdot \Omega^{size}_{y,z} \cdot \chi_{y,z,t,sc} & \hspace{0.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}, \forall sc \in \mathcal{SC}  \\[6pt]
+	\qquad & - \: \rho^{min}_{y,z} \cdot \Omega^{size}_{y,z} \cdot \zeta_{y,z,t,sc} &
 \end{aligned}
 ```
 (See Constraints 5-6 in the code)
 
-where decision $\Theta_{y,z,t}$, $f_{y, z, t}$, and $r_{y, z, t}$ are respectively, the energy injected into the grid, regulation, and reserve by technology $y$ in zone $z$ at time $t$, parameter $\kappa_{y,z,t}^{up|down}$ is the maximum ramp-up or ramp-down rate as a percentage of installed capacity, parameter $\rho_{y,z}^{min}$ is the minimum stable power output per unit of installed capacity, and parameter $\rho_{y,z,t}^{max}$ is the maximum available generation per unit of installed capacity. These constraints account for the ramping limits for committed (online) units as well as faster changes in power enabled by units starting or shutting down in the current time step.
+where decision $\Theta_{y,z,t,sc}$, $f_{y, z, t,sc}$, and $r_{y, z, t,sc}$ are respectively, the energy injected into the grid, regulation, and reserve 
+by technology $y$ in zone $z$ at time $t$ in scenario $sc$, parameter $\kappa_{y,z,t,sc}^{up|down}$ is the maximum ramp-up or ramp-down rate as a 
+percentage of installed capacity, parameter $\rho_{y,z}^{min}$ is the minimum stable power output per unit of installed capacity, and parameter 
+$\rho_{y,z,t,sc}^{max}$ is the maximum available generation per unit of installed capacity. These constraints account for the ramping limits 
+for committed (online) units as well as faster changes in power enabled by units starting or shutting down in the current time step.
 
 **Minimum and maximum power output**
 
-If not modeling regulation and spinning reserves, thermal resources subject to unit commitment adhere to the following constraints that ensure power output does not exceed minimum and maximum feasible levels:
+If not modeling regulation and spinning reserves, thermal resources subject to unit commitment adhere to the following constraints that ensure power output does 
+not exceed minimum and maximum feasible levels:
 
 ```math
 \begin{aligned}
-	\Theta_{y,z,t} \geq \rho^{min}_{y,z} \times \Omega^{size}_{y,z} \times \nu_{y,z,t}
-	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}
+	\Theta_{y,z,t,sc} \geq \rho^{min}_{y,z} \times \Omega^{size}_{y,z} \times \nu_{y,z,t,sc}
+	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 
 ```math
 \begin{aligned}
-	\Theta_{y,z,t} \leq \rho^{max}_{y,z} \times \Omega^{size}_{y,z} \times \nu_{y,z,t}
-	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}
+	\Theta_{y,z,t,sc} \leq \rho^{max}_{y,z} \times \Omega^{size}_{y,z} \times \nu_{y,z,t,sc}
+	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 
@@ -102,19 +126,20 @@ If modeling reserves and regulation, these constraints are replaced by those est
 
 **Minimum and maximum up and down time**
 
-Thermal resources subject to unit commitment adhere to the following constraints on the minimum time steps after start-up before a unit can shutdown again (minimum up time) and the minimum time steps after shut-down before a unit can start-up again (minimum down time):
+Thermal resources subject to unit commitment adhere to the following constraints on the minimum time steps after start-up before a unit can shutdown again (minimum up time) 
+and the minimum time steps after shut-down before a unit can start-up again (minimum down time):
 
 ```math
 \begin{aligned}
-	\nu_{y,z,t} \geq \displaystyle \sum_{\hat{t} = t-(\tau^{up}_{y,z}-1)}^t \chi_{y,z,\hat{t}}
-	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}
+	\nu_{y,z,t,sc} \geq \displaystyle \sum_{\hat{t} = t-(\tau^{up}_{y,z}-1)}^t \chi_{y,z,\hat{t},sc}
+	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 
 ```math
 \begin{aligned}
-	\frac{\overline{\Delta_{y,z}} + \Omega_{y,z} - \Delta_{y,z}}{\Omega^{size}_{y,z}} -  \nu_{y,z,t} \geq \displaystyle \sum_{\hat{t} = t-(\tau^{down}_{y,z}-1)}^t \zeta_{y,z,\hat{t}}
-	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}
+	\frac{\overline{\Delta_{y,z}} + \Omega_{y,z} - \Delta_{y,z}}{\Omega^{size}_{y,z}} -  \nu_{y,z,t,sc} \geq \displaystyle \sum_{\hat{t} = t-(\tau^{down}_{y,z}-1)}^t \zeta_{y,z,\hat{t},sc}
+	\hspace{1.5cm} \forall y \in \mathcal{UC}, \forall z \in \mathcal{Z}, \forall t \in \mathcal{T}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 (See Constraints 9-10 in the code)
@@ -141,18 +166,18 @@ function thermal_commit!(EP::Model, inputs::Dict, setup::Dict)
 
 	### Expressions ###
 
-    # These variables are used in the ramp-up and ramp-down expressions
-    reserves_term = @expression(EP, [y in THERM_COMMIT, t in 1:T], 0)
-    regulation_term = @expression(EP, [y in THERM_COMMIT, t in 1:T], 0)
+    	# These variables are used in the ramp-up and ramp-down expressions
+    	reserves_term = @expression(EP, [y in THERM_COMMIT, t in 1:T, sc in 1:SC], 0)
+    	regulation_term = @expression(EP, [y in THERM_COMMIT, t in 1:T, sc in 1:SC], 0)
 
-    if setup["Reserves"] > 0
-        THERM_COMMIT_REG = intersect(THERM_COMMIT, inputs["REG"]) # Set of thermal resources with regulation reserves
-        THERM_COMMIT_RSV = intersect(THERM_COMMIT, inputs["RSV"]) # Set of thermal resources with spinning reserves
-        regulation_term = @expression(EP, [y in THERM_COMMIT, t in 1:T],
-                           y ∈ THERM_COMMIT_REG ? EP[:vREG][y,t] - EP[:vREG][y, hoursbefore(p, t, 1)] : 0)
-        reserves_term = @expression(EP, [y in THERM_COMMIT, t in 1:T],
-                           y ∈ THERM_COMMIT_RSV ? EP[:vRSV][y,t] : 0)
-    end
+    	if setup["Reserves"] > 0
+        	THERM_COMMIT_REG = intersect(THERM_COMMIT, inputs["REG"]) # Set of thermal resources with regulation reserves
+        	THERM_COMMIT_RSV = intersect(THERM_COMMIT, inputs["RSV"]) # Set of thermal resources with spinning reserves
+        	regulation_term = @expression(EP, [y in THERM_COMMIT, t in 1:T, sc in 1:SC],
+                           y ∈ THERM_COMMIT_REG ? EP[:vREG][y,t,sc] - EP[:vREG][y, hoursbefore(p, t, 1),sc] : 0)
+        	reserves_term = @expression(EP, [y in THERM_COMMIT, t in 1:T, sc in 1:SC],
+                           y ∈ THERM_COMMIT_RSV ? EP[:vRSV][y,t,sc] : 0)
+    	end
 
 	## Power Balance Expressions ##
 	@expression(EP, ePowerBalanceThermCommit[t=1:T, z=1:Z, sc=1:SC],

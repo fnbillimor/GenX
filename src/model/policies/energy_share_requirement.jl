@@ -5,8 +5,8 @@ The implementation allows for user to define one or multiple RPS/CES style minim
 For each energy share requirement constraint $p \in \mathcal{P}^{ESR}$, we specify the share of total demand in each eligible model zone, $z \in \mathcal{Z}^{ESR}_{p}$, that must be served by qualifying resources, $\mathcal{G}_{p}^{ESR} \subset \mathcal{G}$:
 ```math
 \begin{aligned}
-&\sum_{z \in \mathcal{Z}_{p}^{ESR}} \sum_{y \in \mathcal{G}_{p}^{ESR}} \sum_{t \in \mathcal{T}} (\omega_{t} \times  \Theta_{y,z,t}) \geq  \sum_{z \in \mathcal{Z}^{ESR}_{p}} \sum_{t \in \mathcal{T}} (\mu_{p,z}^{ESR} \times \omega_{t} \times D_{z,t}) + \\
-&\sum_{y \in \mathcal{O}} \sum_{z \in \mathcal{Z}^{ESR}_{p}} \sum_{t \in \mathcal{T}} \left(\mu_{p,z}^{ESR} \times \omega_{t} \times (\Pi_{y,z,t} - \Theta_{y,z,t}) \right) \hspace{1 cm}  \forall p \in \mathcal{P}^{ESR} \\
+&\sum_{z \in \mathcal{Z}_{p}^{ESR}} \sum_{y \in \mathcal{G}_{p}^{ESR}} \sum_{t \in \mathcal{T}} (\omega_{t,sc} \times  \Theta_{y,z,t,sc}) \geq  \sum_{z \in \mathcal{Z}^{ESR}_{p}} \sum_{t \in \mathcal{T}} (\mu_{p,z}^{ESR} \times \omega_{t,sc} \times D_{z,t,sc}) + \\
+&\sum_{y \in \mathcal{O}} \sum_{z \in \mathcal{Z}^{ESR}_{p}} \sum_{t \in \mathcal{T}} \left(\mu_{p,z}^{ESR} \times \omega_{t,sc} \times (\Pi_{y,z,t,sc} - \Theta_{y,z,t,sc}) \right) \hspace{1 cm}  \forall p \in \mathcal{P}^{ESR}, \forall sc \in \mathcal{SC}  \\
 \end{aligned}
 ```
 The final term in the summation above adds roundtrip storage losses to the total load to which the energy share obligation applies. This term is included in the constraint if the GenX setup parameter ```StorageLosses=1```. If ```StorageLosses=0```, this term is removed from the constraint. In practice, most existing renewable portfolio standard policies do not account for storage losses when determining energy share requirements. However, with 100% RPS or CES policies enacted in several jurisdictions, policy makers may wish to include storage losses in the minimum energy share, as otherwise there will be a difference between total generation and total load that will permit continued use of non-qualifying resources (e.g. emitting generators).
@@ -14,18 +14,21 @@ The final term in the summation above adds roundtrip storage losses to the total
 function energy_share_requirement!(EP::Model, inputs::Dict, setup::Dict)
 
 	println("Energy Share Requirement Policies Module")
-
+	SC=inputs["SC"]     # Number of scenarios
 	## Energy Share Requirements (minimum energy share from qualifying renewable resources) constraint
-	@constraint(EP, cESRShare[ESR=1:inputs["nESR"]], EP[:eESR][ESR] >= 0)
+	@constraint(EP, cESRShare[ESR=1:inputs["nESR"], sc=1:SC], EP[:eESR][ESR,sc] >= 0)
 
 	# if input files are present, add energy share requirement slack variables
 	if haskey(inputs, "dfESR_slack")
-		@variable(EP, vESR_slack[ESR=1:inputs["nESR"]]>=0)
+		@variable(EP, vESR_slack[ESR=1:inputs["nESR"], sc=1:SC]>=0)
 		EP[:eESR] += vESR_slack
 
-		@expression(EP, eCESRSlack[ESR=1:inputs["nESR"]], inputs["dfESR_slack"][ESR,:PriceCap] * EP[:vESR_slack][ESR])
-		@expression(EP, eCTotalESRSlack, sum(EP[:eCESRSlack][ESR] for ESR = 1:inputs["nESR"]))
+		@expression(EP, eCESRSlack[ESR=1:inputs["nESR"], sc=1:SC], inputs["dfESR_slack"][ESR,:PriceCap] * EP[:vESR_slack][ESR,sc])
+		@expression(EP, eCTotalESRSlack[sc=1:SC], sum(EP[:eCESRSlack][ESR,sc] for ESR = 1:inputs["nESR"]))
 
-		EP[:eObj] += eCTotalESRSlack
+		#EP[:eObj] += eCTotalESRSlack
+		for sc in 1:SC
+			EP[:eSCS][sc] += eCTotalESRSlack[sc]
+		end
 	end
 end

@@ -11,8 +11,8 @@ Mass-based emission limits are implemented in the following expression. For each
 
 ```math
 \begin{aligned}
-    \sum_{z \in \mathcal{Z}^{CO_2}_{p,mass}} \sum_{y \in \mathcal{G}} \sum_{t \in \mathcal{T}} \left(\epsilon_{y,z}^{CO_2} \times \omega_{t} \times \Theta_{y,z,t} \right)
-   & \leq \sum_{z \in \mathcal{Z}^{CO_2}_{p,mass}} \epsilon^{CO_{2}}_{z,p, mass} \hspace{1 cm}  \forall p \in \mathcal{P}^{CO_2}_{mass}
+    \sum_{z \in \mathcal{Z}^{CO_2}_{p,mass}} \sum_{y \in \mathcal{G}} \sum_{t \in \mathcal{T}} \left(\epsilon_{y,z}^{CO_2} \times \omega_{t,sc} \times \Theta_{y,z,t,sc} \right)
+   & \leq \sum_{z \in \mathcal{Z}^{CO_2}_{p,mass}} \epsilon^{CO_{2}}_{z,p, mass} \hspace{1 cm}  \forall p \in \mathcal{P}^{CO_2}_{mass}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 
@@ -24,8 +24,8 @@ We modify the right hand side of the above mass-based constraint, $p \in \mathca
 
 ```math
 \begin{aligned}
-    \sum_{z \in \mathcal{Z}^{CO_2}_{p,load}} \sum_{y \in \mathcal{G}} \sum_{t \in \mathcal{T}} \left(\epsilon_{y,z}^{CO_2} \times \omega_{t} \times \Theta_{y,t,z} \right)
-    \leq & \sum_{z \in \mathcal{Z}^{CO_2}_{p,load}} \sum_{t \in \mathcal{T}}  \left(\epsilon_{z,p,load}^{CO_2} \times  \omega_{t} \times D_{z,t} \right) \\  + & \sum_{z \in \mathcal{Z}^{CO_2}_{p,load}} \sum_{y \in \mathcal{O}}  \sum_{t \in \mathcal{T}} \left(\epsilon_{z,p,load}^{CO_2} \times \omega_{t} \times \left(\Pi_{y,t,z} - \Theta_{y,t,z} \right) \right) \\  - & \sum_{z \in \mathcal{Z}^{CO_2}_{p,load}} \sum_{s \in \mathcal{S} } \sum_{t \in \mathcal{T}}  \left(\epsilon_{z,p,load}^{CO_2} \times \omega_{t} \times \Lambda_{s,z,t}\right) \hspace{1 cm}  \forall p \in \mathcal{P}^{CO_2}_{load}
+    \sum_{z \in \mathcal{Z}^{CO_2}_{p,load}} \sum_{y \in \mathcal{G}} \sum_{t \in \mathcal{T}} \left(\epsilon_{y,z}^{CO_2} \times \omega_{t,sc} \times \Theta_{y,t,z,sc} \right)
+    \leq & \sum_{z \in \mathcal{Z}^{CO_2}_{p,load}} \sum_{t \in \mathcal{T}}  \left(\epsilon_{z,p,load}^{maxCO_2} \times  \omega_{t,sc} \times D_{z,t,sc} \right) \\  + & \sum_{z \in \mathcal{Z}^{CO_2}_{p,load}} \sum_{y \in \mathcal{O}}  \sum_{t \in \mathcal{T}} \left(\epsilon_{z,p,load}^{maxCO_2} \times \omega_{t,sc} \times \left(\Pi_{y,t,sc,z} - \Theta_{y,t,sc,z} \right) \right) \\  - & \sum_{z \in \mathcal{Z}^{CO_2}_{p,load}} \sum_{s \in \mathcal{S} } \sum_{t \in \mathcal{T}}  \left(\epsilon_{z,p,load}^{maxCO_2} \times \omega_{t,sc} \times \Lambda_{s,z,t,sc}\right) \hspace{1 cm}  \forall p \in \mathcal{P}^{CO_2}_{load}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 
@@ -35,8 +35,8 @@ Similarly, a generation based emission constraint is defined by setting the emis
 
 ```math
 \begin{aligned}
-\sum_{z \in \mathcal{Z}^{CO_2}_{p,gen}} \sum_{y \in \mathcal{G}} \sum_{t \in \mathcal{T}} & \left(\epsilon_{y,z}^{CO_2} \times \omega_{t} \times \Theta_{y,t,z} \right) \\
-    \leq \sum_{z \in \mathcal{Z}^{CO_2}_{p,gen}} \sum_{y \in \mathcal{G}} \sum_{t \in \mathcal{T}} & \left(\epsilon_{z,p,gen}^{CO_2} \times  \omega_{t} \times \Theta_{y,t,z} \right)  \hspace{1 cm}  \forall p \in \mathcal{P}^{CO_2}_{gen}
+\sum_{z \in \mathcal{Z}^{CO_2}_{p,gen}} \sum_{y \in \mathcal{G}} \sum_{t \in \mathcal{T}} & \left(\epsilon_{y,z}^{CO_2} \times \omega_{t,sc} \times \Theta_{y,t,z,sc} \right) \\
+    \leq \sum_{z \in \mathcal{Z}^{CO_2}_{p,gen}} \sum_{y \in \mathcal{G}} \sum_{t \in \mathcal{T}} & \left(\epsilon_{z,p,gen}^{maxCO_2} \times  \omega_{t,sc} \times \Theta_{y,t,z,sc} \right)  \hspace{1 cm}  \forall p \in \mathcal{P}^{CO_2}_{gen}, \forall sc \in \mathcal{SC}
 \end{aligned}
 ```
 
@@ -51,30 +51,32 @@ function co2_cap!(EP::Model, inputs::Dict, setup::Dict)
 	G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
 	T = inputs["T"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
-
+	SC=inputs["SC"]     # Number of scenarios
 	### Variable ###
 	# if input files are present, add CO2 cap slack variables
 	if haskey(inputs, "dfCO2Cap_slack")
-		@variable(EP, vCO2Cap_slack[cap = 1:inputs["NCO2Cap"]]>=0)
+		@variable(EP, vCO2Cap_slack[cap = 1:inputs["NCO2Cap"],sc=1:SC]>=0)
 
-		@expression(EP, eCCO2Cap_slack[cap = 1:inputs["NCO2Cap"]], 
-		inputs["dfCO2Cap_slack"][cap,:PriceCap] * EP[:vCO2Cap_slack][cap])
-		@expression(EP, eCTotalCO2CapSlack, 
-		sum(EP[:eCCO2Cap_slack][cap] for cap = 1:inputs["NCO2Cap"]))
+		@expression(EP, eCCO2Cap_slack[cap = 1:inputs["NCO2Cap"],sc=1:SC], 
+		inputs["dfCO2Cap_slack"][cap,:PriceCap] * EP[:vCO2Cap_slack][cap,sc])
+		@expression(EP, eCTotalCO2CapSlack[sc=1:SC], 
+		sum(EP[:eCCO2Cap_slack][cap,sc] for cap = 1:inputs["NCO2Cap"]))
 		
-		EP[:eObj] += eCTotalCO2CapSlack
+		#EP[:eObj] += eCTotalCO2CapSlack
+		for sc in 1:SC
+			EP[:eSCS][sc] += eCTotalCO2CapSlack[sc]
+		end
 	else 
-		@variable(EP, vCO2Cap_slack[cap = 1:inputs["NCO2Cap"]]==0)
+		@variable(EP, vCO2Cap_slack[cap = 1:inputs["NCO2Cap"],sc=1:SC]==0)
 	end
 
-	SC=inputs["SC"]
 	### Constraints ###
 
 	## Mass-based: Emissions constraint in absolute emissions limit (tons)
 	if setup["CO2Cap"] == 1
 		@constraint(EP, cCO2Emissions_systemwide[cap=1:inputs["NCO2Cap"],sc=1:SC],
 			sum(inputs["omega"][t,sc] * EP[:eEmissionsByZone][z,t,sc] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]), t=1:T) -
-			vCO2Cap_slack[cap]<=
+			vCO2Cap_slack[cap,sc]<=
 			sum(inputs["dfMaxCO2"][z,cap] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]))
 		)
 
@@ -83,7 +85,7 @@ function co2_cap!(EP::Model, inputs::Dict, setup::Dict)
 
 		@constraint(EP, cCO2Emissions_systemwide[cap=1:inputs["NCO2Cap"],sc=1:SC],
 			sum(inputs["omega"][t,sc] * EP[:eEmissionsByZone][z,t,sc] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]), t=1:T) -
-			vCO2Cap_slack[cap] <=
+			vCO2Cap_slack[cap,sc] <=
 			sum(inputs["dfMaxCO2Rate"][z,cap] * sum(inputs["omega"][t,sc] * (inputs["pD"][t,z,sc] - sum(EP[:vNSE][s,t,z,sc] for s in 1:SEG)) for t=1:T) for z = findall(x->x==1, inputs["dfCO2CapZones"][:,cap])) +
 			sum(inputs["dfMaxCO2Rate"][z,cap] * setup["StorageLosses"] *  EP[:eELOSSByZone][z] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]))
 		)
@@ -92,7 +94,7 @@ function co2_cap!(EP::Model, inputs::Dict, setup::Dict)
 	elseif (setup["CO2Cap"]==3)
 		@constraint(EP, cCO2Emissions_systemwide[cap=1:inputs["NCO2Cap"],sc=1:SC],
 			sum(inputs["omega"][t,sc] * EP[:eEmissionsByZone][z,t,sc] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]), t=1:T) -
-			vCO2Cap_slack[cap] <=
+			vCO2Cap_slack[cap,sc] <=
 			sum(inputs["dfMaxCO2Rate"][z,cap] * inputs["omega"][t,sc] * EP[:eGenerationByZone][z,t,sc] for t=1:T, z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]))
 		)
 	end 
