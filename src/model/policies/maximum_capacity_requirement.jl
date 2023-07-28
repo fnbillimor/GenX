@@ -23,6 +23,6 @@ function maximum_capacity_requirement!(EP::Model, inputs::Dict, setup::Dict)
 		@expression(EP, eCMaxCap_slack[maxcap = 1:NumberOfMaxCapReqs], inputs["MaxCapPriceCap"][maxcap] * EP[:vMaxCap_slack][maxcap])
 		@expression(EP, eTotalCMaxCapSlack, sum(EP[:eCMaxCap_slack][maxcap] for maxcap = 1:NumberOfMaxCapReqs))
 		
-		EP[:eObj] += eTotalCMaxCapSlack
+		EP[:sSIC] += eTotalCMaxCapSlack
 	end
 end
