@@ -1,12 +1,21 @@
 @doc raw"""
 	curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict)
-This function defines the constraints for operation of variable renewable energy (VRE) resources whose output can be curtailed ($y \in \mathcal{VRE}$), such as utility-scale solar PV or wind power resources or run-of-river hydro resources that can spill water.
-The operational constraints for VRE resources are a function of each technology's time-dependent hourly capacity factor (or availability factor, $\rho^{max}_{y,z,t}$), in per unit terms, and the total available capacity ($\Delta^{total}_{y,z}$).
+This function defines the constraints for operation of variable renewable energy (VRE) resources whose output can be curtailed ($y \in \mathcal{VRE}$), 
+such as utility-scale solar PV or wind power resources or run-of-river hydro resources that can spill water.
+The operational constraints for VRE resources are a function of each technology's time-dependent and scenario-dependent hourly capacity factor (or availability factor, $\rho^{max}_{y,z,t,sc}$),
+ in per unit terms, and the total available capacity ($\Delta^{total}_{y,z}$).
+
 **Power output in each time step**
-For each VRE technology type $y$ and model zone $z$, the model allows for incorporating multiple bins with different parameters for resource quality ($\rho^{max}_{y,z,t}$), maximum availability ($\overline{\Omega_{y,z}}$) and investment cost ($\Pi^{INVEST}_{y,z}$, for example, due to interconnection cost differences). We define variables related to installed capacity ($\Delta_{y,z}$) and retired capacity ($\Delta_{y,z}$) for all resource bins for a particular VRE resource type $y$ and zone $z$ ($\overline{\mathcal{VRE}}^{y,z}$). However, the variable corresponding to power output in each timestep is only defined for the first bin. Parameter $VREIndex_{y,z}$, is used to keep track of the first bin, where $VREIndex_{y,z}=1$ for the first bin and $VREIndex_{y,z}=0$ for the remaining bins. This approach allows for modeling many different bins per VRE technology type and zone while significantly reducing the number of operational variable (related to power output for each time step from each bin) added to the model with every additional bin. Thus, the maximum power output for each VRE resource type in each zone is given by the following equation:
+For each VRE technology type $y$ and model zone $z$, the model allows for incorporating multiple bins with different parameters for resource quality ($\rho^{max}_{y,z,t,sc}$), 
+maximum availability ($\overline{\Omega_{y,z}}$) and investment cost ($\Pi^{INVEST}_{y,z}$, for example, due to interconnection cost differences). We define variables related to 
+installed capacity ($\Delta_{y,z}$) and retired capacity ($\Delta_{y,z}$) for all resource bins for a particular VRE resource type $y$ and zone $z$ ($\overline{\mathcal{VRE}}^{y,z}$). 
+However, the variable corresponding to power output in each timestep is only defined for the first bin. Parameter $VREIndex_{y,z}$, is used to keep track of the first bin, 
+where $VREIndex_{y,z}=1$ for the first bin and $VREIndex_{y,z}=0$ for the remaining bins. This approach allows for modeling many different bins per VRE technology type and zone while 
+significantly reducing the number of operational variable (related to power output for each time step from each bin) added to the model with every additional bin. Thus, the maximum 
+power output for each VRE resource type in each zone is given by the following equation:
 ```math
 \begin{aligned}
-	\Theta_{y,z,t} \leq \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t} \times \Delta^{total}_{x,z}}  \hspace{2 cm}  \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}
+	\Theta_{y,z,t,sc} \leq \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t,sc} \times \Delta^{total}_{x,z}}  \hspace{2 cm}  \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}, sc \in \mathcal{SC}
 \end{aligned}
 ```
 The above constraint is defined as an inequality instead of an equality to allow for VRE power output to be curtailed if desired. This adds the possibility of introducing VRE curtailment as an extra degree of freedom to guarantee that generation exactly meets demand in each time step.
@@ -80,24 +89,28 @@ end
 
 @doc raw"""
 	curtailable_variable_renewable_reserves!(EP::Model, inputs::Dict)
-When modeling operating reserves, this function is called by ```curtailable_variable_renewable()```, which modifies the constraint for maximum power output in each time step from VRE resources to account for procuring some of the available capacity for frequency regulation ($f_{y,z,t}$) and upward operating (spinning) reserves ($r_{y,z,t}$).
+When modeling operating reserves, this function is called by ```curtailable_variable_renewable()```, which modifies the constraint for maximum power output in each time step from 
+VRE resources to account for procuring some of the available capacity for frequency regulation ($f_{y,z,t,sc}$) and upward operating (spinning) reserves ($r_{y,z,t,sc}$).
 ```math
 \begin{aligned}
-	\Theta_{y,z,t} + f_{y,z,t} + r_{y,z,t} \leq \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t}\times \Delta^{total}_{x,z}}  \hspace{0.1 cm}   \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}
+	\Theta_{y,z,t,sc} + f_{y,z,t,sc} + r_{y,z,t,sc} \leq \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t}\times \Delta^{total}_{x,z}}  \hspace{0.1 cm}   \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}, sc \in \mathcal{SC}
 \end{aligned}
 ```
-The amount of downward frequency regulation reserves also cannot exceed the current power output.
+The amount of downward frequency regulation reserves also cannot exceed the current power output for every scenario.
 ```math
 \begin{aligned}
-	f_{y,z,t} \leq \Theta_{y,z,t}
-	\forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}
+	f_{y,z,t,sc} \leq \Theta_{y,z,t,sc}
+	\forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}, sc \in \mathcal{SC}
 \end{aligned}
 ```
-The amount of frequency regulation and operating reserves procured in each time step is bounded by the user-specified fraction ($\upsilon^{reg}_{y,z}$,$\upsilon^{rsv}_{y,z}$) of available capacity in each period for each reserve type, reflecting the maximum ramp rate for the VRE resource in whatever time interval defines the requisite response time for the regulation or reserve products (e.g., 5 mins or 15 mins or 30 mins). These response times differ by system operator and reserve product, and so the user should define these parameters in a self-consistent way for whatever system context they are modeling.
+The amount of frequency regulation and operating reserves procured in each time step and in each scenario is bounded by the user-specified fraction 
+($\upsilon^{reg}_{y,z}$,$\upsilon^{rsv}_{y,z}$) of available capacity in each period and each scenario for each reserve type, reflecting the maximum ramp rate for the VRE resource 
+in whatever time interval defines the requisite response time for the regulation or reserve products (e.g., 5 mins or 15 mins or 30 mins). These response times differ 
+by system operator and reserve product, and so the user should define these parameters in a self-consistent way for whatever system context they are modeling.
 ```math
 \begin{aligned}
-	r_{y,z,t} \leq \upsilon^{rsv}_{y,z} \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t}\times \Delta^{total}_{x,z}}  \hspace{1 cm}   \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T} \\
-	f_{y,z,t} \leq \upsilon^{reg}_{y,z} \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t}\times \Delta^{total}_{x,z}}  \hspace{1 cm}   \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}
+	r_{y,z,t,sc} \leq \upsilon^{rsv}_{y,z} \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t,sc}\times \Delta^{total}_{x,z}}  \hspace{1 cm}   \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}, sc \in \mathcal{SC} \\
+	f_{y,z,t,sc} \leq \upsilon^{reg}_{y,z} \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t,sc}\times \Delta^{total}_{x,z}}  \hspace{1 cm}   \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}, sc \in \mathcal{SC}
 \end{aligned}
 ```
 """
