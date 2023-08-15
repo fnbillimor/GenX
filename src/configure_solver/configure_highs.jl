@@ -340,7 +340,7 @@ function configure_highs(solver_settings_path::String)
 	solver_settings = YAML.load(open(solver_settings_path))
 	solver_settings = convert(Dict{String, Any}, solver_settings)
 
-    default_settings = Dict{String,Any}(
+        default_settings = Dict{String,Any}(
         "Feasib_Tol" => 1e-6,
         "Optimal_Tol" => 1e-4,
         "Pre_Solve" => "choose",

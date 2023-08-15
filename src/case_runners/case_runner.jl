@@ -1,7 +1,9 @@
+#Function to get to the Settings folder for any partcular case
 function get_settings_path(case::AbstractString)
     return joinpath(case, "Settings")
 end
 
+#Function to get into a particular yml file within the Settings folder
 function get_settings_path(case::AbstractString, filename::AbstractString)
     return joinpath(get_settings_path(case), filename)
 end
@@ -48,9 +50,9 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
 
     if mysetup["TimeDomainReduction"] == 1
         prevent_doubled_timedomainreduction(case)
-        if !time_domain_reduced_files_exist(TDRpath)
+        if !time_domain_reduced_files_exist(TDRpath, number_of_scenarios)
             println("Clustering Time Series Data (Grouped)...")
-            cluster_inputs(case, settings_path, mysetup)
+            cluster_inputs(case, settings_path, mysetup, number_of_scenarios)
         else
             println("Time Series Data Already Clustered.")
         end
@@ -106,15 +108,15 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
     TDRpath = joinpath(first_stage_path, mysetup["TimeDomainReductionFolder"])
     if mysetup["TimeDomainReduction"] == 1
         prevent_doubled_timedomainreduction(first_stage_path)
-        if !time_domain_reduced_files_exist(TDRpath)
+        if !time_domain_reduced_files_exist(TDRpath, number_of_scenarios)
             if (mysetup["MultiStage"] == 1) && (TDRSettingsDict["MultiStageConcatenate"] == 0)
                 println("Clustering Time Series Data (Individually)...")
                 for stage_id in 1:mysetup["MultiStageSettingsDict"]["NumStages"]
-                    cluster_inputs(case, settings_path, mysetup, stage_id)
+                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, stage_id)
                 end
             else
                 println("Clustering Time Series Data (Grouped)...")
-                cluster_inputs(case, settings_path, mysetup)
+                cluster_inputs(case, settings_path, mysetup, number_of_scenarios)
             end
         else
             println("Time Series Data Already Clustered.")
