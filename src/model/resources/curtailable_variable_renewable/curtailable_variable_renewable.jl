@@ -84,36 +84,8 @@ function curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict)
 		sum(EP[:vP][y,t,sc] for y in intersect(inputs["VRE"], dfGen[dfGen[!,:Zone].==z,:R_ID]))
 	)
 	EP[:eGenerationByZone] += eGenerationByVRE
-
 end
 
-@doc raw"""
-	curtailable_variable_renewable_reserves!(EP::Model, inputs::Dict)
-When modeling operating reserves, this function is called by ```curtailable_variable_renewable()```, which modifies the constraint for maximum power output in each time step from 
-VRE resources to account for procuring some of the available capacity for frequency regulation ($f_{y,z,t,sc}$) and upward operating (spinning) reserves ($r_{y,z,t,sc}$).
-```math
-\begin{aligned}
-	\Theta_{y,z,t,sc} + f_{y,z,t,sc} + r_{y,z,t,sc} \leq \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t}\times \Delta^{total}_{x,z}}  \hspace{0.1 cm}   \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}, sc \in \mathcal{SC}
-\end{aligned}
-```
-The amount of downward frequency regulation reserves also cannot exceed the current power output for every scenario.
-```math
-\begin{aligned}
-	f_{y,z,t,sc} \leq \Theta_{y,z,t,sc}
-	\forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}, sc \in \mathcal{SC}
-\end{aligned}
-```
-The amount of frequency regulation and operating reserves procured in each time step and in each scenario is bounded by the user-specified fraction 
-($\upsilon^{reg}_{y,z}$,$\upsilon^{rsv}_{y,z}$) of available capacity in each period and each scenario for each reserve type, reflecting the maximum ramp rate for the VRE resource 
-in whatever time interval defines the requisite response time for the regulation or reserve products (e.g., 5 mins or 15 mins or 30 mins). These response times differ 
-by system operator and reserve product, and so the user should define these parameters in a self-consistent way for whatever system context they are modeling.
-```math
-\begin{aligned}
-	r_{y,z,t,sc} \leq \upsilon^{rsv}_{y,z} \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t,sc}\times \Delta^{total}_{x,z}}  \hspace{1 cm}   \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}, sc \in \mathcal{SC} \\
-	f_{y,z,t,sc} \leq \upsilon^{reg}_{y,z} \sum_{(x,z)\in \overline{\mathcal{VRE}}^{x,z}}{\rho^{max}_{x,z,t,sc}\times \Delta^{total}_{x,z}}  \hspace{1 cm}   \forall y,z \in \{(y,z)|VREIndex_{y,z}=1, z \in \mathcal{Z}\},t \in \mathcal{T}, sc \in \mathcal{SC}
-\end{aligned}
-```
-"""
 function curtailable_variable_renewable_reserves!(EP::Model, inputs::Dict)
 
 	dfGen = inputs["dfGen"]

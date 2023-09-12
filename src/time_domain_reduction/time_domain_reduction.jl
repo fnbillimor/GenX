@@ -515,7 +515,7 @@ In Load_data.csv, include the following:
      the first stage and will apply the periods of each other model stage to this set
      of representative periods by closest Eucliden distance.
 """
-function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, stage_id=-99, v=false)
+function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=false)
     if v println(now()) end
 
     ##### Step 0: Load in settings and data
@@ -545,20 +545,21 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
         MultiStageConcatenate = myTDRsetup["MultiStageConcatenate"]
         NumStages = mysetup["MultiStageSettingsDict"]["NumStages"]
     end
-
-    tdr_load=Dict()
-    tdr_genvar = Dict()
-    tdr_fuels = Dict()
-    for i in 1:number_of_scenarios
-        tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
-        tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
-        tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
-        tdr_period[i] = joinpath(TimeDomainReductionFolder,"Period_map", "Period_map_scenario_$i.csv")
-    end
-    #Load_Outfile = joinpath(TimeDomainReductionFolder, "Load_data.csv")
-    #GVar_Outfile = joinpath(TimeDomainReductionFolder, "Generators_variability.csv")
-    #Fuel_Outfile = joinpath(TimeDomainReductionFolder, "Fuels_data.csv")
-    #PMap_Outfile = joinpath(TimeDomainReductionFolder, "Period_map.csv")
+    
+    #tdr_load=Dict()
+    #tdr_genvar = Dict()
+    #tdr_fuels = Dict()
+    #for i in 1:number_of_scenarios
+        #tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
+        #tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
+        #tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
+        #tdr_period[i] = joinpath(TimeDomainReductionFolder,"Period_map", "Period_map_scenario_$i.csv")
+    #end
+    
+    Load_Outfile = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$sc.csv")
+    GVar_Outfile = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$sc.csv")
+    Fuel_Outfile = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$sc.csv")
+    PMap_Outfile = joinpath(TimeDomainReductionFolder,"Period_map", "Period_map_scenario_$sc.csv")
     YAML_Outfile = joinpath(TimeDomainReductionFolder, "time_domain_reduction_settings.yml")
 
     # Define a local version of the setup so that you can modify the mysetup["ParameterScale"] value to be zero in case it is 1
@@ -616,7 +617,7 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
         end
     else
         if v println("Not MultiStage") end
-        myinputs = load_inputs(mysetup_local,inpath)
+        myinputs = load_inputs(mysetup_local,inpath,sc)
         RESOURCE_ZONES = myinputs["RESOURCE_ZONES"]
         RESOURCES = myinputs["RESOURCES"]
         ZONES = myinputs["R_ZONES"]
@@ -965,12 +966,13 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
                 Stage_PeriodMaps[per] = PeriodMap[group_ranges[per],:]
                 Stage_PeriodMaps[per][!,:Period_Index] = 1:(group_ranges[per][end]-group_ranges[per][1]+1)
                 # Outfiles
-                #Stage_Outfiles[per] = Dict()
-                #Stage_Outfiles[per]["Load"] = joinpath("Inputs_p$per", Load_Outfile)
-                #Stage_Outfiles[per]["GVar"] = joinpath("Inputs_p$per", GVar_Outfile)
-                #Stage_Outfiles[per]["Fuel"] = joinpath("Inputs_p$per", Fuel_Outfile)
-                #Stage_Outfiles[per]["PMap"] = joinpath("Inputs_p$per", PMap_Outfile)
-                #Stage_Outfiles[per]["YAML"] = joinpath("Inputs_p$per", YAML_Outfile)
+                Stage_Outfiles[per] = Dict()
+                Stage_Outfiles[per]["Load"] = joinpath("Inputs_p$per", "Load_data", Load_Outfile)
+                Stage_Outfiles[per]["GVar"] = joinpath("Inputs_p$per", "Generators_variability", GVar_Outfile)
+                Stage_Outfiles[per]["Fuel"] = joinpath("Inputs_p$per", "Fuels_data", Fuel_Outfile)
+                Stage_Outfiles[per]["PMap"] = joinpath("Inputs_p$per", "Periods_map", PMap_Outfile)
+                Stage_Outfiles[per]["YAML"] = joinpath("Inputs_p$per", YAML_Outfile)
+                """
                 for i in 1:number_of_scenarios
                     Stage_Outfiles[per][i] = Dict()
                     Stage_Outfiles[per][i]["Load"] = joinpath("Inputs_p$per", tdr_load[i])
@@ -979,10 +981,38 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
                     Stage_Outfiles[per][i]["PMap"] = joinpath("Inputs_p$per", tdr_period[i])
                     Stage_Outfiles[per][i]["YAML"] = joinpath("Inputs_p$per", YAML_Outfile)
                 end
-
+                """
                 # Save output data to stage-specific locations
                 ### TDR_Results/Load_data_clustered.csv
-                load_in = load_dataframe(joinpath(inpath, "Inputs", "Inputs_p$per", "Load_data.csv"))
+                """
+                my_dir = joinpath(inpath, "Inputs", "Inputs_p$per")
+                filename = "Load_data_scenario_*.csv"
+	            load_files = glob(filename, my_dir)
+	            load_in = DataFrame.(CSV.File.(load_files))
+                for j in 1:number_of_scenarios
+                    #load_in = load_dataframe(joinpath(inpath, "Inputs", "Inputs_p$per", "Load_data_scenario_$i.csv"))
+                    load_in[j][!,:Sub_Weights] = load_in[j][!,:Sub_Weights] * 1.
+                    load_in[j][1:length(Stage_Weights[per]),:Sub_Weights] .= Stage_Weights[per]
+                    load_in[j][!,:Rep_Periods][1] = length(Stage_Weights[per])
+                    load_in[j][!,:Timesteps_per_Rep_Period][1] = TimestepsPerRepPeriod
+                    select!(load_in[j], Not(LoadCols))
+                    select!(load_in[j], Not(:Time_Index))
+                    Time_Index_M = Union{Int64, Missings.Missing}[missing for i in 1:size(load_in[j],1)]
+                    Time_Index_M[1:size(LPOutputData,1)] = 1:size(LPOutputData,1)
+                    load_in[j][!,:Time_Index] .= Time_Index_M
+                    for c in LoadCols
+                        new_col = Union{Float64, Missings.Missing}[missing for i in 1:size(load_in[j],1)]
+                        new_col[1:size(LPOutputData,1)] = LPOutputData[!,c]
+                        load_in[j][!,c] .= new_col
+                    end
+                    load_in[j] = load_in[j][1:size(LPOutputData,1),:]
+    
+                    if v println("Writing load file...") end
+                    CSV.write(joinpath(inpath, "Inputs", Stage_Outfiles[per]["Load"]), load_in[j])
+                end
+                """
+
+                load_in = load_dataframe(joinpath(inpath, "Inputs", "Inputs_p$per", "Load_data", "Load_data_scenario_$sc.csv"))
                 load_in[!,:Sub_Weights] = load_in[!,:Sub_Weights] * 1.
                 load_in[1:length(Stage_Weights[per]),:Sub_Weights] .= Stage_Weights[per]
                 load_in[!,:Rep_Periods][1] = length(Stage_Weights[per])
@@ -992,7 +1022,6 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
                 Time_Index_M = Union{Int64, Missings.Missing}[missing for i in 1:size(load_in,1)]
                 Time_Index_M[1:size(LPOutputData,1)] = 1:size(LPOutputData,1)
                 load_in[!,:Time_Index] .= Time_Index_M
-
                 for c in LoadCols
                     new_col = Union{Float64, Missings.Missing}[missing for i in 1:size(load_in,1)]
                     new_col[1:size(LPOutputData,1)] = LPOutputData[!,c]
@@ -1014,7 +1043,7 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
                 CSV.write(joinpath(inpath, "Inputs", Stage_Outfiles[per]["GVar"]), GVOutputData, header=NewGVColNames)
 
                 ### TDR_Results/Fuels_data.csv
-                fuel_in = load_dataframe(joinpath(inpath, "Inputs", "Inputs_p$per", "Fuels_data.csv"))
+                fuel_in = load_dataframe(joinpath(inpath, "Inputs", "Inputs_p$per", "Fuels_data", "Fuels_data_scenario_$sc.csv"))
                 select!(fuel_in, Not(:Time_Index))
                 SepFirstRow = DataFrame(fuel_in[1, :])
                 NewFuelOutput = vcat(SepFirstRow, FPOutputData)
@@ -1040,7 +1069,83 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
             mkpath(joinpath(inpath,"Inputs",input_stage_directory, TimeDomainReductionFolder))
 
             ### TDR_Results/Load_data.csv
-            load_in = load_dataframe(joinpath(inpath, "Inputs", input_stage_directory, "Load_data.csv"))
+            for i in 1:number_of_scenarios
+                load_in = load_dataframe(joinpath(inpath, "Inputs", input_stage_directory, "Load_data_scenario_$i.csv"))
+                load_in[!,:Sub_Weights] = load_in[!,:Sub_Weights] * 1.
+                load_in[1:length(W),:Sub_Weights] .= W
+                load_in[!,:Rep_Periods][1] = length(W)
+                load_in[!,:Timesteps_per_Rep_Period][1] = TimestepsPerRepPeriod
+                select!(load_in, Not(LoadCols))
+                select!(load_in, Not(:Time_Index))
+                Time_Index_M = Union{Int64, Missings.Missing}[missing for i in 1:size(load_in,1)]
+                Time_Index_M[1:size(LPOutputData,1)] = 1:size(LPOutputData,1)
+                load_in[!,:Time_Index] .= Time_Index_M
+            end
+
+            for c in LoadCols
+                new_col = Union{Float64, Missings.Missing}[missing for i in 1:size(load_in,1)]
+                new_col[1:size(LPOutputData,1)] = LPOutputData[!,c]
+                load_in[!,c] .= new_col
+            end
+            load_in = load_in[1:size(LPOutputData,1),:]
+
+            if v println("Writing load file...") end
+            for i in 1:number_of_scenarios
+                CSV.write(joinpath(inpath,"Inputs",input_stage_directory,tdr_load[i]), load_in)
+            end
+            for i in 1:number_of_scenarios
+                tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
+            end
+
+            ### TDR_Results/Generators_variability.csv
+
+            # Reset column ordering, add time index, and solve duplicate column name trouble with CSV.write's header kwarg
+            GVColMap = Dict(RESOURCE_ZONES[i] => RESOURCES[i] for i in 1:length(myinputs["RESOURCES"]))
+            GVColMap["Time_Index"] = "Time_Index"
+            GVOutputData = GVOutputData[!, Symbol.(RESOURCE_ZONES)]
+            insertcols!(GVOutputData, 1, :Time_Index => 1:size(GVOutputData,1))
+            NewGVColNames = [GVColMap[string(c)] for c in names(GVOutputData)]
+            if v println("Writing resource file...") end
+            CSV.write(joinpath(inpath,"Inputs",input_stage_directory,GVar_Outfile), GVOutputData, header=NewGVColNames)
+            """
+            for i in 1:number_of_scenarios
+                tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
+            end
+            """
+            tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$sc.csv")
+
+            ### TDR_Results/Fuels_data.csv
+
+            fuel_in = load_dataframe(joinpath(inpath,"Inputs",input_stage_directory,"Fuels_data", "Fuels_data_scenario_$sc.csv"))
+            select!(fuel_in, Not(:Time_Index))
+            SepFirstRow = DataFrame(fuel_in[1, :])
+            NewFuelOutput = vcat(SepFirstRow, FPOutputData)
+            rename!(NewFuelOutput, FuelCols)
+            insertcols!(NewFuelOutput, 1, :Time_Index => 0:size(NewFuelOutput,1)-1)
+            if v println("Writing fuel profiles...") end
+            CSV.write(joinpath(inpath,"Inputs",input_stage_directory,Fuel_Outfile), NewFuelOutput)
+            """
+            for i in 1:number_of_scenarios
+                tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
+            end
+            """
+            tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$sc.csv")
+
+            ### Period_map.csv
+            if v println("Writing period map...") end
+            CSV.write(joinpath(inpath,"Inputs",input_stage_directory,PMap_Outfile), PeriodMap)
+
+            ### time_domain_reduction_settings.yml
+            if v println("Writing .yml settings...") end
+            YAML.write_file(joinpath(inpath,"Inputs",input_stage_directory,YAML_Outfile), myTDRsetup)
+        end
+    else
+        if v println("Outputs: Single-Stage") end
+        mkpath(joinpath(inpath, TimeDomainReductionFolder))
+        """
+        for i in 1:number_of_scenarios
+            ### TDR_Results/Load_data.csv
+            load_in = load_dataframe(joinpath(inpath, "Load_data", "Load_data_scenario_$i.csv"))
             load_in[!,:Sub_Weights] = load_in[!,:Sub_Weights] * 1.
             load_in[1:length(W),:Sub_Weights] .= W
             load_in[!,:Rep_Periods][1] = length(W)
@@ -1057,63 +1162,13 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
                 load_in[!,c] .= new_col
             end
             load_in = load_in[1:size(LPOutputData,1),:]
-
             if v println("Writing load file...") end
-            for i in 1:number_of_scenarios
-                CSV.write(joinpath(inpath,"Inputs",input_stage_directory,tdr_load[i]), load_in)
-            end
-            for i in 1:number_of_scenarios
-                tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
-                tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
-                tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
-            end
-
-            ### TDR_Results/Generators_variability.csv
-
-            # Reset column ordering, add time index, and solve duplicate column name trouble with CSV.write's header kwarg
-            GVColMap = Dict(RESOURCE_ZONES[i] => RESOURCES[i] for i in 1:length(myinputs["RESOURCES"]))
-            GVColMap["Time_Index"] = "Time_Index"
-            GVOutputData = GVOutputData[!, Symbol.(RESOURCE_ZONES)]
-            insertcols!(GVOutputData, 1, :Time_Index => 1:size(GVOutputData,1))
-            NewGVColNames = [GVColMap[string(c)] for c in names(GVOutputData)]
-            if v println("Writing resource file...") end
-            CSV.write(joinpath(inpath,"Inputs",input_stage_directory,GVar_Outfile), GVOutputData, header=NewGVColNames)
-            for i in 1:number_of_scenarios
-                tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
-                tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
-                tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
-            end
-
-            ### TDR_Results/Fuels_data.csv
-
-            fuel_in = load_dataframe(joinpath(inpath,"Inputs",input_stage_directory,"Fuels_data.csv"))
-            select!(fuel_in, Not(:Time_Index))
-            SepFirstRow = DataFrame(fuel_in[1, :])
-            NewFuelOutput = vcat(SepFirstRow, FPOutputData)
-            rename!(NewFuelOutput, FuelCols)
-            insertcols!(NewFuelOutput, 1, :Time_Index => 0:size(NewFuelOutput,1)-1)
-            if v println("Writing fuel profiles...") end
-            CSV.write(joinpath(inpath,"Inputs",input_stage_directory,Fuel_Outfile), NewFuelOutput)
-            for i in 1:number_of_scenarios
-                tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
-                tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
-                tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
-            end
-
-            ### Period_map.csv
-            if v println("Writing period map...") end
-            CSV.write(joinpath(inpath,"Inputs",input_stage_directory,PMap_Outfile), PeriodMap)
-
-            ### time_domain_reduction_settings.yml
-            if v println("Writing .yml settings...") end
-            YAML.write_file(joinpath(inpath,"Inputs",input_stage_directory,YAML_Outfile), myTDRsetup)
+            #CSV.write(joinpath(inpath, Load_Outfile), load_in)
+            CSV.write(joinpath(inpath, tdr_load[i]), load_in)
         end
-    else
-        if v println("Outputs: Single-Stage") end
-        mkpath(joinpath(inpath, TimeDomainReductionFolder))
-
+        """
         ### TDR_Results/Load_data.csv
-        load_in = load_dataframe(joinpath(inpath, "Load_data.csv"))
+        load_in = load_dataframe(joinpath(inpath, "Load_data", "Load_data_scenario_$sc.csv"))
         load_in[!,:Sub_Weights] = load_in[!,:Sub_Weights] * 1.
         load_in[1:length(W),:Sub_Weights] .= W
         load_in[!,:Rep_Periods][1] = length(W)
@@ -1130,18 +1185,24 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
             load_in[!,c] .= new_col
         end
         load_in = load_in[1:size(LPOutputData,1),:]
-
         if v println("Writing load file...") end
         CSV.write(joinpath(inpath, Load_Outfile), load_in)
-        for i in 1:number_of_scenarios
-            tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
-            tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
-            tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
-        end
 
         ### TDR_Results/Generators_variability.csv
 
         # Reset column ordering, add time index, and solve duplicate column name trouble with CSV.write's header kwarg
+        """
+        for i in 1:number_of_scenarios
+            GVColMap = Dict(RESOURCE_ZONES[i] => RESOURCES[i] for i in 1:length(myinputs["RESOURCES"]))
+            GVColMap["Time_Index"] = "Time_Index"
+            GVOutputData = GVOutputData[!, Symbol.(RESOURCE_ZONES)]
+            insertcols!(GVOutputData, 1, :Time_Index => 1:size(GVOutputData,1))
+            NewGVColNames = [GVColMap[string(c)] for c in names(GVOutputData)]
+            if v println("Writing resource file...") end
+            #CSV.write(joinpath(inpath, GVar_Outfile), GVOutputData, header=NewGVColNames)
+            CSV.write(joinpath(inpath, tdr_genvar[i]), GVOutputData, header=NewGVColNames)
+        end
+        """
         GVColMap = Dict(RESOURCE_ZONES[i] => RESOURCES[i] for i in 1:length(myinputs["RESOURCES"]))
         GVColMap["Time_Index"] = "Time_Index"
         GVOutputData = GVOutputData[!, Symbol.(RESOURCE_ZONES)]
@@ -1149,15 +1210,23 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
         NewGVColNames = [GVColMap[string(c)] for c in names(GVOutputData)]
         if v println("Writing resource file...") end
         CSV.write(joinpath(inpath, GVar_Outfile), GVOutputData, header=NewGVColNames)
-        for i in 1:number_of_scenarios
-            tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
-            tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
-            tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
-        end
+        #CSV.write(joinpath(inpath, tdr_genvar[i]), GVOutputData, header=NewGVColNames)
 
         ### TDR_Results/Fuels_data.csv
-
-        fuel_in = load_dataframe(joinpath(inpath, "Fuels_data.csv"))
+        """
+        for i in 1:number_of_scenarios
+            fuel_in = load_dataframe(joinpath(inpath, "Fuels_data", "Fuels_data_scenario_$i.csv"))
+            select!(fuel_in, Not(:Time_Index))
+            SepFirstRow = DataFrame(fuel_in[1, :])
+            NewFuelOutput = vcat(SepFirstRow, FPOutputData)
+            rename!(NewFuelOutput, FuelCols)
+            insertcols!(NewFuelOutput, 1, :Time_Index => 0:size(NewFuelOutput,1)-1)
+            if v println("Writing fuel profiles...") end
+            #CSV.write(joinpath(inpath, Fuel_Outfile), NewFuelOutput)
+            CSV.write(joinpath(inpath, tdr_fuels[i]), NewFuelOutput)
+        end
+        """
+        fuel_in = load_dataframe(joinpath(inpath, "Fuels_data", "Fuels_data_scenario_$sc.csv"))
         select!(fuel_in, Not(:Time_Index))
         SepFirstRow = DataFrame(fuel_in[1, :])
         NewFuelOutput = vcat(SepFirstRow, FPOutputData)
@@ -1165,16 +1234,16 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sta
         insertcols!(NewFuelOutput, 1, :Time_Index => 0:size(NewFuelOutput,1)-1)
         if v println("Writing fuel profiles...") end
         CSV.write(joinpath(inpath, Fuel_Outfile), NewFuelOutput)
-        for i in 1:number_of_scenarios
-            tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
-            tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
-            tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
-        end
 
         ### TDR_Results/Period_map.csv
         if v println("Writing period map...") end
         CSV.write(joinpath(inpath, PMap_Outfile), PeriodMap)
 
+        """
+        for i in 1:number_of_scenarios
+            CSV.write(joinpath(inpath, tdr_period[i]), PeriodMap)
+        end
+        """
         ### TDR_Results/time_domain_reduction_settings.yml
         if v println("Writing .yml settings...") end
         YAML.write_file(joinpath(inpath, YAML_Outfile), myTDRsetup)

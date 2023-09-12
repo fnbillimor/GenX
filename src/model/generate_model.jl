@@ -215,8 +215,8 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 		maximum_capacity_requirement!(EP, inputs, setup)
 	end
 	###costs for the scenario.  I.e. it would sum generation varaible costs + capital costs + network investment costs + etc for each scenario.
-	@expression(EP, eMSC, sum(inputs["scenprob"][sc]*EP[:eSCS][sc] for sc in sc=1:S) ) #the mean system cost
-	@expression(EP, eCVARSC, vVAR + (1/setup["Alpha"])sum(inputs["scenprob"][sc]*EP[:vCVARaux][sc] for sc in sc=1:S) ) #the CVAR of system costs
+	@expression(EP, eMSC, sum(inputs["scenprob"][sc]*EP[:eSCS][sc] for sc in 1:SC) ) #the mean system cost
+	@expression(EP, eCVARSC, vVAR + (1/setup["Alpha"])sum(inputs["scenprob"][sc]*EP[:vCVARaux][sc] for sc in 1:SC) ) #the CVAR of system costs
 
 	## The objective function is defined as weighted combination of eMSC and eCVARSC
 	#@objective(EP,Min,EP[:eObj])

@@ -52,7 +52,9 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
         prevent_doubled_timedomainreduction(case)
         if !time_domain_reduced_files_exist(TDRpath, number_of_scenarios)
             println("Clustering Time Series Data (Grouped)...")
-            cluster_inputs(case, settings_path, mysetup, number_of_scenarios)
+            for sc in 1:number_of_scenarios
+                cluster_inputs(case, settings_path, mysetup, sc)
+            end
         else
             println("Time Series Data Already Clustered.")
         end

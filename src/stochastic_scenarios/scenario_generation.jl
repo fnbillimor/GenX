@@ -15,7 +15,7 @@ received this license file.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 function generate_scenarios(inpath::AbstractString, settings_path::AbstractString, mysetup, stage_id=-99, v=false)
-
+#=
 	for fuelscen in 1:FSC 
 		for genscen in 1:GSC 
 			for loadscen in 1:LSC 
@@ -26,4 +26,6 @@ function generate_scenarios(inpath::AbstractString, settings_path::AbstractStrin
 			end
 		end
 	end
+=#
+return 4
 end

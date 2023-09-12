@@ -20,6 +20,6 @@ function load_probability_distribution!(setup::Dict, path::AbstractString, input
 	inputs["scenprob"] = transpose(Matrix{Float64}(probability_distribution[1:inputs["T"],2:(inputs["SC"]+1)]))
 
     
-	println(filename " Successfully Read!")
+	println(filename, " Successfully Read!")
 
 end
