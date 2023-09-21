@@ -9,7 +9,8 @@ path - string path to working directory
 
 returns: Dict (dictionary) object containing all data inputs
 """
-function load_inputs(setup::Dict,path::AbstractString)
+function load_inputs!(setup::Dict,path::AbstractString, scenario_num::Int64, source_flag=false)
+	source_flag=true #flag to indicate which implementation of load_input calls the load_generators_data.jl
 
 	## Read input files
 	println("Reading Input CSV Files")
@@ -24,15 +25,15 @@ function load_inputs(setup::Dict,path::AbstractString)
 	end
 
 	# Read temporal-resolved load data, and clustering information if relevant
-	load_load_data!(setup, path, inputs)
+	load_load_data!(setup, path, inputs, scenario_num)
 	# Read fuel cost data, including time-varying fuel costs
-	cost_fuel, CO2_fuel = load_fuels_data!(setup, path, inputs)
+	load_fuels_data!(setup, path, inputs, scenario_num)
 	# Read in generator/resource related inputs
-	load_generators_data!(setup, path, inputs, cost_fuel, CO2_fuel)
+	load_generators_data!(setup, path, inputs, source_flag, scenario_num)
 	# Read in generator/resource availability profiles
-	load_generators_variability!(setup, path, inputs)
+	load_generators_variability!(setup, path, inputs, scenario_num)
 
-    	validatetimebasis(inputs)
+    	validatetimebasis(inputs, scenario_num)
 
 	if setup["CapacityReserveMargin"]==1
 		load_cap_reserve_margin!(setup, path, inputs)
@@ -63,8 +64,10 @@ function load_inputs(setup::Dict,path::AbstractString)
 	end
 
 	# Read in mapping of modeled periods to representative periods
-	if is_period_map_necessary(inputs) && is_period_map_exist(setup, path, inputs)
-		load_period_map!(setup, path, inputs)
+	for sc in 1:scenario_num
+		if is_period_map_necessary(inputs,sc) && is_period_map_exist(setup, path, inputs,sc)
+			load_period_map!(setup, path, inputs,sc)
+		end
 	end
 
 	println("CSV Files Successfully Read In From $path")
@@ -72,7 +75,7 @@ function load_inputs(setup::Dict,path::AbstractString)
 	return inputs
 end
 
-function load_inputs(setup::Dict,path::AbstractString, sc::Int64)
+function load_inputs!(setup::Dict,path::AbstractString, scenario_num::Int64, sc::Int64, source_flag=false)
 
 	## Read input files
 	println("Reading Input CSV Files")
@@ -87,15 +90,15 @@ function load_inputs(setup::Dict,path::AbstractString, sc::Int64)
 	end
 
 	# Read temporal-resolved load data, and clustering information if relevant
-	load_load_data!(setup, path, inputs, sc)
+	load_load_data!(setup, path, inputs, scenario_num, sc)
 	# Read fuel cost data, including time-varying fuel costs
-	cost_fuel, CO2_fuel = load_fuels_data!(setup, path, inputs, sc)
+	load_fuels_data!(setup, path, inputs, scenario_num, sc)
 	# Read in generator/resource related inputs
-	load_generators_data!(setup, path, inputs, cost_fuel, CO2_fuel)
+	load_generators_data!(setup, path, inputs, source_flag, scenario_num)
 	# Read in generator/resource availability profiles
-	load_generators_variability!(setup, path, inputs, sc)
+	load_generators_variability!(setup, path, inputs, scenario_num, sc)
 
-    	validatetimebasis(inputs, sc)
+    	validatetimebasis(inputs, scenario_num, sc)
 
 	if setup["CapacityReserveMargin"]==1
 		load_cap_reserve_margin!(setup, path, inputs)
@@ -126,7 +129,7 @@ function load_inputs(setup::Dict,path::AbstractString, sc::Int64)
 	end
 
 	# Read in mapping of modeled periods to representative periods
-	if is_period_map_necessary(inputs) && is_period_map_exist(setup, path, inputs)
+	if is_period_map_necessary(inputs, scenario_num) && is_period_map_exist(setup, path, inputs, scenario_num)
 		load_period_map!(setup, path, inputs)
 	end
 
@@ -136,16 +139,16 @@ function load_inputs(setup::Dict,path::AbstractString, sc::Int64)
 end
 
 
-function is_period_map_necessary(inputs::Dict)
-	multiple_rep_periods = inputs["REP_PERIOD"] > 1
+function is_period_map_necessary(inputs::Dict, sc::Int64)
+	multiple_rep_periods = inputs["REP_PERIOD_scenario_$sc"] > 1
 	has_stor_lds = !isempty(inputs["STOR_LONG_DURATION"])
 	has_hydro_lds = !isempty(inputs["STOR_HYDRO_LONG_DURATION"])
     	multiple_rep_periods && (has_stor_lds || has_hydro_lds)
 end
 
-function is_period_map_exist(setup::Dict, path::AbstractString, inputs::Dict)
-	filename = "Period_map.csv"
-	is_here = isfile(joinpath(path, filename))
-	is_in_folder = isfile(joinpath(path, setup["TimeDomainReductionFolder"], filename))
+function is_period_map_exist(setup::Dict, path::AbstractString, inputs::Dict, sc::Int64)
+	filename = "Period_map_scenario_$sc.csv"
+	is_here = isfile(joinpath(path, "Period_map", filename))
+	is_in_folder = isfile(joinpath(path, setup["TimeDomainReductionFolder"], "Period_map", filename))
 	is_here || is_in_folder
 end

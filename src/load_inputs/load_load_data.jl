@@ -3,14 +3,14 @@
 
 Read input parameters related to electricity load (demand)
 """
-function load_load_data!(setup::Dict, path::AbstractString, inputs::Dict)
+function load_load_data!(setup::Dict, path::AbstractString, inputs::Dict, scenario_num::Int64)
 
 	# Load related inputs
 	data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-        if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory)
-            my_dir = data_directory
+        if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory, scenario_num)
+            my_dir = joinpath(data_directory, "Load_data")
 	else
-            my_dir = path
+            my_dir = joinpath(path, "Load_data")
 	end
     	filename = "Load_data_scenario_*.csv"
 	load_files = glob(filename, my_dir)
@@ -53,7 +53,7 @@ function load_load_data!(setup::Dict, path::AbstractString, inputs::Dict)
 
 		# Demand in MW for each zone
 		#println(names(load_in))
-		start = findall(s -> s == "Load_MW_z1_scenario_1", names(load_in[i]))[1] #gets the starting column number of all the columns, with header "Load_MW_z1"
+		start = findall(s -> s == "Load_MW_z1", names(load_in[i]))[1] #gets the starting column number of all the columns, with header "Load_MW_z1"
     		scale_factor = setup["ParameterScale"] == 1 ? ModelScalingFactor : 1
     		# Max value of non-served energy
     		inputs["Voll_scenario_$i"] = as_vector(:Voll) / scale_factor # convert from $/MWh $ million/GWh (assuming objective is divided by 1000)
@@ -73,7 +73,7 @@ end
 # ensure that the length of load data exactly matches
 # the number of subperiods times their length
 # and that the number of subperiods equals the list of provided weights
-function validatetimebasis(inputs::Dict)
+function validatetimebasis(inputs::Dict, SC::Int64)
 	println("Validating time basis")
 	for i in 1:SC
 		demand_length = size(inputs["pD_scenario_$i"], 1)
@@ -82,8 +82,8 @@ function validatetimebasis(inputs::Dict)
 		typical_fuel = first(inputs["fuels_scenario_$i"])
 		fuel_costs_length = size(inputs["fuel_costs_scenario_$i"][typical_fuel], 1)
     
-	        T = inputs["T"]
-	        hours_per_subperiod = inputs["hours_per_subperio_scenario_$i"]
+	        T = inputs["T_scenario_$i"]
+	        hours_per_subperiod = inputs["hours_per_subperiod_scenario_$i"]
 	        number_of_representative_periods = inputs["REP_PERIOD_scenario_$i"]
 	        expected_length_1 = hours_per_subperiod * number_of_representative_periods
     
@@ -146,10 +146,10 @@ prevent_doubled_timedomainreduction(path::AbstractString)
 This function prevents TimeDomainReduction from running on a case which
 already has more than one Representative Period or has more than one Sub_Weight specified.
 """
-function prevent_doubled_timedomainreduction(path::AbstractString)
+function prevent_doubled_timedomainreduction(path::AbstractString, sc::Int64)
     
-	filename = "Load_data.csv"
-	load_in = load_dataframe(joinpath(path, filename))
+	filename = "Load_data_scenario_$sc.csv"
+	load_in = load_dataframe(joinpath(path, "Load_data", filename))
 	as_vector(col::Symbol) = collect(skipmissing(load_in[!, col]))
 	representative_periods = convert(Int16, as_vector(:Rep_Periods)[1])
 	sub_weights = as_vector(:Sub_Weights)
@@ -165,46 +165,45 @@ function prevent_doubled_timedomainreduction(path::AbstractString)
     
 end
 
-
-function load_load_data!(setup::Dict, path::AbstractString, inputs::Dict, sc::Int64)
+function load_load_data!(setup::Dict, path::AbstractString, inputs::Dict, scenario_num::Int64, sc::Int64)
 
 	# Load related inputs
 	data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-    if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory)
-        my_dir = data_directory
+    	if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory, scenario_num)
+        	my_dir = joinpath(data_directory, "Load_data")
 	else
-        my_dir = path
+        	my_dir = joinpath(path, "Load_data")
 	end
-    filename = "Load_data.csv"
-    load_in = load_dataframe(joinpath(my_dir, filename))
+    	filename = "Load_data_scenario_$sc.csv"
+    	load_in = load_dataframe(joinpath(my_dir, filename))
 
-    as_vector(col::Symbol) = collect(skipmissing(load_in[!, col]))
+    	as_vector(col::Symbol) = collect(skipmissing(load_in[!, col]))
 
 	# Number of time steps (periods)
-    T = length(as_vector(:Time_Index))
+    	T = length(as_vector(:Time_Index))
 	# Number of demand curtailment/lost load segments
-    SEG = length(as_vector(:Demand_Segment))
+    	SEG = length(as_vector(:Demand_Segment))
 
 	## Set indices for internal use
-    inputs["T"] = T
-    inputs["SEG"] = SEG
+    	inputs["T"] = T
+    	inputs["SEG"] = SEG
 	Z = inputs["Z"]   # Number of zones
 
 	inputs["omega"] = zeros(Float64, T) # weights associated with operational sub-period in the model - sum of weight = 8760
-    # Weights for each period - assumed same weights for each sub-period within a period
-    inputs["Weights"] = as_vector(:Sub_Weights) # Weights each period
+    	# Weights for each period - assumed same weights for each sub-period within a period
+    	inputs["Weights"] = as_vector(:Sub_Weights) # Weights each period
 
-    # Total number of periods and subperiods
-    inputs["REP_PERIOD"] = convert(Int16, as_vector(:Rep_Periods)[1])
-    inputs["H"] = convert(Int64, as_vector(:Timesteps_per_Rep_Period)[1])
+    	# Total number of periods and subperiods
+    	inputs["REP_PERIOD"] = convert(Int16, as_vector(:Rep_Periods)[1])
+    	inputs["H"] = convert(Int64, as_vector(:Timesteps_per_Rep_Period)[1])
 
-    # Creating sub-period weights from weekly weights
-    for w in 1:inputs["REP_PERIOD"]
-        for h in 1:inputs["H"]
-            t = inputs["H"]*(w-1)+h
-            inputs["omega"][t] = inputs["Weights"][w]/inputs["H"]
-        end
-    end
+    	# Creating sub-period weights from weekly weights
+    	for w in 1:inputs["REP_PERIOD"]
+        	for h in 1:inputs["H"]
+            		t = inputs["H"]*(w-1)+h
+            		inputs["omega"][t] = inputs["Weights"][w]/inputs["H"]
+        	end
+    	end
 
 	# Create time set steps indicies
 	inputs["hours_per_subperiod"] = div.(T,inputs["REP_PERIOD"]) # total number of hours per subperiod
@@ -216,17 +215,17 @@ function load_load_data!(setup::Dict, path::AbstractString, inputs::Dict, sc::In
 	# Demand in MW for each zone
 	#println(names(load_in))
 	start = findall(s -> s == "Load_MW_z1", names(load_in))[1] #gets the starting column number of all the columns, with header "Load_MW_z1"
-    scale_factor = setup["ParameterScale"] == 1 ? ModelScalingFactor : 1
-    # Max value of non-served energy
-    inputs["Voll"] = as_vector(:Voll) / scale_factor # convert from $/MWh $ million/GWh (assuming objective is divided by 1000)
-    # Demand in MW
-    inputs["pD"] =Matrix(load_in[1:T, start:start+Z-1]) / scale_factor  # convert to GW
+    	scale_factor = setup["ParameterScale"] == 1 ? ModelScalingFactor : 1
+    	# Max value of non-served energy
+    	inputs["Voll"] = as_vector(:Voll) / scale_factor # convert from $/MWh $ million/GWh (assuming objective is divided by 1000)
+    	# Demand in MW
+    	inputs["pD"] =Matrix(load_in[1:T, start:start+Z-1]) / scale_factor  # convert to GW
 
 	# Cost of non-served energy/demand curtailment
-    # Cost of each segment reported as a fraction of value of non-served energy - scaled implicitly
-    inputs["pC_D_Curtail"] = as_vector(:Cost_of_Demand_Curtailment_per_MW) * inputs["Voll"][1]
-    # Maximum hourly demand curtailable as % of the max demand (for each segment)
-    inputs["pMax_D_Curtail"] = as_vector(:Max_Demand_Curtailment)
+    	# Cost of each segment reported as a fraction of value of non-served energy - scaled implicitly
+    	inputs["pC_D_Curtail"] = as_vector(:Cost_of_Demand_Curtailment_per_MW) * inputs["Voll"][1]
+    	# Maximum hourly demand curtailable as % of the max demand (for each segment)
+    	inputs["pMax_D_Curtail"] = as_vector(:Max_Demand_Curtailment)
 
 	println(filename * " Successfully Read!")
 end
@@ -234,7 +233,7 @@ end
 # ensure that the length of load data exactly matches
 # the number of subperiods times their length
 # and that the number of subperiods equals the list of provided weights
-function validatetimebasis(inputs::Dict, sc::Int64)
+function validatetimebasis(inputs::Dict, SC::Int64, sc::Int64)
     println("Validating time basis")
     demand_length = size(inputs["pD"], 1)
     generators_variability_length = size(inputs["pP_Max"], 2)

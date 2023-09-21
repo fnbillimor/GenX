@@ -3,14 +3,14 @@
 
 Read input parameters related to fuel costs and CO$_2$ content of fuels
 """
-function load_fuels_data!(setup::Dict, path::AbstractString, inputs::Dict)
+function load_fuels_data!(setup::Dict, path::AbstractString, inputs::Dict, scenario_num::Int64)
 
 	# Fuel related inputs - read in different files depending on if time domain reduction is activated or not
 	data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-	if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory)
-		my_dir = data_directory
+	if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory, scenario_num)
+		my_dir = joinpath(data_directory, "Fuels_data")
 	else
-		my_dir = path
+		my_dir = joinpath(path, "Fuels_data")
 	end
 	filename = "Fuels_data_scenario_*.csv"
 	fuels_files = glob(filename, my_dir)
@@ -44,22 +44,21 @@ function load_fuels_data!(setup::Dict, path::AbstractString, inputs::Dict)
 	    	inputs["fuel_costs_scenario_$i"] = fuel_costs
 	    	inputs["fuel_CO2_scenario_$i"] = fuel_CO2
 	
-	    	println(filename * " Successfully Read!")
-	
-	    	return fuel_costs, fuel_CO2
+	    	#return fuel_costs, fuel_CO2
 	end
+	println(filename * " Successfully Read!")
 end
 
-function load_fuels_data!(setup::Dict, path::AbstractString, inputs::Dict, sc::Int64)
+function load_fuels_data!(setup::Dict, path::AbstractString, inputs::Dict, scenario_num::Int64, sc::Int64)
 
 	# Fuel related inputs - read in different files depending on if time domain reduction is activated or not
 	data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-	if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory)
-	    my_dir = data_directory
+	if setup["TimeDomainReduction"] == 1  && time_domain_reduced_files_exist(data_directory, scenario_num)
+		my_dir = joinpath(data_directory, "Fuels_data")
 	else
-	    my_dir = path
+		my_dir = joinpath(path, "Fuels_data")
 	end
-	filename = "Fuels_data.csv"
+	filename = "Fuels_data_scenario_$sc.csv"
 	fuels_in = load_dataframe(joinpath(my_dir, filename))
     
 	existing_fuels = names(fuels_in)
@@ -90,7 +89,7 @@ function load_fuels_data!(setup::Dict, path::AbstractString, inputs::Dict, sc::I
     
 	println(filename * " Successfully Read!")
     
-	return fuel_costs, fuel_CO2
+	#return fuel_costs, fuel_CO2
     end
     
 	

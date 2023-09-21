@@ -515,7 +515,7 @@ In Load_data.csv, include the following:
      the first stage and will apply the periods of each other model stage to this set
      of representative periods by closest Eucliden distance.
 """
-function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=false)
+function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sc, stage_id=-99, v=false)
     if v println(now()) end
 
     ##### Step 0: Load in settings and data
@@ -539,6 +539,10 @@ function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=fals
     WeightTotal = myTDRsetup["WeightTotal"]
     ClusterFuelPrices = myTDRsetup["ClusterFuelPrices"]
     TimeDomainReductionFolder = mysetup["TimeDomainReductionFolder"]
+    #TimeDomainReductionLoadFolder = mysetup["TimeDomainReductionLoadFolder"]
+    #TimeDomainReductionGenFolder = mysetup["TimeDomainReductionGenFolder"]
+    #TimeDomainReductionFuelFolder = mysetup["TimeDomainReductionFuelFolder"]
+    #TimeDomainReductionMapFolder = mysetup["TimeDomainReductionMapFolder"]
 
     MultiStage = mysetup["MultiStage"]
     if MultiStage == 1
@@ -555,7 +559,12 @@ function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=fals
         #tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
         #tdr_period[i] = joinpath(TimeDomainReductionFolder,"Period_map", "Period_map_scenario_$i.csv")
     #end
-    
+   
+    mkpath(joinpath(inpath, TimeDomainReductionFolder, "Load_data")) 
+    mkpath(joinpath(inpath, TimeDomainReductionFolder, "Generators_variability"))
+    mkpath(joinpath(inpath, TimeDomainReductionFolder, "Fuels_data"))
+    mkpath(joinpath(inpath, TimeDomainReductionFolder, "Period_map"))
+   
     Load_Outfile = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$sc.csv")
     GVar_Outfile = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$sc.csv")
     Fuel_Outfile = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$sc.csv")
@@ -588,7 +597,7 @@ function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=fals
             # the first, even if the first stage is okay.
             prevent_doubled_timedomainreduction(inpath_sub)
 
-        	inputs_dict[t] = load_inputs(mysetup_MS, inpath_sub)
+        	inputs_dict[t] = load_inputs!(mysetup_MS, inpath_sub)
 
         	inputs_dict[t] = configure_multi_stage_inputs(inputs_dict[t],mysetup["MultiStageSettingsDict"],mysetup["NetworkExpansion"])
         end
@@ -617,7 +626,7 @@ function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=fals
         end
     else
         if v println("Not MultiStage") end
-        myinputs = load_inputs(mysetup_local,inpath,sc)
+        myinputs = load_inputs!(mysetup_local,inpath,number_of_scenarios,sc)
         RESOURCE_ZONES = myinputs["RESOURCE_ZONES"]
         RESOURCES = myinputs["RESOURCES"]
         ZONES = myinputs["R_ZONES"]
@@ -1109,7 +1118,7 @@ function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=fals
             CSV.write(joinpath(inpath,"Inputs",input_stage_directory,GVar_Outfile), GVOutputData, header=NewGVColNames)
             """
             for i in 1:number_of_scenarios
-                tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
+                tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_i.csv")
             end
             """
             tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$sc.csv")
@@ -1126,7 +1135,7 @@ function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=fals
             CSV.write(joinpath(inpath,"Inputs",input_stage_directory,Fuel_Outfile), NewFuelOutput)
             """
             for i in 1:number_of_scenarios
-                tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
+                tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_i.csv")
             end
             """
             tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$sc.csv")
@@ -1145,7 +1154,7 @@ function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=fals
         """
         for i in 1:number_of_scenarios
             ### TDR_Results/Load_data.csv
-            load_in = load_dataframe(joinpath(inpath, "Load_data", "Load_data_scenario_$i.csv"))
+            load_in = load_dataframe(joinpath(inpath, "Load_data", "Load_data_scenario_i.csv"))
             load_in[!,:Sub_Weights] = load_in[!,:Sub_Weights] * 1.
             load_in[1:length(W),:Sub_Weights] .= W
             load_in[!,:Rep_Periods][1] = length(W)
@@ -1215,7 +1224,7 @@ function cluster_inputs(inpath, settings_path, mysetup, sc, stage_id=-99, v=fals
         ### TDR_Results/Fuels_data.csv
         """
         for i in 1:number_of_scenarios
-            fuel_in = load_dataframe(joinpath(inpath, "Fuels_data", "Fuels_data_scenario_$i.csv"))
+            fuel_in = load_dataframe(joinpath(inpath, "Fuels_data", "Fuels_data_scenario_i.csv"))
             select!(fuel_in, Not(:Time_Index))
             SepFirstRow = DataFrame(fuel_in[1, :])
             NewFuelOutput = vcat(SepFirstRow, FPOutputData)

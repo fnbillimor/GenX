@@ -71,11 +71,11 @@ The power balance constraint of the model ensures that electricity demand is met
 ## returns: Model EP object containing the entire optimization problem model to be solved by SolveModel.jl
 ##
 ################################################################################
-function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAttributes)
+function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAttributes, number_of_scenarios::Int64)
 
-	T = inputs["T"]     # Number of time steps (hours)
+	T = inputs["T_scenario_1"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
-	SC = inputs["SC"]   # Number of scenarios
+	SC = number_of_scenarios   # Number of scenarios
 
 	## Start pre-solve timer
 	presolver_start_time = time()
@@ -113,7 +113,7 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 
 	# Energy Share Requirement
 	if setup["EnergyShareRequirement"] >= 1
-		@expression(EP, eESR[ESR=1:inputs["nESR"]], 0)
+		@expression(EP, eESR[ESR=1:inputs["nESR"]][sc=1:SC], 0)
 	end
 
 	if setup["MinCapReq"] == 1
@@ -125,17 +125,17 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	end
 
 	# Infrastructure
-	discharge!(EP, inputs, setup)
+	discharge!(EP, inputs, setup, number_of_scenarios)
 
-	non_served_energy!(EP, inputs, setup)
+	non_served_energy!(EP, inputs, setup, number_of_scenarios)
 
 	investment_discharge!(EP, inputs, setup)
 
 	if setup["UCommit"] > 0
-		ucommit!(EP, inputs, setup)
+		ucommit!(EP, inputs, setup, number_of_scenarios)
 	end
 
-	emissions!(EP, inputs)
+	emissions!(EP, inputs, number_of_scenarios)
 
 	if setup["Reserves"] > 0
 		reserves!(EP, inputs, setup)
@@ -149,7 +149,7 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	# Model constraints, variables, expression related to dispatchable renewable resources
 
 	if !isempty(inputs["VRE"])
-		curtailable_variable_renewable!(EP, inputs, setup)
+		curtailable_variable_renewable!(EP, inputs, setup, number_of_scenarios)
 	end
 
 	# Model constraints, variables, expression related to non-dispatchable renewable resources

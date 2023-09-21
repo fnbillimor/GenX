@@ -40,14 +40,14 @@ Additionally, total demand curtailed in each time step and in each scenario cann
 \end{aligned}
 ```
 """
-function non_served_energy!(EP::Model, inputs::Dict, setup::Dict)
+function non_served_energy!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int64)
 
 	println("Non-served Energy Module")
 
-	T = inputs["T"]     # Number of time steps
+	T = inputs["T_scenario_1"]     # Number of time steps
 	Z = inputs["Z"]     # Number of zones
-	SEG = inputs["SEG"] # Number of load curtailment segments
-	SC = inputs["SC"]   # Number of scenarios
+	SEG = inputs["SEG_scenario_1"] # Number of load curtailment segments
+	SC = number_of_scenarios  # Number of scenarios
 	### Variables ###
 
 	# Non-served energy/curtailed demand in the segment "s" at hour "t" in zone "z" in scenario "sc"
@@ -58,7 +58,7 @@ function non_served_energy!(EP::Model, inputs::Dict, setup::Dict)
 	## Objective Function Expressions ##
 
 	# Cost of non-served energy/curtailed demand at hour "t" in zone "z" in scenario "sc"
-	@expression(EP, eCNSE[s=1:SEG,t=1:T,z=1:Z,sc=1:SC], (#=inputs["scenprob"][sc]*=#inputs["omega"][t,sc]*inputs["pC_D_Curtail"][s]*vNSE[s,t,z,sc]))
+	@expression(EP, eCNSE[s=1:SEG,t=1:T,z=1:Z,sc=1:SC], (inputs["omega_scenario_$sc"][t]*inputs["pC_D_Curtail_scenario_$sc"][s]*vNSE[s,t,z,sc]))
 
 	# Sum individual demand segment contributions to non-served energy costs to get total non-served energy costs
 	# Julia is fastest when summing over one row one column at a time
@@ -66,9 +66,7 @@ function non_served_energy!(EP::Model, inputs::Dict, setup::Dict)
 	@expression(EP, eTotalCNSET[t=1:T,sc in 1:SC], sum(eTotalCNSETS[t,z,sc] for z in 1:Z))
 	@expression(EP, eTotalCNSE[sc in 1:SC], sum(eTotalCNSET[t,sc] for t in 1:T))
 
- 	for sc in 1:SC		
- 		EP[:eSCS][sc] += eTotalCNSE[sc]
- 	end
+ 	EP[:eSCS] += eTotalCNSE
 
 	# Add total cost contribution of non-served energy/curtailed demand to the objective function
 	#EP[:eObj] += eTotalCNSE
@@ -91,9 +89,9 @@ function non_served_energy!(EP::Model, inputs::Dict, setup::Dict)
 	### Constratints ###
 
 	# Demand curtailed in each segment of curtailable demands cannot exceed maximum allowable share of demand
-	@constraint(EP, cNSEPerSeg[s=1:SEG, t=1:T, z=1:Z, sc=1:SC], vNSE[s,t,z,sc] <= inputs["pMax_D_Curtail"][s]*inputs["pD"][t,z,sc])
+	@constraint(EP, cNSEPerSeg[s=1:SEG, t=1:T, z=1:Z, sc=1:SC], vNSE[s,t,z,sc] <= inputs["pMax_D_Curtail_scenario_$sc"][s]*inputs["pD_scenario_$sc"][t,z])
 
 	# Total demand curtailed in each time step (hourly) cannot exceed total demand
-	@constraint(EP, cMaxNSE[t=1:T, z=1:Z, sc=1:SC], sum(vNSE[s,t,z,sc] for s=1:SEG) <= inputs["pD"][t,z,sc])
+	@constraint(EP, cMaxNSE[t=1:T, z=1:Z, sc=1:SC], sum(vNSE[s,t,z,sc] for s=1:SEG) <= inputs["pD_scenario_$sc"][t,z])
 
 end

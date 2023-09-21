@@ -21,7 +21,7 @@ power output for each VRE resource type in each zone is given by the following e
 The above constraint is defined as an inequality instead of an equality to allow for VRE power output to be curtailed if desired. This adds the possibility of introducing VRE curtailment as an extra degree of freedom to guarantee that generation exactly meets demand in each time step.
 Note that if ```Reserves=1``` indicating that frequency regulation and operating reserves are modeled, then this function calls ```curtailable_variable_renewable_reserves!()```, which replaces the above constraints with a formulation inclusive of reserve provision.
 """
-function curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict)
+function curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int64)
 	## Controllable variable renewable generators
 	### Option of modeling VRE generators with multiple availability profiles and capacity limits -  Num_VRE_Bins in Generators_data.csv  >1
 	## Default value of Num_VRE_Bins ==1
@@ -32,10 +32,10 @@ function curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict)
 	Reserves = setup["Reserves"]
 	CapacityReserveMargin = setup["CapacityReserveMargin"]
 
-	T = inputs["T"]     # Number of time steps (hours)
+	T = inputs["T_scenario_1"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
 	G = inputs["G"] 	# Number of generators
-	SC = inputs["SC"]   # Number of scenarios
+	SC = number_of_scenarios   # Number of scenarios
 	VRE = inputs["VRE"]
 
 	VRE_POWER_OUT = intersect(dfGen[dfGen.Num_VRE_Bins.>=1,:R_ID], VRE)
@@ -52,7 +52,7 @@ function curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict)
 
 	# Capacity Reserves Margin policy
 	if CapacityReserveMargin > 0
-		@expression(EP, eCapResMarBalanceVRE[res=1:inputs["NCapacityReserveMargin"], t=1:T, sc=1:SC], sum(dfGen[y,Symbol("CapRes_$res")] * EP[:eTotalCap][y] * inputs["pP_Max"][y,t,sc]  for y in VRE))
+		@expression(EP, eCapResMarBalanceVRE[res=1:inputs["NCapacityReserveMargin"], t=1:T, sc=1:SC], sum(dfGen[y,Symbol("CapRes_$res")] * EP[:eTotalCap][y] * inputs["pP_Max_scenario_$sc"][y,t]  for y in VRE))
 		EP[:eCapResMarBalance] += eCapResMarBalanceVRE
 	end
 
@@ -65,12 +65,12 @@ function curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict)
 
 		# Constraints on contribution to regulation and reserves
 		if Reserves == 1
-			curtailable_variable_renewable_reserves!(EP, inputs)
+			curtailable_variable_renewable_reserves!(EP, inputs, number_of_scenarios)
 		else
 			# Maximum power generated per hour by renewable generators must be less than
 			# sum of product of hourly capacity factor for each bin times its the bin installed capacity
 			# Note: inequality constraint allows curtailment of output below maximum level.
-			@constraint(EP, [t=1:T,sc=1:SC], EP[:vP][y,t,sc] <= sum(inputs["pP_Max"][yy,t,sc]*EP[:eTotalCap][yy] for yy in VRE_BINS))
+			@constraint(EP, [t=1:T,sc=1:SC], EP[:vP][y,t,sc] <= sum(inputs["pP_Max_scenario_$sc"][yy,t]*EP[:eTotalCap][yy] for yy in VRE_BINS))
 		end
 
 	end
@@ -86,11 +86,11 @@ function curtailable_variable_renewable!(EP::Model, inputs::Dict, setup::Dict)
 	EP[:eGenerationByZone] += eGenerationByVRE
 end
 
-function curtailable_variable_renewable_reserves!(EP::Model, inputs::Dict)
+function curtailable_variable_renewable_reserves!(EP::Model, inputs::Dict, number_of_scenarios::Int64)
 
 	dfGen = inputs["dfGen"]
-	T = inputs["T"]
-	SC = inputs["SC"]   # Number of scenarios
+	T = inputs["T_scenario_1"]
+	SC = number_of_scenarios   # Number of scenarios
 	VRE_POWER_OUT = intersect(dfGen[dfGen.Num_VRE_Bins.>=1,:R_ID], inputs["VRE"])
 
 	for y in VRE_POWER_OUT
@@ -101,44 +101,45 @@ function curtailable_variable_renewable_reserves!(EP::Model, inputs::Dict)
 		if y in inputs["REG"] && y in inputs["RSV"] # Resource eligible for regulation and spinning reserves
 			@constraints(EP, begin
 				# For VRE, reserve contributions must be less than the specified percentage of the capacity factor for the hour
-				[t=1:T,sc=1:SC], EP[:vREG][y,t,sc] <= dfGen[y,:Reg_Max]*sum(inputs["pP_Max"][yy,t,sc]*EP[:eTotalCap][yy] for yy in VRE_BINS)
-				[t=1:T,sc=1:SC], EP[:vRSV][y,t,sc] <= dfGen[y,:Rsv_Max]*sum(inputs["pP_Max"][yy,t,sc]*EP[:eTotalCap][yy] for yy in VRE_BINS)
+				[t=1:T,sc=1:SC], EP[:vREG][y,t,sc] <= dfGen[y,:Reg_Max]*sum(inputs["pP_Max_scenario_$sc"][yy,t]*EP[:eTotalCap][yy] for yy in VRE_BINS)
+				[t=1:T,sc=1:SC], EP[:vRSV][y,t,sc] <= dfGen[y,:Rsv_Max]*sum(inputs["pP_Max_scenario_$sc"][yy,t]*EP[:eTotalCap][yy] for yy in VRE_BINS)
 
 				# Power generated and regulation reserve contributions down per hour must be greater than zero
 				[t=1:T,sc=1:SC], EP[:vP][y,t,sc]-EP[:vREG][y,t,sc] >= 0
 
 				# Power generated and reserve contributions up per hour by renewable generators must be less than
 				# hourly capacity factor. Note: inequality constraint allows curtailment of output below maximum level.
-				[t=1:T,sc=1:SC], EP[:vP][y,t,sc]+EP[:vREG][y,t,sc]+EP[:vRSV][y,t,sc] <= sum(inputs["pP_Max"][yy,t,sc]*EP[:eTotalCap][yy] for yy in VRE_BINS)
+				[t=1:T,sc=1:SC], EP[:vP][y,t,sc]+EP[:vREG][y,t,sc]+EP[:vRSV][y,t,sc] <= sum(inputs["pP_Max_scenario_$sc"][yy,t]*EP[:eTotalCap][yy] for yy in VRE_BINS)
 			end)
+		
 		elseif y in inputs["REG"] # Resource only eligible for regulation reserves
 			@constraints(EP, begin
 				# For VRE, reserve contributions must be less than the specified percentage of the capacity factor for the hour
-				[t=1:T,sc=1:SC], EP[:vREG][y,t,sc] <= dfGen[y,:Reg_Max]*sum(inputs["pP_Max"][yy,t,sc]*EP[:eTotalCap][yy] for yy in VRE_BINS)
+				[t=1:T,sc=1:SC], EP[:vREG][y,t,sc] <= dfGen[y,:Reg_Max]*sum(inputs["pP_Max_scenario_$sc"][yy,t]*EP[:eTotalCap][yy] for yy in VRE_BINS)
 
 				# Power generated and regulation reserve contributions down per hour must be greater than zero
 				[t=1:T,sc=1:SC], EP[:vP][y,t,sc]-EP[:vREG][y,t,sc] >= 0
 
 				# Power generated and reserve contributions up per hour by renewable generators must be less than
 				# hourly capacity factor. Note: inequality constraint allows curtailment of output below maximum level.
-				[t=1:T.sc=1:SC], EP[:vP][y,t,sc]+EP[:vREG][y,t,sc] <= sum(inputs["pP_Max"][yy,t,sc]*EP[:eTotalCap][yy] for yy in VRE_BINS)
+				[t=1:T,sc=1:SC], EP[:vP][y,t,sc]+EP[:vREG][y,t,sc] <= sum(inputs["pP_Max_scenario_$sc"][yy,t]*EP[:eTotalCap][yy] for yy in VRE_BINS)
 			end)
-
+		
 		elseif y in inputs["RSV"] # Resource only eligible for spinning reserves - only available in up, no down spinning reserves
 
 			@constraints(EP, begin
 				# For VRE, reserve contributions must be less than the specified percentage of the capacity factor for the hour
-				[t=1:T,sc=1:SC], EP[:vRSV][y,t,sc] <= dfGen[y,:Rsv_Max]*sum(inputs["pP_Max"][yy,t,sc]*EP[:eTotalCap][yy] for yy in VRE_BINS)
+				[t=1:T,sc=1:SC], EP[:vRSV][y,t,sc] <= dfGen[y,:Rsv_Max]*sum(inputs["pP_Max_scenario_$sc"][yy,t]*EP[:eTotalCap][yy] for yy in VRE_BINS)
 
 				# Power generated and reserve contributions up per hour by renewable generators must be less than
 				# hourly capacity factor. Note: inequality constraint allows curtailment of output below maximum level.
-				[t=1:T,sc=1:SC], EP[:vP][y,t,sc]+EP[:vRSV][y,t,sc] <= sum(inputs["pP_Max"][yy,t,sc]*EP[:eTotalCap][yy] for yy in VRE_BINS)
+				[t=1:T,sc=1:SC], EP[:vP][y,t,sc]+EP[:vRSV][y,t,sc] <= sum(inputs["pP_Max_scenario_$sc"][yy,t]*EP[:eTotalCap][yy] for yy in VRE_BINS)
 			end)
 		else # Resource not eligible for reserves
 			# Maximum power generated per hour by renewable generators must be less than
 			# sum of product of hourly capacity factor for each bin times its the bin installed capacity
 			# Note: inequality constraint allows curtailment of output below maximum level.
-			@constraint(EP, [t=1:T,sc=1:SC], EP[:vP][y,t,sc] <= sum(inputs["pP_Max"][yy,t,sc]*EP[:eTotalCap][yy] for yy in VRE_BINS))
+			@constraint(EP, [t=1:T,sc=1:SC], EP[:vP][y,t,sc] <= sum(inputs["pP_Max_scenario_$sc"][yy,t]*EP[:eTotalCap][yy] for yy in VRE_BINS))
 		end
 	end
 

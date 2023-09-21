@@ -49,11 +49,13 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
     TDRpath = joinpath(case, mysetup["TimeDomainReductionFolder"])
 
     if mysetup["TimeDomainReduction"] == 1
-        prevent_doubled_timedomainreduction(case)
+        for sc in 1:number_of_scenarios
+            prevent_doubled_timedomainreduction(case, sc)
+        end
         if !time_domain_reduced_files_exist(TDRpath, number_of_scenarios)
             println("Clustering Time Series Data (Grouped)...")
             for sc in 1:number_of_scenarios
-                cluster_inputs(case, settings_path, mysetup, sc)
+                cluster_inputs(case, settings_path, mysetup, number_of_scenarios, sc)
             end
         else
             println("Time Series Data Already Clustered.")
@@ -68,10 +70,10 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
 
     ### Load inputs
     println("Loading Inputs")
-    myinputs = load_inputs(mysetup, case)
+    myinputs = load_inputs!(mysetup, case, number_of_scenarios)
 
     println("Generating the Optimization Model")
-    time_elapsed = @elapsed EP = generate_model(mysetup, myinputs, OPTIMIZER)
+    time_elapsed = @elapsed EP = generate_model(mysetup, myinputs, OPTIMIZER, number_of_scenarios)
     println("Time elapsed for model building is")
     println(time_elapsed)
 
@@ -109,7 +111,9 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
     first_stage_path = joinpath(case, "Inputs", "Inputs_p1")
     TDRpath = joinpath(first_stage_path, mysetup["TimeDomainReductionFolder"])
     if mysetup["TimeDomainReduction"] == 1
-        prevent_doubled_timedomainreduction(first_stage_path)
+        for sc in 1:number_of_scenarios
+            prevent_doubled_timedomainreduction(first_stage_path, sc)
+        end
         if !time_domain_reduced_files_exist(TDRpath, number_of_scenarios)
             if (mysetup["MultiStage"] == 1) && (TDRSettingsDict["MultiStageConcatenate"] == 0)
                 println("Clustering Time Series Data (Individually)...")
@@ -140,7 +144,7 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
         # Step 1) Load Inputs
         inpath_sub = joinpath(case, "Inputs", string("Inputs_p",t))
 
-        inputs_dict[t] = load_inputs(mysetup, inpath_sub)
+        inputs_dict[t] = load_inputs!(mysetup, inpath_sub)
         inputs_dict[t] = configure_multi_stage_inputs(inputs_dict[t],mysetup["MultiStageSettingsDict"],mysetup["NetworkExpansion"])
 
         # Step 2) Generate model

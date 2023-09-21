@@ -13,6 +13,7 @@ export mga
 export morris
 export simple_operation
 export choose_output_dir
+export generate_scenarios
 
 # Multi-stage methods
 export run_ddp
@@ -32,6 +33,7 @@ using Dates
 using Clustering
 using Distances
 using Combinatorics
+using Glob
 
 using Random
 using RecursiveArrayTools
@@ -67,6 +69,7 @@ function include_all_in_folder(folder)
 end
 
 include_all_in_folder("case_runners")
+include_all_in_folder("stochastic_scenarios")
 include_all_in_folder("configure_settings")
 include_all_in_folder("configure_solver")
 include_all_in_folder("load_inputs")

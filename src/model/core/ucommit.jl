@@ -22,17 +22,17 @@ The total cost of start-ups across all generators subject to unit commitment ($y
 
 The sum of start-up costs is added to the objective function.
 """
-function ucommit!(EP::Model, inputs::Dict, setup::Dict)
+function ucommit!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int64)
 
 	println("Unit Commitment Module")
 
 	dfGen = inputs["dfGen"]
 
 	G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
-	T = inputs["T"]     # Number of time steps (hours)
+	T = inputs["T_scenario_1"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
 	COMMIT = inputs["COMMIT"] # For not, thermal resources are the only ones eligible for Unit Committment
-	SC = inputs["SC"]   # Number of scenarios
+	SC = number_of_scenarios  # Number of scenarios
 	### Variables ###
 
 	## Decision variables for unit commitment
@@ -48,7 +48,7 @@ function ucommit!(EP::Model, inputs::Dict, setup::Dict)
 	## Objective Function Expressions ##
 
 	# Startup costs of "generation" for resource "y" during hour "t"
-	@expression(EP, eCStart[y in COMMIT, t=1:T, sc=1:SC],(inputs["omega"][t,sc]*inputs["C_Start"][y,t,sc]*vSTART[y,t,sc]))
+	@expression(EP, eCStart[y in COMMIT, t=1:T, sc=1:SC],(inputs["omega_scenario_$sc"][t]*inputs["C_Start"][y,t]*vSTART[y,t,sc]))
 
 	# Julia is fastest when summing over one row one column at a time
 	@expression(EP, eTotalCStartT[t=1:T, sc=1:SC], sum(eCStart[y,t,sc] for y in COMMIT))

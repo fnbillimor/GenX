@@ -3,16 +3,16 @@
 
 This function creates expression to add the CO2 emissions by plants in each zone, which is subsequently added to the total emissions
 """
-function emissions!(EP::Model, inputs::Dict)
+function emissions!(EP::Model, inputs::Dict, number_of_scenarios::Int64)
 
 	println("Emissions Module (for CO2 Policy modularization)")
 
 	dfGen = inputs["dfGen"]
 
 	G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
-	T = inputs["T"]     # Number of time steps (hours)
+	T = inputs["T_scenario_1"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
-	SC = inputs["SC"]   # Number of scenarios
+	SC = number_of_scenarios # Number of scenarios
 	@expression(EP, eEmissionsByPlant[y=1:G,t=1:T, sc=1:SC],
 
 		if y in inputs["COMMIT"]

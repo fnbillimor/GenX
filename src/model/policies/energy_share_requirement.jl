@@ -27,8 +27,6 @@ function energy_share_requirement!(EP::Model, inputs::Dict, setup::Dict)
 		@expression(EP, eCTotalESRSlack[sc=1:SC], sum(EP[:eCESRSlack][ESR,sc] for ESR = 1:inputs["nESR"]))
 
 		#EP[:eObj] += eCTotalESRSlack
-		for sc in 1:SC
-			EP[:eSCS][sc] += eCTotalESRSlack[sc]
-		end
+		EP[:eSCS] += eCTotalESRSlack
 	end
 end
