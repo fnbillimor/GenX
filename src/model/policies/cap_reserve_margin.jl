@@ -26,15 +26,15 @@ the shadow prices of this constraint corresponds to the capacity market payments
 ```
 Note that multiple capacity reserve margin requirements can be specified covering different individual zones or aggregations of zones, where the total number of constraints is specified by the GenX settings parameter ```CapacityReserveMargin``` (where this parameter should be an integer value > 0).
 """
-function cap_reserve_margin!(EP::Model, inputs::Dict, setup::Dict)
+function cap_reserve_margin!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int64)
 	# capacity reserve margin constraint
-	T = inputs["T"]
+	T = inputs["T_scenario_1"]
 	NCRM = inputs["NCapacityReserveMargin"]
-	SC=inputs["SC"]
+	SC= number_of_scenarios 
 	println("Capacity Reserve Margin Policies Module")
 
 	@constraint(EP, cCapacityResMargin[res=1:NCRM,t=1:T,sc=1:SC], EP[:eCapResMarBalance][res,t,sc]
-				>= sum(inputs["pD"][t,z,sc] * (1 + inputs["dfCapRes"][z,res])
+				>= sum(inputs["pD_scenario_$sc"][t,z] * (1 + inputs["dfCapRes"][z,res])
 				for z=findall(x->x!=0,inputs["dfCapRes"][:,res])))
 
 	# if input files are present, add capacity reserve margin slack variables
@@ -42,12 +42,10 @@ function cap_reserve_margin!(EP::Model, inputs::Dict, setup::Dict)
 		@variable(EP,vCapResSlack[res=1:NCRM,t=1:T,sc=1:SC]>=0)
 		EP[:eCapResMarBalance] += vCapResSlack
 
-		@expression(EP, eCapResSlack_Year[res=1:NCRM,sc=1:SC], sum(EP[:vCapResSlack][res,t,sc] * inputs["omega"][t,sc] for t in 1:T))
+		@expression(EP, eCapResSlack_Year[res=1:NCRM,sc=1:SC], sum(EP[:vCapResSlack][res,t,sc] * inputs["omega_scenario_$sc"][t] for t in 1:T))
 		@expression(EP, eCCapResSlack[res=1:NCRM,sc=1:SC], inputs["dfCapRes_slack"][res,:PriceCap] * EP[:eCapResSlack_Year][res,sc])
 		@expression(EP, eCTotalCapResSlack[sc=1:SC], sum(EP[:eCCapResSlack][res,sc] for res = 1:NCRM))
 		#EP[:eObj] += eCTotalCapResSlack
-		for sc in 1:SC
-			EP[:eSCS][sc] += eCTotalCapResSlack[sc]
-		end
+		EP[:eSCS] += eCTotalCapResSlack
 	end
 end

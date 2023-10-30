@@ -15,17 +15,14 @@ received this license file.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 function generate_scenarios(inpath::AbstractString, settings_path::AbstractString, mysetup, stage_id=-99, v=false)
-#=
 	for fuelscen in 1:FSC 
-		for genscen in 1:GSC 
-			for loadscen in 1:LSC 
-				fuels_scen_df=DataFrame(CSV.File(joinpath(fuels_path, "Fuels_data_scenario_$fuelscen.csv"), header=true) copycols=true)
-				gen_var_scen_df=DataFrame(CSV.File(joinpath(genvar_path, "Generators_variability_scenario_$genscen.csv"), header=true) copycols=true)
-				loadscen_df=DataFrame(CSV.File(joinpath(load_path, "Load_data_scenario_$loadscen.csv"), header=true) copycols=true)
-				combined_time_series=hcat(fuels_scen_df, gen_var_df, loadscen_df)
-			end
+		for weatheryearscen in 1:SC
+			fuels_scen_df=DataFrame(CSV.File(joinpath(fuels_path, "Fuels_data_scenario_$fuelscen.csv"), header=true) copycols=true)
+			gen_var_scen_df=DataFrame(CSV.File(joinpath(genvar_path, "Generators_variability_scenario_$weatheryearscen.csv"), header=true) copycols=true)
+			loadscen_df=DataFrame(CSV.File(joinpath(load_path, "Load_data_scenario_$weatheryearscen.csv"), header=true) copycols=true)
+			combined_time_series=hcat(fuels_scen_df, gen_var_df, loadscen_df)
 		end
 	end
-=#
-return 4
+
+	return FSC*SC
 end

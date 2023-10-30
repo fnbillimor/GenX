@@ -3,7 +3,7 @@
 
 Sets up variables and constraints specific to storage resources with symmetric charge and discharge capacities. See ```storage()``` in ```storage.jl``` for description of constraints.
 """
-function storage_symmetric!(EP::Model, inputs::Dict, setup::Dict)
+function storage_symmetric!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int64)
 	# Set up additional variables, constraints, and expressions associated with storage resources with symmetric charge & discharge capacity
 	# (e.g. most electrochemical batteries that use same components for charge & discharge)
 	# STOR = 1 corresponds to storage with distinct power and energy capacity decisions but symmetric charge/discharge power ratings
@@ -13,15 +13,15 @@ function storage_symmetric!(EP::Model, inputs::Dict, setup::Dict)
 	dfGen = inputs["dfGen"]
 	Reserves = setup["Reserves"]
 
-	T = inputs["T"]     # Number of time steps (hours)
-	SC = inputs["SC"]   # Number of scenarios
+	T = inputs["T_scenario_1"]     # Number of time steps (hours)
+	SC = number_of_scenarios   # Number of scenarios
 	STOR_SYMMETRIC = inputs["STOR_SYMMETRIC"]
 
 	### Constraints ###
 
 	# Storage discharge and charge power (and reserve contribution) related constraints for symmetric storage resources:
 	if Reserves == 1
-		storage_symmetric_reserves!(EP, inputs)
+		storage_symmetric_reserves!(EP, inputs, number_of_scenarios)
 	else
 		@constraints(EP, begin
 			# Maximum charging rate must be less than symmetric power rating
@@ -39,11 +39,11 @@ end
 
 Sets up variables and constraints specific to storage resources with symmetric charge and discharge capacities when reserves are modeled. See ```storage()``` in ```storage.jl``` for description of constraints.
 """
-function storage_symmetric_reserves!(EP::Model, inputs::Dict)
+function storage_symmetric_reserves!(EP::Model, inputs::Dict, number_of_scenarios::Int64)
 
 	dfGen = inputs["dfGen"]
-	T = inputs["T"]
-	SC = inputs["SC"]   # Number of scenarios
+	T = inputs["T_scenario_1"]
+	SC = number_of_scenarios   # Number of scenarios
 	STOR_SYMMETRIC = inputs["STOR_SYMMETRIC"]
 
 	STOR_SYM_REG_RSV = intersect(STOR_SYMMETRIC, inputs["REG"], inputs["RSV"]) # Set of symmetric storage resources with both REG and RSV reserves

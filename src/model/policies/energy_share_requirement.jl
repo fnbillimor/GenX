@@ -11,10 +11,10 @@ For each energy share requirement constraint $p \in \mathcal{P}^{ESR}$, we speci
 ```
 The final term in the summation above adds roundtrip storage losses to the total load to which the energy share obligation applies. This term is included in the constraint if the GenX setup parameter ```StorageLosses=1```. If ```StorageLosses=0```, this term is removed from the constraint. In practice, most existing renewable portfolio standard policies do not account for storage losses when determining energy share requirements. However, with 100% RPS or CES policies enacted in several jurisdictions, policy makers may wish to include storage losses in the minimum energy share, as otherwise there will be a difference between total generation and total load that will permit continued use of non-qualifying resources (e.g. emitting generators).
 """
-function energy_share_requirement!(EP::Model, inputs::Dict, setup::Dict)
+function energy_share_requirement!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int64)
 
 	println("Energy Share Requirement Policies Module")
-	SC=inputs["SC"]     # Number of scenarios
+	SC=number_of_scenarios     # Number of scenarios
 	## Energy Share Requirements (minimum energy share from qualifying renewable resources) constraint
 	@constraint(EP, cESRShare[ESR=1:inputs["nESR"], sc=1:SC], EP[:eESR][ESR,sc] >= 0)
 

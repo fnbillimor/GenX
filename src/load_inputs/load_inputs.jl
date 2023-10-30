@@ -10,7 +10,7 @@ path - string path to working directory
 returns: Dict (dictionary) object containing all data inputs
 """
 function load_inputs!(setup::Dict,path::AbstractString, scenario_num::Int64, source_flag=false)
-	source_flag=true #flag to indicate which implementation of load_input calls the load_generators_data.jl
+	source_flag=true #flag to indicate which implementation of load_input calls the load_generators_data.jl true for call from the case runner, and false for call from the TDR
 
 	## Read input files
 	println("Reading Input CSV Files")
@@ -70,13 +70,15 @@ function load_inputs!(setup::Dict,path::AbstractString, scenario_num::Int64, sou
 		end
 	end
 
+	load_probability_distribution!(setup, path, inputs, scenario_num)
+
 	println("CSV Files Successfully Read In From $path")
 
 	return inputs
 end
 
 function load_inputs!(setup::Dict,path::AbstractString, scenario_num::Int64, sc::Int64, source_flag=false)
-
+	#flag to indicate which implementation of load_input calls the load_generators_data.jl true for call from the case runner, and false for call from the TDR
 	## Read input files
 	println("Reading Input CSV Files")
 	## Declare Dict (dictionary) object used to store parameters
@@ -129,7 +131,7 @@ function load_inputs!(setup::Dict,path::AbstractString, scenario_num::Int64, sc:
 	end
 
 	# Read in mapping of modeled periods to representative periods
-	if is_period_map_necessary(inputs, scenario_num) && is_period_map_exist(setup, path, inputs, scenario_num)
+	if is_period_map_necessary(inputs, sc) && is_period_map_exist(setup, path, inputs, sc)
 		load_period_map!(setup, path, inputs)
 	end
 

@@ -100,9 +100,6 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	@expression(EP, eSCS[sc=1:SC], 0) #system cost per scenario. This would equate to the summation of total system
 	@expression(EP, sSIC, 0) #System Investment cost
 
-	# Initialize Objective Function Expression
-	#@expression(EP, eObj, 0)
-
 
 	#@expression(EP, :eCO2Cap[cap=1:inputs["NCO2Cap"]], 0)
 	@expression(EP, eGenerationByZone[z=1:Z, t=1:T, sc=1:SC], 0)
@@ -113,7 +110,7 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 
 	# Energy Share Requirement
 	if setup["EnergyShareRequirement"] >= 1
-		@expression(EP, eESR[ESR=1:inputs["nESR"]][sc=1:SC], 0)
+		@expression(EP, eESR[ESR=1:inputs["nESR"], sc=1:SC], 0)
 	end
 
 	if setup["MinCapReq"] == 1
@@ -138,11 +135,11 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	emissions!(EP, inputs, number_of_scenarios)
 
 	if setup["Reserves"] > 0
-		reserves!(EP, inputs, setup)
+		reserves!(EP, inputs, setup, number_of_scenarios)
 	end
 
 	if Z > 1
-		transmission!(EP, inputs, setup)
+		transmission!(EP, inputs, setup, number_of_scenarios)
 	end
 
 	# Technologies
@@ -154,57 +151,60 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 
 	# Model constraints, variables, expression related to non-dispatchable renewable resources
 	if !isempty(inputs["MUST_RUN"])
-		must_run!(EP, inputs, setup)
+		must_run!(EP, inputs, setup, number_of_scenarios)
 	end
 
 	# Model constraints, variables, expression related to energy storage modeling
 	if !isempty(inputs["STOR_ALL"])
-		storage!(EP, inputs, setup)
+		storage!(EP, inputs, setup, number_of_scenarios)
 	end
-
+	#=
 	# Model constraints, variables, expression related to reservoir hydropower resources
 	if !isempty(inputs["HYDRO_RES"])
-		hydro_res!(EP, inputs, setup)
+		hydro_res!(EP, inputs, setup, number_of_scenarios)
 	end
-
+	=#
 	# Model constraints, variables, expression related to reservoir hydropower resources with long duration storage
-	if inputs["REP_PERIOD"] > 1 && !isempty(inputs["STOR_HYDRO_LONG_DURATION"])
-		hydro_inter_period_linkage!(EP, inputs)
+	#=
+	for sc in 1:SC
+		if inputs["REP_PERIOD_scenario_$sc"] > 1 && !isempty(inputs["STOR_HYDRO_LONG_DURATION"])
+			hydro_inter_period_linkage!(EP, inputs, number_of_scenarios)
+		end
 	end
-
+	=#
 	# Model constraints, variables, expression related to demand flexibility resources
 	if !isempty(inputs["FLEX"])
-		flexible_demand!(EP, inputs, setup)
+		flexible_demand!(EP, inputs, setup, number_of_scenarios)
 	end
 	# Model constraints, variables, expression related to thermal resource technologies
 	if !isempty(inputs["THERM_ALL"])
-		thermal!(EP, inputs, setup)
+		thermal!(EP, inputs, setup, number_of_scenarios)
 	end
-
+	#=
 	# Model constraints, variables, expression related to retrofit technologies
 	if !isempty(inputs["RETRO"])
-		EP = retrofit(EP, inputs)
+		EP = retrofit(EP, inputs, number_of_scenarios)
 	end
-
+	=#
 	# Policies
 	# CO2 emissions limits
 	if setup["CO2Cap"] > 0
-		co2_cap!(EP, inputs, setup)
+		co2_cap!(EP, inputs, setup, number_of_scenarios)
 	end
 
-	# Endogenous Retirements
+	#=# Endogenous Retirements
 	if setup["MultiStage"] > 0
-		endogenous_retirement!(EP, inputs, setup)
+		endogenous_retirement!(EP, inputs, setup, number_of_scenarios)
 	end
-
+	=#
 	# Energy Share Requirement
 	if setup["EnergyShareRequirement"] >= 1
-		energy_share_requirement!(EP, inputs, setup)
+		energy_share_requirement!(EP, inputs, setup, number_of_scenarios)
 	end
 
 	#Capacity Reserve Margin
 	if setup["CapacityReserveMargin"] > 0
-		cap_reserve_margin!(EP, inputs, setup)
+		cap_reserve_margin!(EP, inputs, setup, number_of_scenarios)
 	end
 
 	if (setup["MinCapReq"] == 1)
@@ -219,12 +219,11 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	@expression(EP, eCVARSC, vVAR + (1/setup["Alpha"])sum(inputs["scenprob"][sc]*EP[:vCVARaux][sc] for sc in 1:SC) ) #the CVAR of system costs
 
 	## The objective function is defined as weighted combination of eMSC and eCVARSC
-	#@objective(EP,Min,EP[:eObj])
 	@objective(EP,Min,(1-setup["Beta"])*EP[:eMSC] + setup["Beta"]*EP[:eCVARSC] )
 	## Power balance constraints
 	# demand = generation + storage discharge - storage charge - demand deferral + deferred demand satisfaction - demand curtailment (NSE)
 	#          + incoming power flows - outgoing power flows - flow losses - charge of heat storage + generation from NACC
-	@constraint(EP, cPowerBalance[t=1:T, z=1:Z, sc=1:SC], EP[:ePowerBalance][t,z,sc] == inputs["pD"][t,z,sc])
+	@constraint(EP, cPowerBalance[t=1:T, z=1:Z, sc=1:SC], EP[:ePowerBalance][t,z,sc] == inputs["pD_scenario_$sc"][t,z])
 	@constraint(EP,cCVAR2[sc=1:SC],EP[:vCVARaux][sc]>= EP[:eSCS][sc] - EP[:vVAR])
 	## Record pre-solver time
 	presolver_time = time() - presolver_start_time

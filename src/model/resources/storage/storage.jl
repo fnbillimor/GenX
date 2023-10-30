@@ -97,16 +97,13 @@ Finally, the constraints on maximum discharge rate are replaced by the following
 ```
 The above reserve related constraints are established by ```storage_all_reserves!()``` in ```storage_all.jl```
 """
-function storage!(EP::Model, inputs::Dict, setup::Dict)
+function storage!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int64)
 
 	println("Storage Resources Module")
 	dfGen = inputs["dfGen"]
-	T = inputs["T"]
+	T = inputs["T_scenario_1"]
 	STOR_ALL = inputs["STOR_ALL"]
-
-    	p = inputs["hours_per_subperiod"]
-    	rep_periods = inputs["REP_PERIOD"]
-	SC = inputs["SC"]   # Number of scenarios
+	SC = number_of_scenarios   # Number of scenarios
 	Reserves = setup["Reserves"]
 	EnergyShareRequirement = setup["EnergyShareRequirement"]
 	CapacityReserveMargin = setup["CapacityReserveMargin"]
@@ -115,21 +112,25 @@ function storage!(EP::Model, inputs::Dict, setup::Dict)
 
 	if !isempty(STOR_ALL)
 		investment_energy!(EP, inputs, setup)
-		storage_all!(EP, inputs, setup)
-
+		storage_all!(EP, inputs, setup, number_of_scenarios)
+		rep_period_subset = Int64[]
+		for sc in 1:SC
+			if inputs["REP_PERIOD_scenario_$sc"] > 1 && !isempty(inputs["STOR_LONG_DURATION"])
+				push!(rep_period_subset,inputs["REP_PERIOD_scenario_$sc"])			
+			end
+	    	end
 		# Include Long Duration Storage only when modeling representative periods and long-duration storage
-		if rep_periods > 1 && !isempty(inputs["STOR_LONG_DURATION"])
-			long_duration_storage!(EP, inputs)
-		end
+		number_of_scenarios_of_subset= length(rep_period_subset)
+		#long_duration_storage!(EP, inputs, number_of_scenarios_of_subset)
 	end
 
 	if !isempty(inputs["STOR_ASYMMETRIC"])
 		investment_charge!(EP, inputs, setup)
-		storage_asymmetric!(EP, inputs, setup)
+		storage_asymmetric!(EP, inputs, setup, number_of_scenarios)
 	end
 
 	if !isempty(inputs["STOR_SYMMETRIC"])
-		storage_symmetric!(EP, inputs, setup)
+		storage_symmetric!(EP, inputs, setup, number_of_scenarios)
 	end
 
 	# ESR Lossses

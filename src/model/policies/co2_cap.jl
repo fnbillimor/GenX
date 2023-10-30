@@ -42,16 +42,16 @@ Similarly, a generation based emission constraint is defined by setting the emis
 
 Note that the generator-side rate-based constraint can be used to represent a fee-rebate (``feebate'') system: the dirty generators that emit above the bar ($\epsilon_{z,p,gen}^{maxCO_2}$) have to buy emission allowances from the emission regulator in the region $z$ where they are located; in the same vein, the clean generators get rebates from the emission regulator at an emission allowance price being the dual variable of the emissions rate constraint.
 """
-function co2_cap!(EP::Model, inputs::Dict, setup::Dict)
+function co2_cap!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int64)
 
 	println("C02 Policies Module")
 
 	dfGen = inputs["dfGen"]
-	SEG = inputs["SEG"]  # Number of lines
+	SEG = inputs["SEG_scenario_1"]  # Number of lines
 	G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
-	T = inputs["T"]     # Number of time steps (hours)
+	T = inputs["T_scenario_1"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
-	SC=inputs["SC"]     # Number of scenarios
+	SC=number_of_scenarios    # Number of scenarios
 	### Variable ###
 	# if input files are present, add CO2 cap slack variables
 	if haskey(inputs, "dfCO2Cap_slack")
@@ -63,9 +63,7 @@ function co2_cap!(EP::Model, inputs::Dict, setup::Dict)
 		sum(EP[:eCCO2Cap_slack][cap,sc] for cap = 1:inputs["NCO2Cap"]))
 		
 		#EP[:eObj] += eCTotalCO2CapSlack
-		for sc in 1:SC
-			EP[:eSCS][sc] += eCTotalCO2CapSlack[sc]
-		end
+		EP[:eSCS] += eCTotalCO2CapSlack
 	else 
 		@variable(EP, vCO2Cap_slack[cap = 1:inputs["NCO2Cap"],sc=1:SC]==0)
 	end
@@ -75,7 +73,7 @@ function co2_cap!(EP::Model, inputs::Dict, setup::Dict)
 	## Mass-based: Emissions constraint in absolute emissions limit (tons)
 	if setup["CO2Cap"] == 1
 		@constraint(EP, cCO2Emissions_systemwide[cap=1:inputs["NCO2Cap"],sc=1:SC],
-			sum(inputs["omega"][t,sc] * EP[:eEmissionsByZone][z,t,sc] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]), t=1:T) -
+			sum(inputs["omega_scenario_$sc"][t] * EP[:eEmissionsByZone][z,t,sc] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]), t=1:T) -
 			vCO2Cap_slack[cap,sc]<=
 			sum(inputs["dfMaxCO2"][z,cap] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]))
 		)
@@ -84,18 +82,18 @@ function co2_cap!(EP::Model, inputs::Dict, setup::Dict)
 	elseif setup["CO2Cap"] == 2 ##This part moved to non_served_energy.jl
 
 		@constraint(EP, cCO2Emissions_systemwide[cap=1:inputs["NCO2Cap"],sc=1:SC],
-			sum(inputs["omega"][t,sc] * EP[:eEmissionsByZone][z,t,sc] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]), t=1:T) -
+			sum(inputs["omega_scenario_$sc"][t] * EP[:eEmissionsByZone][z,t,sc] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]), t=1:T) -
 			vCO2Cap_slack[cap,sc] <=
-			sum(inputs["dfMaxCO2Rate"][z,cap] * sum(inputs["omega"][t,sc] * (inputs["pD"][t,z,sc] - sum(EP[:vNSE][s,t,z,sc] for s in 1:SEG)) for t=1:T) for z = findall(x->x==1, inputs["dfCO2CapZones"][:,cap])) +
+			sum(inputs["dfMaxCO2Rate"][z,cap] * sum(inputs["omega_scenario_$sc"][t] * (inputs["pD_scenario_$sc"][t,z] - sum(EP[:vNSE][s,t,z,sc] for s in 1:SEG)) for t=1:T) for z = findall(x->x==1, inputs["dfCO2CapZones"][:,cap])) +
 			sum(inputs["dfMaxCO2Rate"][z,cap] * setup["StorageLosses"] *  EP[:eELOSSByZone][z] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]))
 		)
 
 	## Generation + Rate-based: Emissions constraint in terms of rate (tons/MWh)
 	elseif (setup["CO2Cap"]==3)
 		@constraint(EP, cCO2Emissions_systemwide[cap=1:inputs["NCO2Cap"],sc=1:SC],
-			sum(inputs["omega"][t,sc] * EP[:eEmissionsByZone][z,t,sc] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]), t=1:T) -
+			sum(inputs["omega_scenario_$sc"][t] * EP[:eEmissionsByZone][z,t,sc] for z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]), t=1:T) -
 			vCO2Cap_slack[cap,sc] <=
-			sum(inputs["dfMaxCO2Rate"][z,cap] * inputs["omega"][t,sc] * EP[:eGenerationByZone][z,t,sc] for t=1:T, z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]))
+			sum(inputs["dfMaxCO2Rate"][z,cap] * inputs["omega_scenario_$sc"][t] * EP[:eGenerationByZone][z,t,sc] for t=1:T, z=findall(x->x==1, inputs["dfCO2CapZones"][:,cap]))
 		)
 	end 
 

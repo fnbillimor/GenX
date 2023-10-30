@@ -55,28 +55,65 @@ Finally, the next constraint enforces that the initial storage level for each in
 \end{aligned}
 ```
 """
-function long_duration_storage!(EP::Model, inputs::Dict)
+function long_duration_storage!(EP::Model, inputs::Dict, number_of_scenarios_subset::Int64)
 
 	println("Long Duration Storage Module")
 
 	dfGen = inputs["dfGen"]
 
 	G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
-	T = inputs["T"]     # Number of time steps (hours)
+	T = inputs["T_scenario_1"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
-	REP_PERIOD = inputs["REP_PERIOD"]     # Number of representative periods
-	SC = inputs["SC"]
+	SC = number_of_scenarios_subset
+	NPeriods=53
+	#=
+	STOR_LONG_DURATION = inputs["STOR_LONG_DURATION"]
+	REP_PERIOD = Array{Int64, SC}(undef, SC, 1)
+
+	START_SUBPERIODS = Array{Int64, 2}(undef, SC, 1)
+
+	hours_per_subperiod = Array{Int64, SC}(undef, SC, 1)
+	=#
+	dfPeriodMap = DataFrame[]
+	#=
+	NPeriods = Array{Int64, SC}(undef, SC, 1)
+	MODELED_PERIODS_INDEX = Array{Int64, SC}(undef, SC, 1)
+	REP_PERIODS_INDEX = Array{Int64, SC}(undef, SC, 1)
+
+	for sc in 1:SC
+		REP_PERIOD[sc,1] = inputs["REP_PERIOD_scenario_$sc"]     # Number of representative periods
+	
+
+		STOR_LONG_DURATION[sc,1] = inputs["STOR_LONG_DURATION_scenario_$sc"]
+		START_SUBPERIODS[sc,1] = inputs["START_SUBPERIODS_scenario_$sc"]
+
+		hours_per_subperiod[sc,1] = inputs["hours_per_subperiod_scenario_$sc"] #total number of hours per subperiod
+
+		dfPeriodMap[sc,1] = inputs["Period_Map_scenario_$sc"] # Dataframe that maps modeled periods to representative periods
+		NPeriods[sc,1] = size(inputs["Period_Map_scenario_$sc"])[1] # Number of modeled periods
+
+		MODELED_PERIODS_INDEX[sc,1] = 1:NPeriods[sc,1]
+		REP_PERIODS_INDEX[sc,1] = MODELED_PERIODS_INDEX[dfPeriodMap[sc,1][!,:Rep_Period] .== MODELED_PERIODS_INDEX[sc,1],1]
+	end 
+=#
+	REP_PERIOD = inputs["REP_PERIOD_scenario_1"]     # Number of representative periods
+	
 
 	STOR_LONG_DURATION = inputs["STOR_LONG_DURATION"]
-	START_SUBPERIODS = inputs["START_SUBPERIODS"]
+	START_SUBPERIODS = inputs["START_SUBPERIODS_scenario_1"]
 
-	hours_per_subperiod = inputs["hours_per_subperiod"] #total number of hours per subperiod
-
-	dfPeriodMap = inputs["Period_Map"] # Dataframe that maps modeled periods to representative periods
-	NPeriods = size(inputs["Period_Map"])[1] # Number of modeled periods
+	hours_per_subperiod = inputs["hours_per_subperiod_scenario_1"] #total number of hours per subperiod
+	for sc in 1:SC
+		push!(dfPeriodMap, inputs["Period_Map_scenario_$sc"]) # Dataframe that maps modeled periods to representative periods
+	end
+	for sc in 1:1
+		NPeriods=size(inputs["Period_Map_scenario_$sc"])[1] # Number of modeled periods
+	end
+	#NPeriods=size(dfPeriodMap[2])[1] # Number of modeled periods
 
 	MODELED_PERIODS_INDEX = 1:NPeriods
-	REP_PERIODS_INDEX = MODELED_PERIODS_INDEX[dfPeriodMap[!,:Rep_Period] .== MODELED_PERIODS_INDEX]
+	REP_PERIODS_INDEX = MODELED_PERIODS_INDEX[dfPeriodMap[1][!,:Rep_Period] .== MODELED_PERIODS_INDEX]
+	
 
 	### Variables ###
 
@@ -101,11 +138,11 @@ function long_duration_storage!(EP::Model, inputs::Dict)
 	# Storage at beginning of period w = storage at beginning of period w-1 + storage built up in period w (after n representative periods)
 	## Multiply storage build up term from prior period with corresponding weight
 	@constraint(EP, cSoCBalLongDurationStorageInterior[y in STOR_LONG_DURATION, r in MODELED_PERIODS_INDEX[1:(end-1)], sc=1:SC],
-					vSOCw[y,r+1,sc] == vSOCw[y,r,sc] + vdSOC[y,dfPeriodMap[r,:Rep_Period_Index],sc])
+					vSOCw[y,r+1,sc] == vSOCw[y,r,sc] + vdSOC[y,dfPeriodMap[sc][r,:Rep_Period_Index],sc])
 
 	## Last period is linked to first period
 	@constraint(EP, cSoCBalLongDurationStorageEnd[y in STOR_LONG_DURATION, r in MODELED_PERIODS_INDEX[end], sc=1:SC],
-					vSOCw[y,1,sc] == vSOCw[y,r,sc] + vdSOC[y,dfPeriodMap[r,:Rep_Period_Index],sc])
+					vSOCw[y,1,sc] == vSOCw[y,r,sc] + vdSOC[y,dfPeriodMap[sc][r,:Rep_Period_Index],sc])
 
 	# Storage at beginning of each modeled period cannot exceed installed energy capacity
 	@constraint(EP, cSoCBalLongDurationStorageUpper[y in STOR_LONG_DURATION, r in MODELED_PERIODS_INDEX, sc=1:SC],
@@ -114,6 +151,6 @@ function long_duration_storage!(EP::Model, inputs::Dict)
 	# Initial storage level for representative periods must also adhere to sub-period storage inventory balance
 	# Initial storage = Final storage - change in storage inventory across representative period
 	@constraint(EP, cSoCBalLongDurationStorageSub[y in STOR_LONG_DURATION, r in REP_PERIODS_INDEX, sc=1:SC],
-					vSOCw[y,r,sc] == EP[:vS][y,hours_per_subperiod*dfPeriodMap[r,:Rep_Period_Index],sc] - vdSOC[y,dfPeriodMap[r,:Rep_Period_Index],sc])
+					vSOCw[y,r,sc] == EP[:vS][y,hours_per_subperiod*dfPeriodMap[sc][r,:Rep_Period_Index],sc] - vdSOC[y,dfPeriodMap[sc][r,:Rep_Period_Index],sc])
 
 end

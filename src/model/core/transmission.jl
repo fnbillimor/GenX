@@ -123,14 +123,14 @@ from the solution. These constraints and binary decisions are ommited if the mod
 \end{aligned}
 ```
 """
-function transmission!(EP::Model, inputs::Dict, setup::Dict)
+function transmission!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int64)
 
 	println("Transmission Module")
 
-	T = inputs["T"]     # Number of time steps (hours)
+	T = inputs["T_scenario_1"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
 	L = inputs["L"]     # Number of transmission lines
-	SC = inputs["SC"]   # Number of scenarios
+	SC = number_of_scenarios   # Number of scenarios
 
 	UCommit = setup["UCommit"]
 	NetworkExpansion = setup["NetworkExpansion"]

@@ -1,0 +1,195 @@
+technology,year,parameter,value,unit,source
+solar-rooftop,2020,discount rate,0.04,per unit,standard for decentral
+onwind,2020,lifetime,28,years,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+offwind,2020,lifetime,28,years,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+solar,2020,lifetime,36,years,IEA2010
+solar-rooftop,2020,lifetime,36,years,IEA2010
+solar-utility,2020,lifetime,36,years,IEA2010
+PHS,2020,lifetime,80,years,IEA2010
+hydro,2020,lifetime,80,years,IEA2010
+ror,2020,lifetime,80,years,IEA2010
+OCGT,2020,lifetime,25,years,IEA2010
+nuclear,2020,lifetime,40,years,ECF2010 in DIW DataDoc http://hdl.handle.net/10419/80348
+CCGT,2020,lifetime,25,years,IEA2010
+coal,2020,lifetime,40,years,IEA2010
+lignite,2020,lifetime,40,years,IEA2010
+geothermal,2020,lifetime,40,years,IEA2010
+biomass,2020,lifetime,30,years,ECF2010 in DIW DataDoc http://hdl.handle.net/10419/80348
+oil,2020,lifetime,25,years,ECF2010 in DIW DataDoc http://hdl.handle.net/10419/80348
+onwind,2020,investment,1097.97,EUR/kWel,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+offwind,2020,investment,1704.31,EUR/kWel,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+offwind-ac-station,2020,investment,250,EUR/kWel,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+offwind-ac-connection-submarine,2020,investment,2685,EUR/MW/km,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+offwind-ac-connection-underground,2020,investment,1342,EUR/MW/km,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+offwind-dc-station,2020,investment,400,EUR/kWel,Haertel 2017; assuming one onshore and one offshore node + 13% learning reduction
+offwind-dc-connection-submarine,2020,investment,2000,EUR/MW/km,DTU report based on Fig 34 of https://ec.europa.eu/energy/sites/ener/files/documents/2014_nsog_report.pdf
+offwind-dc-connection-underground,2020,investment,1000,EUR/MW/km,Haertel 2017; average + 13% learning reduction
+solar,2020,investment,673.13,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+biomass,2020,investment,2209,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+geothermal,2020,investment,3392,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+coal,2020,investment,3845.51,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348 PC (Advanced/SuperC)
+lignite,2020,investment,3845.51,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+solar-rooftop,2020,investment,877.27,EUR/kWel,ETIP PV
+solar-utility,2020,investment,468.995,EUR/kWel,ETIP PV
+PHS,2020,investment,2208.16,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+hydro,2020,investment,2208.16,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+ror,2020,investment,3312.24,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+OCGT,2020,investment,449.28,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+nuclear,2020,investment,7940.45,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+CCGT,2020,investment,867.5,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+oil,2020,investment,343,EUR/kWel,DIW DataDoc http://hdl.handle.net/10419/80348
+onwind,2020,FOM,1.24,%/year,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+offwind,2020,FOM,2.29,%/year,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+solar,2020,FOM,1.655,%/year,DIW DataDoc http://hdl.handle.net/10419/80348
+solar-rooftop,2020,FOM,1.205,%/year,ETIP PV
+solar-utility,2020,FOM,2.105,%/year,ETIP PV
+biomass,2020,FOM,4.53,%/year,DIW DataDoc http://hdl.handle.net/10419/80348
+geothermal,2020,FOM,2.36,%/year,DIW DataDoc http://hdl.handle.net/10419/80348
+coal,2020,FOM,1.6,%/year,DIW DataDoc http://hdl.handle.net/10419/80348 PC (Advanced/SuperC)
+lignite,2020,FOM,1.6,%/year,DIW DataDoc http://hdl.handle.net/10419/80348 PC (Advanced/SuperC)
+oil,2020,FOM,2.54,%/year,DIW DataDoc http://hdl.handle.net/10419/80348
+PHS,2020,FOM,1,%/year,DIW DataDoc http://hdl.handle.net/10419/80348
+hydro,2020,FOM,1,%/year,DIW DataDoc http://hdl.handle.net/10419/80348
+ror,2020,FOM,2,%/year,DIW DataDoc http://hdl.handle.net/10419/80348
+CCGT,2020,FOM,3.335,%/year,DIW DataDoc http://hdl.handle.net/10419/80348
+OCGT,2020,FOM,1.78,%/year,DIW DataDoc http://hdl.handle.net/10419/80348
+onwind,2020,VOM,1.46,EUR/MWhel,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+offwind,2020,VOM,2.895,EUR/MWhel,DEA https://ens.dk/en/our-services/projections-and-models/technology-data
+solar,2020,VOM,0.01,EUR/MWhel,RES costs made up to fix curtailment order
+coal,2020,VOM,3.5,EUR/MWhel,DIW DataDoc http://hdl.handle.net/10419/80348 PC (Advanced/SuperC)
+lignite,2020,VOM,3.5,EUR/MWhel,DIW DataDoc http://hdl.handle.net/10419/80348
+CCGT,2020,VOM,4.35,EUR/MWhel,DIW DataDoc http://hdl.handle.net/10419/80348
+OCGT,2020,VOM,4.5,EUR/MWhel,DIW DataDoc http://hdl.handle.net/10419/80348
+nuclear,2020,VOM,3.5,EUR/MWhel,DIW DataDoc http://hdl.handle.net/10419/80348
+gas,2020,fuel,20.1,EUR/MWhth,IEA2011b
+uranium,2020,fuel,2.6,EUR/MWhth,DIW DataDoc http://hdl.handle.net/10419/80348
+oil,2020,VOM,6,EUR/MWhel,DIW DataDoc http://hdl.handle.net/10419/80348
+nuclear,2020,fuel,2.6,EUR/MWhth,IEA2011b
+biomass,2020,fuel,7,EUR/MWhth,IEA2011b
+coal,2020,fuel,8.15,EUR/MWhth,IEA2011b
+lignite,2020,fuel,2.9,EUR/MWhth,IEA2011b
+oil,2020,fuel,50,EUR/MWhth,IEA WEM2017 97USD/boe = http://www.iea.org/media/weowebsite/2017/WEM_Documentation_WEO2017.pdf
+PHS,2020,efficiency,0.75,per unit,DIW DataDoc http://hdl.handle.net/10419/80348
+hydro,2020,efficiency,0.9,per unit,DIW DataDoc http://hdl.handle.net/10419/80348
+ror,2020,efficiency,0.9,per unit,DIW DataDoc http://hdl.handle.net/10419/80348
+OCGT,2020,efficiency,0.4,per unit,DIW DataDoc http://hdl.handle.net/10419/80348
+CCGT,2020,efficiency,0.565,per unit,DIW DataDoc http://hdl.handle.net/10419/80348
+biomass,2020,efficiency,0.47,per unit,DIW DataDoc http://hdl.handle.net/10419/80348
+geothermal,2020,efficiency,0.24,per unit,DIW DataDoc http://hdl.handle.net/10419/80348
+nuclear,2020,efficiency,0.33,per unit,DIW DataDoc http://hdl.handle.net/10419/80348
+gas,2020,CO2 intensity,0.2,tCO2/MWth,https://www.eia.gov/environment/emissions/co2_vol_mass.php
+coal,2020,efficiency,0.33,per unit,DIW DataDoc http://hdl.handle.net/10419/80348 PC (Advanced/SuperC)
+lignite,2020,efficiency,0.33,per unit,DIW DataDoc http://hdl.handle.net/10419/80348
+oil,2020,efficiency,0.35,per unit,DIW DataDoc http://hdl.handle.net/10419/80348 CT
+coal,2020,CO2 intensity,0.34,tCO2/MWth,https://www.eia.gov/environment/emissions/co2_vol_mass.php
+lignite,2020,CO2 intensity,0.41,tCO2/MWth,https://www.eia.gov/environment/emissions/co2_vol_mass.php
+oil,2020,CO2 intensity,0.27,tCO2/MWth,https://www.eia.gov/environment/emissions/co2_vol_mass.php
+geothermal,2020,CO2 intensity,0.03,tCO2/MWth,https://www.eia.gov/environment/emissions/co2_vol_mass.php
+electrolysis,2020,investment,600,EUR/kWel,Palzer Thesis
+electrolysis,2020,FOM,2,%/year,NREL http://www.nrel.gov/docs/fy09osti/45873.pdf; budischak2013
+electrolysis,2020,lifetime,26,years,NREL http://www.nrel.gov/docs/fy09osti/45873.pdf; budischak2013
+electrolysis,2020,efficiency,0.665,per unit,NREL http://www.nrel.gov/docs/fy09osti/45873.pdf; budischak2013
+fuel cell,2020,investment,1250,EUR/kWel,NREL http://www.nrel.gov/docs/fy09osti/45873.pdf; budischak2013
+fuel cell,2020,FOM,5,%/year,NREL http://www.nrel.gov/docs/fy09osti/45873.pdf; budischak2013
+fuel cell,2020,lifetime,10,years,NREL http://www.nrel.gov/docs/fy09osti/45873.pdf; budischak2013
+fuel cell,2020,efficiency,0.5,per unit,NREL http://www.nrel.gov/docs/fy09osti/45873.pdf; budischak2013 conservative 2020
+hydrogen storage,2020,investment,11.2,USD/kWh,budischak2013
+hydrogen storage,2020,lifetime,20,years,budischak2013
+hydrogen underground storage,2020,investment,2.75,EUR/kWh,maximum from https://www.nrel.gov/docs/fy10osti/46719.pdf
+hydrogen underground storage,2020,lifetime,100,years,http://www.acatech.de/fileadmin/user_upload/Baumstruktur_nach_Website/Acatech/root/de/Publikationen/Materialien/ESYS_Technologiesteckbrief_Energiespeicher.pdf
+H2 pipeline,2020,investment,267,EUR/MW/km,Welder et al https://doi.org/10.1016/j.ijhydene.2018.12.156
+H2 pipeline,2020,lifetime,40,years,Krieg2012 http://juser.fz-juelich.de/record/136392/files/Energie%26Umwelt_144.pdf
+H2 pipeline,2020,FOM,3,%/year,Krieg2012 http://juser.fz-juelich.de/record/136392/files/Energie%26Umwelt_144.pdf
+H2 pipeline,2020,efficiency,0.98,per unit,Krieg2012 http://juser.fz-juelich.de/record/136392/files/Energie%26Umwelt_144.pdf
+methanation,2020,investment,278,EUR/kWH2,Schaber thesis
+methanation,2020,lifetime,30,years,Schaber thesis
+methanation,2020,FOM,4,%/year,Schaber thesis
+methanation,2020,efficiency,0.8,per unit,Palzer; Breyer for DAC
+helmeth,2020,investment,2000,EUR/kW,no source
+helmeth,2020,lifetime,25,years,no source
+helmeth,2020,FOM,3,%/year,no source
+helmeth,2020,efficiency,0.8,per unit,HELMETH press release
+DAC,2020,investment,7000000,EUR/(tCO2/a),Fasihi/Climeworks
+DAC,2020,lifetime,20,years,Fasihi
+DAC,2020,FOM,4.95,%/year,Fasihi
+battery inverter,2020,investment,242.5,USD/kWel,budischak2013
+battery inverter,2020,lifetime,10,years,budischak2013
+battery inverter,2020,efficiency,0.955,per unit charge/discharge,budischak2013; Lund and Kempton (2008) http://dx.doi.org/10.1016/j.enpol.2008.06.007
+battery inverter,2020,FOM,0.225,%/year,budischak2013
+battery storage,2020,investment,209.5,USD/kWh,budischak2013
+battery storage,2020,lifetime,21,years,budischak2013
+decentral air-sourced heat pump,2020,investment,917.5,EUR/kWth,HP; Palzer thesis
+decentral air-sourced heat pump,2020,lifetime,18,years,HP; Palzer thesis
+decentral air-sourced heat pump,2020,FOM,2.97,%/year,Palzer thesis
+decentral air-sourced heat pump,2020,efficiency,3.45,per unit,default for costs
+decentral air-sourced heat pump,2020,discount rate,0.04,per unit,Palzer thesis
+decentral ground-sourced heat pump,2020,investment,1475,EUR/kWth,Palzer thesis
+decentral ground-sourced heat pump,2020,lifetime,20,years,Palzer thesis
+decentral ground-sourced heat pump,2020,FOM,1.845,%/year,Palzer thesis
+decentral ground-sourced heat pump,2020,efficiency,3.825,per unit,default for costs
+decentral ground-sourced heat pump,2020,discount rate,0.04,per unit,Palzer thesis
+central air-sourced heat pump,2020,investment,951.39,EUR/kWth,Palzer thesis
+central air-sourced heat pump,2020,lifetime,25,years,Palzer thesis
+central air-sourced heat pump,2020,FOM,0.21,%/year,Palzer thesis
+central air-sourced heat pump,2020,efficiency,3.45,per unit,default for costs
+retrofitting I,2020,discount rate,0.04,per unit,Palzer thesis
+retrofitting I,2020,lifetime,50,years,Palzer thesis
+retrofitting I,2020,FOM,1,%/year,Palzer thesis
+retrofitting I,2020,investment,50,EUR/m2/fraction reduction,Palzer thesis
+retrofitting II,2020,discount rate,0.04,per unit,Palzer thesis
+retrofitting II,2020,lifetime,50,years,Palzer thesis
+retrofitting II,2020,FOM,1,%/year,Palzer thesis
+retrofitting II,2020,investment,250,EUR/m2/fraction reduction,Palzer thesis
+water tank charger,2020,efficiency,0.84,per unit,HP
+water tank discharger,2020,efficiency,0.84,per unit,HP
+decentral water tank storage,2020,investment,18.38,EUR/m3,IWES Interaktion
+decentral water tank storage,2020,FOM,1,%/year,HP
+decentral water tank storage,2020,lifetime,20,years,HP
+decentral water tank storage,2020,discount rate,0.04,per unit,Palzer thesis
+central water tank storage,2020,investment,0.57,EUR/m3,IWES Interaktion
+central water tank storage,2020,FOM,0.525,%/year,HP
+central water tank storage,2020,lifetime,21,years,HP
+decentral resistive heater,2020,investment,100,EUR/kWhth,Schaber thesis
+decentral resistive heater,2020,lifetime,20,years,Schaber thesis
+decentral resistive heater,2020,FOM,2,%/year,Schaber thesis
+decentral resistive heater,2020,efficiency,0.9,per unit,Schaber thesis
+decentral resistive heater,2020,discount rate,0.04,per unit,Palzer thesis
+central resistive heater,2020,investment,67.5,EUR/kWhth,Schaber thesis
+central resistive heater,2020,lifetime,20,years,Schaber thesis
+central resistive heater,2020,FOM,1.57,%/year,Schaber thesis
+central resistive heater,2020,efficiency,0.99,per unit,Schaber thesis
+decentral gas boiler,2020,investment,308.265,EUR/kWhth,Palzer thesis
+decentral gas boiler,2020,lifetime,20,years,Palzer thesis
+decentral gas boiler,2020,FOM,6.59,%/year,Palzer thesis
+decentral gas boiler,2020,efficiency,0.975,per unit,Palzer thesis
+decentral gas boiler,2020,discount rate,0.04,per unit,Palzer thesis
+central gas boiler,2020,investment,57.5,EUR/kWhth,Palzer thesis
+central gas boiler,2020,lifetime,25,years,Palzer thesis
+central gas boiler,2020,FOM,3.375,%/year,Palzer thesis
+central gas boiler,2020,efficiency,1.03,per unit,Palzer thesis
+decentral CHP,2020,lifetime,25,years,HP
+decentral CHP,2020,investment,1400,EUR/kWel,HP
+decentral CHP,2020,FOM,3,%/year,HP
+decentral CHP,2020,discount rate,0.04,per unit,Palzer thesis
+central CHP,2020,lifetime,25,years,HP
+central CHP,2020,investment,582.5,EUR/kWel,HP
+central CHP,2020,FOM,3.31,%/year,HP
+decentral solar thermal,2020,discount rate,0.04,per unit,Palzer thesis
+decentral solar thermal,2020,FOM,1.3,%/year,HP
+decentral solar thermal,2020,investment,270000,EUR/1000m2,HP
+decentral solar thermal,2020,lifetime,20,years,HP
+central solar thermal,2020,FOM,1.4,%/year,HP
+central solar thermal,2020,investment,140000,EUR/1000m2,HP
+central solar thermal,2020,lifetime,20,years,HP
+HVAC overhead,2020,investment,400,EUR/MW/km,Hagspiel
+HVAC overhead,2020,lifetime,40,years,Hagspiel
+HVAC overhead,2020,FOM,2,%/year,Hagspiel
+HVDC overhead,2020,investment,400,EUR/MW/km,Hagspiel
+HVDC overhead,2020,lifetime,40,years,Hagspiel
+HVDC overhead,2020,FOM,2,%/year,Hagspiel
+HVDC submarine,2020,investment,471.16,EUR/MW/km,DTU report based on Fig 34 of https://ec.europa.eu/energy/sites/ener/files/documents/2014_nsog_report.pdf
+HVDC submarine,2020,lifetime,40,years,Hagspiel
+HVDC submarine,2020,FOM,0.35,%/year,Hagspiel
+HVDC inverter pair,2020,investment,150000,EUR/MW,Hagspiel
+HVDC inverter pair,2020,lifetime,40,years,Hagspiel
+HVDC inverter pair,2020,FOM,2,%/year,Hagspiel

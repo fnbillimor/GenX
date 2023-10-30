@@ -539,10 +539,6 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sc,
     WeightTotal = myTDRsetup["WeightTotal"]
     ClusterFuelPrices = myTDRsetup["ClusterFuelPrices"]
     TimeDomainReductionFolder = mysetup["TimeDomainReductionFolder"]
-    #TimeDomainReductionLoadFolder = mysetup["TimeDomainReductionLoadFolder"]
-    #TimeDomainReductionGenFolder = mysetup["TimeDomainReductionGenFolder"]
-    #TimeDomainReductionFuelFolder = mysetup["TimeDomainReductionFuelFolder"]
-    #TimeDomainReductionMapFolder = mysetup["TimeDomainReductionMapFolder"]
 
     MultiStage = mysetup["MultiStage"]
     if MultiStage == 1

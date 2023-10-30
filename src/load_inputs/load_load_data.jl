@@ -194,11 +194,11 @@ function load_load_data!(setup::Dict, path::AbstractString, inputs::Dict, scenar
     	inputs["Weights"] = as_vector(:Sub_Weights) # Weights each period
 
     	# Total number of periods and subperiods
-    	inputs["REP_PERIOD"] = convert(Int16, as_vector(:Rep_Periods)[1])
+    	inputs["REP_PERIOD_scenario_$sc"] = convert(Int16, as_vector(:Rep_Periods)[1])
     	inputs["H"] = convert(Int64, as_vector(:Timesteps_per_Rep_Period)[1])
 
     	# Creating sub-period weights from weekly weights
-    	for w in 1:inputs["REP_PERIOD"]
+    	for w in 1:inputs["REP_PERIOD_scenario_$sc"]
         	for h in 1:inputs["H"]
             		t = inputs["H"]*(w-1)+h
             		inputs["omega"][t] = inputs["Weights"][w]/inputs["H"]
@@ -206,7 +206,7 @@ function load_load_data!(setup::Dict, path::AbstractString, inputs::Dict, scenar
     	end
 
 	# Create time set steps indicies
-	inputs["hours_per_subperiod"] = div.(T,inputs["REP_PERIOD"]) # total number of hours per subperiod
+	inputs["hours_per_subperiod"] = div.(T,inputs["REP_PERIOD_scenario_$sc"]) # total number of hours per subperiod
 	hours_per_subperiod = inputs["hours_per_subperiod"] # set value for internal use
 
 	inputs["START_SUBPERIODS"] = 1:hours_per_subperiod:T 	# set of indexes for all time periods that start a subperiod (e.g. sample day/week)
@@ -243,7 +243,7 @@ function validatetimebasis(inputs::Dict, SC::Int64, sc::Int64)
 
     T = inputs["T"]
     hours_per_subperiod = inputs["hours_per_subperiod"]
-    number_of_representative_periods = inputs["REP_PERIOD"]
+    number_of_representative_periods = inputs["REP_PERIOD_scenario_$sc"]
     expected_length_1 = hours_per_subperiod * number_of_representative_periods
 
     H = inputs["H"]
