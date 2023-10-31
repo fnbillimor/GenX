@@ -15,6 +15,7 @@ received this license file.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 function generate_scenarios(inpath::AbstractString, settings_path::AbstractString, mysetup, stage_id=-99, v=false)
+	#=
 	for fuelscen in 1:FSC 
 		for weatheryearscen in 1:SC
 			fuels_scen_df=DataFrame(CSV.File(joinpath(fuels_path, "Fuels_data_scenario_$fuelscen.csv"), header=true) copycols=true)
@@ -24,5 +25,6 @@ function generate_scenarios(inpath::AbstractString, settings_path::AbstractStrin
 		end
 	end
 
-	return FSC*SC
+	return FSC*SC=#
+	return 6
 end

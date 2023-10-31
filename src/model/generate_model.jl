@@ -219,7 +219,7 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	@expression(EP, eCVARSC, vVAR + (1/setup["Alpha"])sum(inputs["scenprob"][sc]*EP[:vCVARaux][sc] for sc in 1:SC) ) #the CVAR of system costs
 
 	## The objective function is defined as weighted combination of eMSC and eCVARSC
-	@objective(EP,Min,(1-setup["Beta"])*EP[:eMSC] + setup["Beta"]*EP[:eCVARSC] )
+	@objective(EP,Min,EP[:sSIC]+(1-setup["Beta"])*EP[:eMSC] + setup["Beta"]*EP[:eCVARSC] )
 	## Power balance constraints
 	# demand = generation + storage discharge - storage charge - demand deferral + deferred demand satisfaction - demand curtailment (NSE)
 	#          + incoming power flows - outgoing power flows - flow losses - charge of heat storage + generation from NACC
