@@ -120,8 +120,8 @@ function storage!(EP::Model, inputs::Dict, setup::Dict, number_of_scenarios::Int
 			end
 	    	end
 		# Include Long Duration Storage only when modeling representative periods and long-duration storage
-		number_of_scenarios_of_subset= length(rep_period_subset)
-		#long_duration_storage!(EP, inputs, number_of_scenarios_of_subset)
+		number_of_scenarios_of_subset= length(rep_period_subset) ##LONG-DURATION STORAGE
+		long_duration_storage!(EP, inputs, number_of_scenarios_of_subset) ##LONG-DURATION STORAGE
 	end
 
 	if !isempty(inputs["STOR_ASYMMETRIC"])

@@ -65,20 +65,20 @@ function long_duration_storage!(EP::Model, inputs::Dict, number_of_scenarios_sub
 	T = inputs["T_scenario_1"]     # Number of time steps (hours)
 	Z = inputs["Z"]     # Number of zones
 	SC = number_of_scenarios_subset
-	NPeriods=53
-	#=
-	STOR_LONG_DURATION = inputs["STOR_LONG_DURATION"]
-	REP_PERIOD = Array{Int64, SC}(undef, SC, 1)
+	#NPeriods=53
+	##=
+	STOR_LONG_DURATION = Array{Int64, 2}(undef, SC, 1) #inputs["STOR_LONG_DURATION"]
+	REP_PERIOD = Array{Int64, 2}(undef, SC, 1)
 
 	START_SUBPERIODS = Array{Int64, 2}(undef, SC, 1)
 
-	hours_per_subperiod = Array{Int64, SC}(undef, SC, 1)
-	=#
+	hours_per_subperiod = Array{Int64, 2}(undef, SC, 1)
+	##=#
 	dfPeriodMap = DataFrame[]
-	#=
-	NPeriods = Array{Int64, SC}(undef, SC, 1)
-	MODELED_PERIODS_INDEX = Array{Int64, SC}(undef, SC, 1)
-	REP_PERIODS_INDEX = Array{Int64, SC}(undef, SC, 1)
+	##=
+	NPeriods = Array{Int64, 2}(undef, SC, 1)
+	MODELED_PERIODS_INDEX = Array{Int64, 2}(undef, SC, 1)
+	REP_PERIODS_INDEX = Array{Int64, 2}(undef, SC, 1)
 
 	for sc in 1:SC
 		REP_PERIOD[sc,1] = inputs["REP_PERIOD_scenario_$sc"]     # Number of representative periods
@@ -95,7 +95,8 @@ function long_duration_storage!(EP::Model, inputs::Dict, number_of_scenarios_sub
 		MODELED_PERIODS_INDEX[sc,1] = 1:NPeriods[sc,1]
 		REP_PERIODS_INDEX[sc,1] = MODELED_PERIODS_INDEX[dfPeriodMap[sc,1][!,:Rep_Period] .== MODELED_PERIODS_INDEX[sc,1],1]
 	end 
-=#
+##=#
+#=
 	REP_PERIOD = inputs["REP_PERIOD_scenario_1"]     # Number of representative periods
 	
 
@@ -113,7 +114,7 @@ function long_duration_storage!(EP::Model, inputs::Dict, number_of_scenarios_sub
 
 	MODELED_PERIODS_INDEX = 1:NPeriods
 	REP_PERIODS_INDEX = MODELED_PERIODS_INDEX[dfPeriodMap[1][!,:Rep_Period] .== MODELED_PERIODS_INDEX]
-	
+=#	
 
 	### Variables ###
 

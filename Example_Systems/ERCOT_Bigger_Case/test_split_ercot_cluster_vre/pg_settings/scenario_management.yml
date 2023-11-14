@@ -1,0 +1,1078 @@
+
+# This is a nested dictionary of settings changes for each scenario defined in the
+# "scenario_definitions_fn" file.
+# - The fist set of keys are planning years.
+# - The second set of keys are either "all_cases" or the name of a scenario in the
+# "scenario_definitions_fn" file. If "all_cases" then the settings key: value will be
+# applied to all settings files for that year. An example scenario might be "ccs_capex".
+# - The third set of keys are names of scenario values. For a "ccs_capex" scenario these
+# might be "high", "mid", "low".
+# - The values under this third set of keys are a key: value pair where the key is a
+# parameter from this settings file with a value that should be modified for a specific
+# case.
+settings_management:
+  2025:
+    min_cap:
+      base:
+        MinCapReq:
+          MinCapTag_1:
+            description: NY_offshorewind
+            min_mw: 1054
+          MinCapTag_2:
+            description: PJME_offshorewind
+            min_mw: 1100
+          MinCapTag_3:
+            description: PJMD_offshorewind
+            min_mw: 0
+          MinCapTag_4:
+            description: ISNE_offshorewind
+            min_mw: 745
+    dgsolar:
+      BIF:
+        distributed_gen_values:
+          2025: 
+            BASN: 1103
+            CANO: 4874
+            CASO: 7562
+            FRCC: 2152
+            ISNE: 3761
+            MISC: 373
+            MISE: 160
+            MISS: 372
+            MISW: 1149
+            NWPP: 593
+            NYCW: 1239
+            NYUP: 897
+            PJMC: 255
+            PJMD: 507
+            PJME: 7144
+            PJMW: 941
+            RMRG: 801
+            SPPC: 160
+            SPPN: 123
+            SPPS: 283
+            SRCA: 1584
+            SRCE: 216
+            SRSE: 277
+            SRSG: 2046
+            TRE: 2478
+      IRA_MID:
+        distributed_gen_values:
+          2025:
+            BASN: 1493
+            CANO: 6583
+            CASO: 10214
+            FRCC: 2943
+            ISNE: 5079
+            MISC: 508
+            MISE: 220
+            MISS: 510
+            MISW: 1560
+            NWPP: 806
+            NYCW: 1679
+            NYUP: 1216
+            PJMC: 350
+            PJMD: 688
+            PJME: 9095
+            PJMW: 1281
+            RMRG: 1085
+            SPPC: 216
+            SPPN: 166
+            SPPS: 387
+            SRCA: 2154
+            SRCE: 295
+            SRSE: 379
+            SRSG: 2770
+            TRE: 3384
+    limitedtransmission:
+      yes:
+        tx_expansion_per_period: 0.5
+    renewable_battery_capex_ccs:
+      renewable_mid_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_mid_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+    ira:
+      yes:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.7225]
+          Offwind_floating:
+            capex_mw: [mul, 0.7225]
+          upv:
+            Var_OM_Cost_per_MWh: [sub, 8.82]
+          Landwind:
+            Var_OM_Cost_per_MWh: [sub, 9.67]
+          bat:
+            capex_mw: [mul, 0.7225]
+            capex_mwh: [mul, 0.7225]
+      no:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.70]
+          Offwind_floating:
+            capex_mw: [mul, 0.70]
+          upv:
+            capex_mw: [mul, 0.90]
+    ng_price:
+      reference:
+        aeo_fuel_scenarios:
+          naturalgas: reference
+      low:
+        aeo_fuel_scenarios:
+          naturalgas: high_resource
+      high:
+        aeo_fuel_scenarios:
+          naturalgas: low_resource
+  2030:
+    min_cap:
+      base:
+        MinCapReq:
+          MinCapTag_1:
+            description: NY_offshorewind
+            min_mw: 4360
+          MinCapTag_2:
+            description: PJME_offshorewind
+            min_mw: 5522.5
+          MinCapTag_3:
+            description: PJMD_offshorewind
+            min_mw: 2640
+          MinCapTag_4:
+            description: ISNE_offshorewind
+            min_mw: 8945
+          MinCapTag_5:
+            description: SRCA_offshorewind
+            min_mw: 2800
+    dgsolar:
+      BIF:
+        distributed_gen_values:
+          2030: 
+            BASN: 1612
+            CANO: 5801
+            CASO: 9001
+            FRCC: 6124
+            ISNE: 4366
+            MISC: 941
+            MISE: 738
+            MISS: 1222
+            MISW: 2135
+            NWPP: 1230
+            NYCW: 1968
+            NYUP: 1425
+            PJMC: 922
+            PJMD: 1215
+            PJME: 10142
+            PJMW: 2184
+            RMRG: 1289
+            SPPC: 324
+            SPPN: 197
+            SPPS: 976
+            SRCA: 3402
+            SRCE: 550
+            SRSE: 820
+            SRSG: 2974
+            TRE: 6635
+      IRA_MID:
+        distributed_gen_values:
+          2030:
+            BASN: 2330
+            CANO: 8383
+            CASO: 13006
+            FRCC: 8848
+            ISNE: 6310
+            MISC: 1359
+            MISE: 1067
+            MISS: 1766
+            MISW: 3085
+            NWPP: 1779
+            NYCW: 2843
+            NYUP: 2059
+            PJMC: 1333
+            PJMD: 1756
+            PJME: 13962
+            PJMW: 3156
+            RMRG: 1863
+            SPPC: 468
+            SPPN: 284
+            SPPS: 1410
+            SRCA: 4915
+            SRCE: 796
+            SRSE: 1185
+            SRSG: 4296
+            TRE: 9588
+    limitedtransmission:
+      yes:
+        tx_expansion_per_period: 0.5
+    renewable_battery_capex_ccs:
+      renewable_mid_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_mid_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+    ira:
+      yes:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.7225]
+          Offwind_floating:
+            capex_mw: [mul, 0.7225]
+          upv:
+            Var_OM_Cost_per_MWh: [sub, 8.82]
+          Landwind:
+            Var_OM_Cost_per_MWh: [sub, 9.67]
+          bat:
+            capex_mw: [mul, 0.7225]
+            capex_mwh: [mul, 0.7225]
+      no:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.70]
+          Offwind_floating:
+            capex_mw: [mul, 0.70]
+          upv:
+            capex_mw: [mul, 0.90]
+    ng_price:
+      reference:
+        aeo_fuel_scenarios:
+          naturalgas: reference
+      low:
+        aeo_fuel_scenarios:
+          naturalgas: high_resource
+      high:
+        aeo_fuel_scenarios:
+          naturalgas: low_resource
+  2035:
+    min_cap:
+      base:
+        MinCapReq:
+          MinCapTag_1:
+            description: NY_offshorewind
+            min_mw: 9000
+          MinCapTag_2:
+            description: PJME_offshorewind
+            min_mw: 12700
+          MinCapTag_3:
+            description: PJMD_offshorewind
+            min_mw: 5200
+          MinCapTag_4:
+            description: ISNE_offshorewind
+            min_mw: 13945
+          MinCapTag_5:
+            description: SRCA_offshorewind
+            min_mw: 2800
+    dgsolar:
+      BIF:
+        distributed_gen_values:
+          2035: 
+            BASN: 2035
+            CANO: 6687
+            CASO: 10375
+            FRCC: 8473
+            ISNE: 5048
+            MISC: 1901
+            MISE: 1808
+            MISS: 2034
+            MISW: 3622
+            NWPP: 1897
+            NYCW: 2734
+            NYUP: 1980
+            PJMC: 1786
+            PJMD: 2219
+            PJME: 11654
+            PJMW: 4080
+            RMRG: 1903
+            SPPC: 580
+            SPPN: 312
+            SPPS: 1621
+            SRCA: 5893
+            SRCE: 1076
+            SRSE: 1386
+            SRSG: 3641
+            TRE: 10201
+      IRA_MID:
+        distributed_gen_values:
+          2035:
+            BASN: 2824
+            CANO: 9281
+            CASO: 14400
+            FRCC: 11761
+            ISNE: 7008
+            MISC: 2636
+            MISE: 2506
+            MISS: 2821
+            MISW: 5027
+            NWPP: 2631
+            NYCW: 3793
+            NYUP: 2747
+            PJMC: 2476
+            PJMD: 3078
+            PJME: 15619
+            PJMW: 5657
+            RMRG: 2640
+            SPPC: 805
+            SPPN: 432
+            SPPS: 2248
+            SRCA: 8173
+            SRCE: 1493
+            SRSE: 1923
+            SRSG: 5054
+            TRE: 14157
+    limitedtransmission:
+      yes:
+        tx_expansion_per_period: 0.5
+    renewable_battery_capex_ccs:
+      renewable_mid_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_mid_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+    ira:
+      yes:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.7225]
+          Offwind_floating:
+            capex_mw: [mul, 0.7225]
+          upv:
+            Var_OM_Cost_per_MWh: [sub, 8.82]
+          Landwind:
+            Var_OM_Cost_per_MWh: [sub, 9.67]
+          bat:
+            capex_mw: [mul, 0.7225]
+            capex_mwh: [mul, 0.7225]
+      no:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.70]
+          Offwind_floating:
+            capex_mw: [mul, 0.70]
+          upv:
+            capex_mw: [mul, 0.90]
+    ng_price:
+      reference:
+        aeo_fuel_scenarios:
+          naturalgas: reference
+      low:
+        aeo_fuel_scenarios:
+          naturalgas: high_resource
+      high:
+        aeo_fuel_scenarios:
+          naturalgas: low_resource
+  2040:
+    min_cap:
+      base:
+        MinCapReq:
+          MinCapTag_1:
+            description: NY_offshorewind
+            min_mw: 9000
+          MinCapTag_2:
+            description: PJME_offshorewind
+            min_mw: 12700
+          MinCapTag_3:
+            description: PJMD_offshorewind
+            min_mw: 5200
+          MinCapTag_4:
+            description: ISNE_offshorewind
+            min_mw: 13945
+          MinCapTag_5:
+            description: SRCA_offshorewind
+            min_mw: 8000
+    dgsolar:
+      BIF:
+        distributed_gen_values:
+          2040: 
+            BASN: 2358
+            CANO: 7322
+            CASO: 11361
+            FRCC: 9178
+            ISNE: 5533
+            MISC: 2991
+            MISE: 2616
+            MISS: 2494
+            MISW: 4487
+            NWPP: 2311
+            NYCW: 3287
+            NYUP: 2380
+            PJMC: 2825
+            PJMD: 3057
+            PJME: 12031
+            PJMW: 6297
+            RMRG: 2432
+            SPPC: 907
+            SPPN: 420
+            SPPS: 2170
+            SRCA: 7200
+            SRCE: 1575
+            SRSE: 1886
+            SRSG: 4028
+            TRE: 11936
+      IRA_MID:
+        distributed_gen_values:
+          2040:
+            BASN: 3123
+            CANO: 9697
+            CASO: 15045
+            FRCC: 12155
+            ISNE: 7327
+            MISC: 3962
+            MISE: 3465
+            MISS: 3303
+            MISW: 5942
+            NWPP: 3059
+            NYCW: 4353
+            NYUP: 3152
+            PJMC: 3740
+            PJMD: 4048
+            PJME: 15512
+            PJMW: 8339
+            RMRG: 3220
+            SPPC: 1201
+            SPPN: 557
+            SPPS: 2874
+            SRCA: 9536
+            SRCE: 2086
+            SRSE: 2497
+            SRSG: 5335
+            TRE: 15807
+    limitedtransmission:
+      yes:
+        tx_expansion_per_period: 0.5
+    renewable_battery_capex_ccs:
+      renewable_mid_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_mid_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+    ira:
+      yes:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.7225]
+          Offwind_floating:
+            capex_mw: [mul, 0.7225]
+          upv:
+            Var_OM_Cost_per_MWh: [sub, 8.82]
+          Landwind:
+            Var_OM_Cost_per_MWh: [sub, 9.67]
+          bat:
+            capex_mw: [mul, 0.7225]
+            capex_mwh: [mul, 0.7225]
+      no:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.70]
+          Offwind_floating:
+            capex_mw: [mul, 0.70]
+          upv:
+            capex_mw: [mul, 0.90]
+    ng_price:
+      reference:
+        aeo_fuel_scenarios:
+          naturalgas: reference
+      low:
+        aeo_fuel_scenarios:
+          naturalgas: high_resource
+      high:
+        aeo_fuel_scenarios:
+          naturalgas: low_resource
+  2045:
+    min_cap:
+      base:
+        MinCapReq:
+          MinCapTag_1:
+            description: NY_offshorewind
+            min_mw: 9000
+          MinCapTag_2:
+            description: PJME_offshorewind
+            min_mw: 12700
+          MinCapTag_3:
+            description: PJMD_offshorewind
+            min_mw: 5200
+          MinCapTag_4:
+            description: ISNE_offshorewind
+            min_mw: 13945
+          MinCapTag_5:
+            description: SRCA_offshorewind
+            min_mw: 8000
+    dgsolar:
+      BIF:
+        distributed_gen_values:
+          2045: 
+            BASN: 2605
+            CANO: 8092
+            CASO: 12554
+            FRCC: 9783
+            ISNE: 5886
+            MISC: 3939
+            MISE: 3136
+            MISS: 2910
+            MISW: 5171
+            NWPP: 2621
+            NYCW: 3515
+            NYUP: 2545
+            PJMC: 2842
+            PJMD: 3886
+            PJME: 12400
+            PJMW: 7310
+            RMRG: 2811
+            SPPC: 1324
+            SPPN: 553
+            SPPS: 2800
+            SRCA: 8508
+            SRCE: 2258
+            SRSE: 2679
+            SRSG: 4346
+            TRE: 13218
+      IRA_MID:
+        distributed_gen_values:
+          2045:
+            BASN: 3352
+            CANO: 10411
+            CASO: 16154
+            FRCC: 12588
+            ISNE: 7574
+            MISC: 5067
+            MISE: 4034
+            MISS: 3744
+            MISW: 6652
+            NWPP: 3372
+            NYCW: 4522
+            NYUP: 3274
+            PJMC: 3657
+            PJMD: 4998
+            PJME: 15620
+            PJMW: 9404
+            RMRG: 3616
+            SPPC: 1703
+            SPPN: 712
+            SPPS: 3602
+            SRCA: 10947
+            SRCE: 2904
+            SRSE: 3445
+            SRSG: 5591
+            TRE: 17006
+    limitedtransmission:
+      yes:
+        tx_expansion_per_period: 0.5
+    renewable_battery_capex_ccs:
+      renewable_mid_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_mid_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+    ira:
+      yes:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.7225]
+          Offwind_floating:
+            capex_mw: [mul, 0.7225]
+          upv:
+            Var_OM_Cost_per_MWh: [sub, 8.82]
+          Landwind:
+            Var_OM_Cost_per_MWh: [sub, 9.67]
+          bat:
+            capex_mw: [mul, 0.7225]
+            capex_mwh: [mul, 0.7225]
+      no:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.70]
+          Offwind_floating:
+            capex_mw: [mul, 0.70]
+          upv:
+            capex_mw: [mul, 0.90]    
+    ng_price:
+      reference:
+        aeo_fuel_scenarios:
+          naturalgas: reference
+      low:
+        aeo_fuel_scenarios:
+          naturalgas: high_resource
+      high:
+        aeo_fuel_scenarios:
+          naturalgas: low_resource
+  2050:
+    min_cap:
+      base:
+        MinCapReq:
+          MinCapTag_1:
+            description: NY_offshorewind
+            min_mw: 9000
+          MinCapTag_2:
+            description: PJME_offshorewind
+            min_mw: 12700
+          MinCapTag_3:
+            description: PJMD_offshorewind
+            min_mw: 5200
+          MinCapTag_4:
+            description: ISNE_offshorewind
+            min_mw: 13945
+          MinCapTag_5:
+            description: SRCA_offshorewind
+            min_mw: 8000
+    dgsolar:
+      BIF:
+        distributed_gen_values:
+          2050: 
+            BASN: 2918
+            CANO: 8889
+            CASO: 13792
+            FRCC: 10332
+            ISNE: 6215
+            MISC: 4903
+            MISE: 3741
+            MISS: 3453
+            MISW: 5668
+            NWPP: 2950
+            NYCW: 3612
+            NYUP: 2615
+            PJMC: 2876
+            PJMD: 4772
+            PJME: 12777
+            PJMW: 8484
+            RMRG: 3166
+            SPPC: 1759
+            SPPN: 709
+            SPPS: 3391
+            SRCA: 9734
+            SRCE: 3209
+            SRSE: 3768
+            SRSG: 4646
+            TRE: 14384
+      IRA_MID:
+        distributed_gen_values:
+          2050:
+            BASN: 3654
+            CANO: 11134
+            CASO: 17275
+            FRCC: 12941
+            ISNE: 8153
+            MISC: 6140
+            MISE: 4685
+            MISS: 4324
+            MISW: 7099
+            NWPP: 3695
+            NYCW: 4523
+            NYUP: 3276
+            PJMC: 3602
+            PJMD: 5977
+            PJME: 15745
+            PJMW: 10625
+            RMRG: 3965
+            SPPC: 2203
+            SPPN: 888
+            SPPS: 4247
+            SRCA: 12192
+            SRCE: 4019
+            SRSE: 4719
+            SRSG: 5820
+            TRE: 18015
+    limitedtransmission:
+      yes:
+        tx_expansion_per_period: 0.5
+    renewable_battery_capex_ccs:
+      renewable_mid_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_mid_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]
+          - [LandbasedWind, Class1, Moderate, 1]
+          - [OffShoreWind, Class3, Moderate, 1]
+          - [OffShoreWind, Class12, Moderate, 1]
+          - [UtilityPV, Class1, Moderate, 1]
+          - [Battery, "*", Moderate, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_low_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Advanced, 1]
+          - [OffShoreWind, Class3, Advanced, 1]
+          - [OffShoreWind, Class12, Advanced, 1]
+          - [UtilityPV, Class1, Advanced, 1]
+          - [Battery, "*", Advanced, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_noccs:
+        atb_new_gen:
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+      renewable_high_yesccs:
+        atb_new_gen:
+          - [Coal, CCS90AvgCF, Moderate, 500]
+          - [NaturalGas, CCAvgCF, Moderate, 500]
+          - [NaturalGas, CTAvgCF, Moderate, 100]
+          - [NaturalGas, CCCCSAvgCF, Conservative, 500]  
+          - [LandbasedWind, Class1, Conservative, 1]
+          - [OffShoreWind, Class3, Conservative, 1]
+          - [OffShoreWind, Class12, Conservative, 1]
+          - [UtilityPV, Class1, Conservative, 1]
+          - [Battery, "*", Conservative, 1]
+          - [Nuclear, Nuclear, Moderate, 2000]
+    ira:
+      yes:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.7225]
+          Offwind_floating:
+            capex_mw: [mul, 0.7225]
+          upv:
+            Var_OM_Cost_per_MWh: [sub, 8.82]
+          Landwind:
+            Var_OM_Cost_per_MWh: [sub, 9.67]
+          bat:
+            capex_mw: [mul, 0.7225]
+            capex_mwh: [mul, 0.7225]
+      no:
+        atb_modifiers:
+          Offwind:
+            capex_mw: [mul, 0.70]
+          Offwind_floating:
+            capex_mw: [mul, 0.70]
+          upv:
+            capex_mw: [mul, 0.90]
+    ng_price:
+      reference:
+        aeo_fuel_scenarios:
+          naturalgas: reference
+      low:
+        aeo_fuel_scenarios:
+          naturalgas: high_resource
+      high:
+        aeo_fuel_scenarios:
+          naturalgas: low_resource
