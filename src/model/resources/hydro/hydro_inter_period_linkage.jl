@@ -41,29 +41,45 @@ Finally, the next constraint enforces that the initial storage level for each in
 \end{aligned}
 ```
 """
-function hydro_inter_period_linkage!(EP::Model, inputs::Dict)
+function hydro_inter_period_linkage!(EP::Model, inputs::Dict, number_of_scenarios_subset::Int64)
 
 	println("Long Duration Storage Module for Hydro Reservoir")
 
 	dfGen = inputs["dfGen"]
 
 	G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
-	T = inputs["T"]     # Number of time steps (hours)
-	SC = inputs["SC"]   # Number of scenarios
+	T = inputs["T_scenario_1"]     # Number of time steps (hours)
+	SC = number_of_scenarios_subset  # Number of scenarios
 	Z = inputs["Z"]     # Number of zones
-	REP_PERIOD = inputs["REP_PERIOD"]     # Number of representative periods
+	REP_PERIOD = Array{Int64, 2}(undef, SC, 1)    # Number of representative periods
 
-	STOR_HYDRO_LONG_DURATION = inputs["STOR_HYDRO_LONG_DURATION"]
+	STOR_HYDRO_LONG_DURATION = Array{Int64, 2}(undef, SC, 1)
 
-	START_SUBPERIODS = inputs["START_SUBPERIODS"]
+	START_SUBPERIODS = Array{Int64, 2}(undef, SC, 1)
 
-	hours_per_subperiod = inputs["hours_per_subperiod"] #total number of hours per subperiod
+	hours_per_subperiod = Array{Int64, 2}(undef, SC, 1) #total number of hours per subperiod
 
-	dfPeriodMap = inputs["Period_Map"] # Dataframe that maps modeled periods to representative periods
-	NPeriods = size(inputs["Period_Map"])[1] # Number of modeled periods
+	dfPeriodMap = DataFrame[] # Dataframe that maps modeled periods to representative periods
+	NPeriods = Array{Int64, 2}(undef, SC, 1) # Number of modeled periods
 
-	MODELED_PERIODS_INDEX = 1:NPeriods
-	REP_PERIODS_INDEX = MODELED_PERIODS_INDEX[dfPeriodMap[!,:Rep_Period] .== MODELED_PERIODS_INDEX]
+	MODELED_PERIODS_INDEX = Array{Int64, 2}(undef, SC, 1)
+	REP_PERIODS_INDEX = Array{Int64, 2}(undef, SC, 1)
+
+	for sc in 1:SC
+		REP_PERIOD[sc,1] = inputs["REP_PERIOD_scenario_$sc"]     # Number of representative periods
+	
+
+		STOR_HYDRO_LONG_DURATION[sc,1] = inputs["STOR_HYDRO_LONG_DURATION_scenario_$sc"]
+		START_SUBPERIODS[sc,1] = inputs["START_SUBPERIODS_scenario_$sc"]
+
+		hours_per_subperiod[sc,1] = inputs["hours_per_subperiod_scenario_$sc"] #total number of hours per subperiod
+
+		dfPeriodMap[sc,1] = inputs["Period_Map_scenario_$sc"] # Dataframe that maps modeled periods to representative periods
+		NPeriods[sc,1] = size(inputs["Period_Map_scenario_$sc"])[1] # Number of modeled periods
+
+		MODELED_PERIODS_INDEX[sc,1] = 1:NPeriods[sc,1]
+		REP_PERIODS_INDEX[sc,1] = MODELED_PERIODS_INDEX[dfPeriodMap[sc,1][!,:Rep_Period] .== MODELED_PERIODS_INDEX[sc,1],1]
+	end
 
 	### Variables ###
 
@@ -74,7 +90,7 @@ function hydro_inter_period_linkage!(EP::Model, inputs::Dict)
 
 	# Build up in storage inventory over each representative period w
 	# Build up inventory can be positive or negative
-	@variable(EP, vdSOC_HYDRO[y in STOR_HYDRO_LONG_DURATION, w=1:REP_PERIOD, sc=1:SC])
+	@variable(EP, vdSOC_HYDRO[y in STOR_HYDRO_LONG_DURATION, w in REP_PERIOD, sc=1:SC])
 
 	### Constraints ###
 
@@ -82,17 +98,20 @@ function hydro_inter_period_linkage!(EP::Model, inputs::Dict)
 	# Modified initial state of storage for long-duration storage - initialize wth value carried over from last period
 	# Alternative to cSoCBalStart constraint which is included when not modeling operations wrapping and long duration storage
 	# Note: tw_min = hours_per_subperiod*(w-1)+1; tw_max = hours_per_subperiod*w
-	@constraint(EP, cSoCBalLongDurationStorageStart_H[w=1:REP_PERIOD, y in STOR_HYDRO_LONG_DURATION, sc=1:SC],
-				    EP[:vS_HYDRO][y,hours_per_subperiod*(w-1)+1,sc] == (EP[:vS_HYDRO][y,hours_per_subperiod*w,sc]-vdSOC_HYDRO[y,w,sc])-(1/dfGen[y,:Eff_Down]*EP[:vP][y,hours_per_subperiod*(w-1)+1,sc])-EP[:vSPILL][y,hours_per_subperiod*(w-1)+1,sc]+inputs["pP_Max"][y,hours_per_subperiod*(w-1)+1,sc]*EP[:eTotalCap][y])
+	@constraint(EP, cSoCBalLongDurationStorageStart_H[w in REP_PERIOD, y in STOR_HYDRO_LONG_DURATION, sc=1:SC],
+				    EP[:vS_HYDRO][y,hours_per_subperiod*(w-1)+1,sc] == (EP[:vS_HYDRO][y,hours_per_subperiod*w,sc]-vdSOC_HYDRO[y,w,sc])-(1/dfGen[y,:Eff_Down]*EP[:vP][y,hours_per_subperiod*(w-1)+1,sc])-EP[:vSPILL][y,hours_per_subperiod*(w-1)+1,sc]+inputs["pP_Max_scenario_$sc"][y,hours_per_subperiod*(w-1)+1,sc]*EP[:eTotalCap][y])
 
 	# Storage at beginning of period w = storage at beginning of period w-1 + storage built up in period w (after n representative periods)
 	## Multiply storage build up term from prior period with corresponding weight
-	@constraint(EP, cSoCBalLongDurationStorageInterior_H[y in STOR_HYDRO_LONG_DURATION, r in MODELED_PERIODS_INDEX[1:(end-1)], sc=1:SC],
-					vSOC_HYDROw[y,r+1,sc] == vSOC_HYDROw[y,r,sc] + vdSOC_HYDRO[y,dfPeriodMap[r,:Rep_Period_Index],sc])
+	#@constraint(EP, cSoCBalLongDurationStorageInterior_H[y in STOR_HYDRO_LONG_DURATION, r in MODELED_PERIODS_INDEX[1:(end-1)], sc=1:SC],
+					#vSOC_HYDROw[y,r+1,sc] == vSOC_HYDROw[y,r,sc] + vdSOC_HYDRO[y,dfPeriodMap[r,:Rep_Period_Index],sc])
 
 	## Last period is linked to first period
-	@constraint(EP, cSoCBalLongDurationStorageEnd_H[y in STOR_HYDRO_LONG_DURATION, r in MODELED_PERIODS_INDEX[end], sc=1:SC],
-					vSOC_HYDROw[y,1,sc] == vSOC_HYDROw[y,r,sc] + vdSOC_HYDRO[y,dfPeriodMap[r,:Rep_Period_Index],sc])
+	#@constraint(EP, cSoCBalLongDurationStorageEnd_H[y in STOR_HYDRO_LONG_DURATION, r in MODELED_PERIODS_INDEX[end], sc=1:SC],
+					#vSOC_HYDROw[y,1,sc] == vSOC_HYDROw[y,r,sc] + vdSOC_HYDRO[y,dfPeriodMap[r,:Rep_Period_Index],sc])
+
+	@constraint(EP, cSoCBalLongDurationStorage_H[y in STOR_HYDRO_LONG_DURATION, r in MODELED_PERIODS_INDEX, sc=1:SC],
+					vSOC_HYDROw[y, mod1(r+1, NPeriods[sc,1])] == vSOC_HYDROw[y,r,sc] + vdSOC_HYDRO[y,dfPeriodMap[sc][r,:Rep_Period_Index],sc])
 
 	# Storage at beginning of each modeled period cannot exceed installed energy capacity
 	@constraint(EP, cSoCBalLongDurationStorageUpper_H[y in STOR_HYDRO_LONG_DURATION, r in MODELED_PERIODS_INDEX, sc=1:SC],

@@ -158,20 +158,21 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	if !isempty(inputs["STOR_ALL"])
 		storage!(EP, inputs, setup, number_of_scenarios)
 	end
-	#=
+	
 	# Model constraints, variables, expression related to reservoir hydropower resources
 	if !isempty(inputs["HYDRO_RES"])
 		hydro_res!(EP, inputs, setup, number_of_scenarios)
 	end
-	=#
+	
 	# Model constraints, variables, expression related to reservoir hydropower resources with long duration storage
-	#=
+	rep_period_subset = Int64[]
 	for sc in 1:SC
 		if inputs["REP_PERIOD_scenario_$sc"] > 1 && !isempty(inputs["STOR_HYDRO_LONG_DURATION"])
-			hydro_inter_period_linkage!(EP, inputs, number_of_scenarios)
+			push!(rep_period_subset,inputs["REP_PERIOD_scenario_$sc"])
 		end
 	end
-	=#
+	number_of_scenarios_of_subset= length(rep_period_subset) ##LONG-DURATION STORAGE
+	hydro_inter_period_linkage!(EP, inputs, number_of_scenarios_of_subset)
 	# Model constraints, variables, expression related to demand flexibility resources
 	if !isempty(inputs["FLEX"])
 		flexible_demand!(EP, inputs, setup, number_of_scenarios)
