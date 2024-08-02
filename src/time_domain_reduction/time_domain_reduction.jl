@@ -515,7 +515,7 @@ In Load_data.csv, include the following:
      the first stage and will apply the periods of each other model stage to this set
      of representative periods by closest Eucliden distance.
 """
-function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sc, stage_id=-99, v=false)
+function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, weather_scenarios, sc, fsc, stage_id=-99, v=false)
     if v println(now()) end
 
     ##### Step 0: Load in settings and data
@@ -545,26 +545,17 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sc,
         MultiStageConcatenate = myTDRsetup["MultiStageConcatenate"]
         NumStages = mysetup["MultiStageSettingsDict"]["NumStages"]
     end
-    
-    #tdr_load=Dict()
-    #tdr_genvar = Dict()
-    #tdr_fuels = Dict()
-    #for i in 1:number_of_scenarios
-        #tdr_load[i] = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$i.csv")
-        #tdr_genvar[i] = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$i.csv")
-        #tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$i.csv")
-        #tdr_period[i] = joinpath(TimeDomainReductionFolder,"Period_map", "Period_map_scenario_$i.csv")
-    #end
    
     mkpath(joinpath(inpath, TimeDomainReductionFolder, "Load_data")) 
     mkpath(joinpath(inpath, TimeDomainReductionFolder, "Generators_variability"))
     mkpath(joinpath(inpath, TimeDomainReductionFolder, "Fuels_data"))
     mkpath(joinpath(inpath, TimeDomainReductionFolder, "Period_map"))
+
    
     Load_Outfile = joinpath(TimeDomainReductionFolder,"Load_data", "Load_data_scenario_$sc.csv")
     GVar_Outfile = joinpath(TimeDomainReductionFolder,"Generators_variability", "Generators_variability_scenario_$sc.csv")
-    Fuel_Outfile = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$sc.csv")
-    PMap_Outfile = joinpath(TimeDomainReductionFolder,"Period_map", "Period_map_scenario_$sc.csv")
+    Fuel_Outfile = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$fsc.csv")
+    PMap_Outfile = joinpath(TimeDomainReductionFolder,"Period_map", "Period_map_scenario_$((fsc-1)*weather_scenarios+sc).csv")
     YAML_Outfile = joinpath(TimeDomainReductionFolder, "time_domain_reduction_settings.yml")
 
     # Define a local version of the setup so that you can modify the mysetup["ParameterScale"] value to be zero in case it is 1
@@ -622,7 +613,7 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, sc,
         end
     else
         if v println("Not MultiStage") end
-        myinputs = load_inputs!(mysetup_local,inpath,number_of_scenarios,sc)
+        myinputs = load_inputs!(mysetup_local,inpath,number_of_scenarios,sc,fsc)
         RESOURCE_ZONES = myinputs["RESOURCE_ZONES"]
         RESOURCES = myinputs["RESOURCES"]
         ZONES = myinputs["R_ZONES"]

@@ -16,6 +16,11 @@ function load_probability_distribution!(setup::Dict, path::AbstractString, input
 	my_dir = path
     	filename = "probability_distribution.csv"
 	probability_distribution = load_dataframe(joinpath(my_dir, filename))
+
+	fuel_prob_filename = "fuel_probability.csv"
+	fuel_probability_distribution = load_dataframe(joinpath(my_dir, fuel_prob_filename))
+
+	
     
 	# Maximum power output and variability of each energy resource
 	scenprob=extract_matrix_from_dataframe(probability_distribution, "scenario")

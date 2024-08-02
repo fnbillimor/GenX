@@ -1,0 +1,26 @@
+ERCOT Winter Projected Demand
+
+     CONTROL AREA                      LOCATION               ACRONYM
+     Austin Energy                     Austin. TX              AENX
+     City Public Service               San Antonio, TX         CPST
+     Central and South West Services   Dallas, TX              CSWS
+     Lower Colorado River Authority    Austin, TX              LCRA
+     Public Utilities Board            Brownsville, TX         PUBX
+     Reliant Energy (HLP)              Houston, TX             REIT
+     South Texas Electric Cooperative  Nursery, TX             STEC
+     Texas Municipal Power Pool        Waco, TX                TMPP
+     Texas-New Mexico Power Co.        League City, TX         TNMP
+     TXU Electric Co.                  Dallas, TX              TUET
+
+             2000    2001    2002    2003    2004    2005    2006    2007    2008    2009
+AENX         1857    1923    2021    2094    2176    2309    2457    2542    2630    2721
+CPST         2345    2349    2540    2642    2745    2853    3042    3152    3267    3386
+CSWS         5701    6256    6303    6523    6705    6916    7319    7527    7740    7957
+LCRA         2490    2588    2696    2810    2932    2988    3176    3281    3390    3503
+PUBX          160     165     170     175     180     185     197     203     210     217
+REIT        10363   10420   10688   10917   11156   11404   11993   12260   12533   12812
+STEC          323     356     407     444     481     520     573     604     631     656
+TMPP         2331    2413    2503    2599    2698    2800    3000    3124    3254    3390
+TNMP          598     612     741     783     805     827     910     973    1041    1113
+TUET        16765   17205   17689   17940   18364   18840   19891   20413   20949   21500
+ERCOT Total 42932   44287   45757   46926   48243   49642   52558   54079   55645   57255

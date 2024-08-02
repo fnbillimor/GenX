@@ -23,7 +23,6 @@ function default_settings()
         "MethodofMorris" => 0,
         "IncludeLossesInESR" => 0,
         "EnableJuMPStringNames" => false,
-        "StochasticScenarioGeneration" => 0,
     )
 end
 

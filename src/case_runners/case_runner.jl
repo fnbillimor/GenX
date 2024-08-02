@@ -26,14 +26,34 @@ function run_genx_case!(case::AbstractString)
     end
 end
 
-function time_domain_reduced_files_exist(tdrpath, number_of_scenarios)
-    tdr_dict=Dict()
+function time_domain_reduced_files_exist(tdrpath, number_of_scenarios, weather_scenarios)
+    tdr_dict = Dict()
     tdr_true_false = true
-    for i in 1:number_of_scenarios
-        tdr_load = isfile(joinpath(tdrpath,"Load_data", "Load_data_scenario_$i.csv"))
-        tdr_genvar = isfile(joinpath(tdrpath,"Generators_variability", "Generators_variability_scenario_$i.csv"))
-        tdr_fuels = isfile(joinpath(tdrpath,"Fuels_data", "Fuels_data_scenario_$i.csv"))
-        tdr_dict[i]=tdr_load && tdr_genvar && tdr_fuels
+    for i = 1:number_of_scenarios
+        j, k = divrem(i, weather_scenarios)
+        if k != 0
+            tdr_load = isfile(joinpath(tdrpath, "Load_data", "Load_data_scenario_$k.csv"))
+            tdr_genvar = isfile(
+                joinpath(
+                    tdrpath,
+                    "Generators_variability",
+                    "Generators_variability_scenario_$k.csv",
+                ),
+            )
+            tdr_fuels = isfile(joinpath(tdrpath, "Fuels_data", "Fuels_data_scenario_$(j+1).csv"))
+            tdr_dict[i] = tdr_load && tdr_genvar && tdr_fuels
+        else
+            tdr_load = isfile(joinpath(tdrpath, "Load_data", "Load_data_scenario_$weather_scenarios.csv"))
+            tdr_genvar = isfile(
+                joinpath(
+                    tdrpath,
+                    "Generators_variability",
+                    "Generators_variability_scenario_$weather_scenarios.csv",
+                ),
+            )
+            tdr_fuels = isfile(joinpath(tdrpath, "Fuels_data", "Fuels_data_scenario_$j.csv"))
+            tdr_dict[i] = tdr_load && tdr_genvar && tdr_fuels
+        end
         tdr_true_false = tdr_true_false && tdr_dict[i]
     end
     return (tdr_true_false)
@@ -42,20 +62,24 @@ end
 function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
     settings_path = get_settings_path(case)
 
-    if mysetup["StochasticScenarioGeneration"] == 1
-        number_of_scenarios = generate_scenarios(case, settings_path, mysetup)
-    end
     ### Cluster time series inputs if necessary and if specified by the user
     TDRpath = joinpath(case, mysetup["TimeDomainReductionFolder"])
 
+    fuel_scenarios, weather_scenarios, number_of_scenarios, myinputs = generate_scenarios!(case, settings_path, mysetup)
+
     if mysetup["TimeDomainReduction"] == 1
-        for sc in 1:number_of_scenarios
+        for sc = 1:weather_scenarios
             prevent_doubled_timedomainreduction(case, sc)
         end
-        if !time_domain_reduced_files_exist(TDRpath, number_of_scenarios)
+        if !time_domain_reduced_files_exist(TDRpath, number_of_scenarios, weather_scenarios)
             println("Clustering Time Series Data (Grouped)...")
-            for sc in 1:number_of_scenarios
-                cluster_inputs(case, settings_path, mysetup, number_of_scenarios, sc)
+            for sc = 1:number_of_scenarios
+                j, k = divrem(sc, weather_scenarios)
+                if k != 0
+                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, k, j+1)
+                else
+                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, j)
+                end
             end
         else
             println("Time Series Data Already Clustered.")
@@ -70,10 +94,11 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
 
     ### Load inputs
     println("Loading Inputs")
-    myinputs = load_inputs!(mysetup, case, number_of_scenarios)
+    myinputs = load_inputs!(mysetup, case, number_of_scenarios, myinputs)
 
     println("Generating the Optimization Model")
-    time_elapsed = @elapsed EP = generate_model(mysetup, myinputs, OPTIMIZER, number_of_scenarios)
+    time_elapsed =
+        @elapsed EP = generate_model(mysetup, myinputs, OPTIMIZER, number_of_scenarios)
     println("Time elapsed for model building is")
     println(time_elapsed)
 
@@ -111,14 +136,21 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
     first_stage_path = joinpath(case, "Inputs", "Inputs_p1")
     TDRpath = joinpath(first_stage_path, mysetup["TimeDomainReductionFolder"])
     if mysetup["TimeDomainReduction"] == 1
-        for sc in 1:number_of_scenarios
+        for sc = 1:number_of_scenarios
             prevent_doubled_timedomainreduction(first_stage_path, sc)
         end
         if !time_domain_reduced_files_exist(TDRpath, number_of_scenarios)
-            if (mysetup["MultiStage"] == 1) && (TDRSettingsDict["MultiStageConcatenate"] == 0)
+            if (mysetup["MultiStage"] == 1) &&
+               (TDRSettingsDict["MultiStageConcatenate"] == 0)
                 println("Clustering Time Series Data (Individually)...")
-                for stage_id in 1:mysetup["MultiStageSettingsDict"]["NumStages"]
-                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, stage_id)
+                for stage_id = 1:mysetup["MultiStageSettingsDict"]["NumStages"]
+                    cluster_inputs(
+                        case,
+                        settings_path,
+                        mysetup,
+                        number_of_scenarios,
+                        stage_id,
+                    )
                 end
             else
                 println("Clustering Time Series Data (Grouped)...")
@@ -133,19 +165,23 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
     println("Configuring Solver")
     OPTIMIZER = configure_solver(mysetup["Solver"], settings_path)
 
-    model_dict=Dict()
-    inputs_dict=Dict()
+    model_dict = Dict()
+    inputs_dict = Dict()
 
-    for t in 1:mysetup["MultiStageSettingsDict"]["NumStages"]
+    for t = 1:mysetup["MultiStageSettingsDict"]["NumStages"]
 
         # Step 0) Set Model Year
         mysetup["MultiStageSettingsDict"]["CurStage"] = t
 
         # Step 1) Load Inputs
-        inpath_sub = joinpath(case, "Inputs", string("Inputs_p",t))
+        inpath_sub = joinpath(case, "Inputs", string("Inputs_p", t))
 
         inputs_dict[t] = load_inputs!(mysetup, inpath_sub)
-        inputs_dict[t] = configure_multi_stage_inputs(inputs_dict[t],mysetup["MultiStageSettingsDict"],mysetup["NetworkExpansion"])
+        inputs_dict[t] = configure_multi_stage_inputs(
+            inputs_dict[t],
+            mysetup["MultiStageSettingsDict"],
+            mysetup["NetworkExpansion"],
+        )
 
         # Step 2) Generate model
         model_dict[t] = generate_model(mysetup, inputs_dict[t], OPTIMIZER)
@@ -175,7 +211,7 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
         mkdir(outpath)
     end
 
-    for p in 1:mysetup["MultiStageSettingsDict"]["NumStages"]
+    for p = 1:mysetup["MultiStageSettingsDict"]["NumStages"]
         outpath_cur = joinpath(outpath, "Results_p$p")
         write_outputs(model_dict[p], outpath_cur, mysetup, inputs_dict[p])
     end
@@ -184,4 +220,3 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
 
     write_multi_stage_outputs(mystats_d, outpath, mysetup, inputs_dict)
 end
-
