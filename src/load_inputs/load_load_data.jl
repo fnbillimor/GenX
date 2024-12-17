@@ -192,7 +192,7 @@ function load_load_data!(
     # Load related inputs
     data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
     if setup["TimeDomainReduction"] == 1 &&
-       time_domain_reduced_files_exist(data_directory, scenario_num)
+        time_domain_reduced_files_exist(data_directory, scenario_num)
         my_dir = joinpath(data_directory, "Load_data")
     else
         my_dir = joinpath(path, "Load_data")

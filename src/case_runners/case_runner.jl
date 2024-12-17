@@ -76,9 +76,9 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
             for sc = 1:number_of_scenarios
                 j, k = divrem(sc, weather_scenarios)
                 if k != 0
-                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, k, j+1)
+                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, k, j+1)
                 else
-                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, j)
+                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, weather_scenarios, j)
                 end
             end
         else
