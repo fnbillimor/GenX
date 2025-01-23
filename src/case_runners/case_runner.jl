@@ -66,19 +66,20 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
     TDRpath = joinpath(case, mysetup["TimeDomainReductionFolder"])
 
     fuel_scenarios, weather_scenarios, number_of_scenarios, myinputs = generate_scenarios!(case, settings_path, mysetup)
-
+    tdr_exists = false #default value
     if mysetup["TimeDomainReduction"] == 1
         for sc = 1:weather_scenarios
             prevent_doubled_timedomainreduction(case, sc)
         end
-        if !time_domain_reduced_files_exist(TDRpath, number_of_scenarios, weather_scenarios)
+        tdr_exists = time_domain_reduced_files_exist(TDRpath, number_of_scenarios, weather_scenarios)
+        if !tdr_exists
             println("Clustering Time Series Data (Grouped)...")
             for sc = 1:number_of_scenarios
                 j, k = divrem(sc, weather_scenarios)
                 if k != 0
-                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, k, j+1)
+                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, k, j+1, tdr_exists)
                 else
-                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, weather_scenarios, j)
+                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, weather_scenarios, j, tdr_exists)
                 end
             end
         else
@@ -94,7 +95,7 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
 
     ### Load inputs
     println("Loading Inputs")
-    myinputs = load_inputs!(mysetup, case, number_of_scenarios, myinputs)
+    myinputs = load_inputs!(mysetup, case, number_of_scenarios, weather_scenarios, fuel_scenarios, myinputs, tdr_exists)
 
     println("Generating the Optimization Model")
     time_elapsed =

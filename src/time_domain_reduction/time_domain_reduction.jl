@@ -515,7 +515,7 @@ In Load_data.csv, include the following:
      the first stage and will apply the periods of each other model stage to this set
      of representative periods by closest Eucliden distance.
 """
-function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, weather_scenarios, sc, fsc, stage_id=-99, v=false)
+function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, weather_scenarios, sc, fsc, tdr_exists::Bool, stage_id=-99, v=false)
     if v println(now()) end
 
     ##### Step 0: Load in settings and data
@@ -613,7 +613,7 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, wea
         end
     else
         if v println("Not MultiStage") end
-        myinputs = load_inputs!(mysetup_local,inpath,number_of_scenarios,sc,fsc)
+        myinputs = load_inputs!(mysetup_local,inpath,number_of_scenarios,sc,fsc, tdr_exists)
         RESOURCE_ZONES = myinputs["RESOURCE_ZONES"]
         RESOURCES = myinputs["RESOURCES"]
         ZONES = myinputs["R_ZONES"]
@@ -1039,7 +1039,7 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, wea
                 CSV.write(joinpath(inpath, "Inputs", Stage_Outfiles[per]["GVar"]), GVOutputData, header=NewGVColNames)
 
                 ### TDR_Results/Fuels_data.csv
-                fuel_in = load_dataframe(joinpath(inpath, "Inputs", "Inputs_p$per", "Fuels_data", "Fuels_data_scenario_$sc.csv"))
+                fuel_in = load_dataframe(joinpath(inpath, "Inputs", "Inputs_p$per", "Fuels_data", "Fuels_data_scenario_$fsc.csv"))
                 select!(fuel_in, Not(:Time_Index))
                 SepFirstRow = DataFrame(fuel_in[1, :])
                 NewFuelOutput = vcat(SepFirstRow, FPOutputData)
@@ -1112,7 +1112,7 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, wea
 
             ### TDR_Results/Fuels_data.csv
 
-            fuel_in = load_dataframe(joinpath(inpath,"Inputs",input_stage_directory,"Fuels_data", "Fuels_data_scenario_$sc.csv"))
+            fuel_in = load_dataframe(joinpath(inpath,"Inputs",input_stage_directory,"Fuels_data", "Fuels_data_scenario_$fsc.csv"))
             select!(fuel_in, Not(:Time_Index))
             SepFirstRow = DataFrame(fuel_in[1, :])
             NewFuelOutput = vcat(SepFirstRow, FPOutputData)
@@ -1125,7 +1125,7 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, wea
                 tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_i.csv")
             end
             """
-            tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$sc.csv")
+            tdr_fuels[i] = joinpath(TimeDomainReductionFolder,"Fuels_data", "Fuels_data_scenario_$fsc.csv")
 
             ### Period_map.csv
             if v println("Writing period map...") end
@@ -1222,7 +1222,7 @@ function cluster_inputs(inpath, settings_path, mysetup, number_of_scenarios, wea
             CSV.write(joinpath(inpath, tdr_fuels[i]), NewFuelOutput)
         end
         """
-        fuel_in = load_dataframe(joinpath(inpath, "Fuels_data", "Fuels_data_scenario_$sc.csv"))
+        fuel_in = load_dataframe(joinpath(inpath, "Fuels_data", "Fuels_data_scenario_$fsc.csv"))
         select!(fuel_in, Not(:Time_Index))
         SepFirstRow = DataFrame(fuel_in[1, :])
         NewFuelOutput = vcat(SepFirstRow, FPOutputData)

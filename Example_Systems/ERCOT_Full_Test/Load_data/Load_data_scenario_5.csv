@@ -1,5 +1,5 @@
-Voll,Demand_Segment,Cost_of_Demand_Curtailment_per_MW,Max_Demand_Curtailment,$/MWh,Rep_Periods,Timesteps_per_Rep_Period,Sub_Weights,Time_Index,TRE_WEST,TRE
-2000,1,1,1,2000,1,168,1,1,2443.269955,21611.151
+Voll,Demand_Segment,Cost_of_Demand_Curtailment_per_MW,Max_Demand_Curtailment,$/MWh,Rep_Periods,Timesteps_per_Rep_Period,Sub_Weights,Time_Index,Load_MW_z1,Load_MW_z2
+2000,1,1,1,2000,1,8760,1,1,2443.269955,21611.151
 ,2,0.9,0.04,1800,,,,2,2404.575418,20915.97399
 ,3,0.55,0.024,1100,,,,3,2350.341074,20090.16093
 ,4,0.2,0.003,400,,,,4,2327.221889,19600.9392

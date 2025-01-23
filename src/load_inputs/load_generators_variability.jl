@@ -7,13 +7,14 @@ function load_generators_variability!(
     setup::Dict,
     path::AbstractString,
     inputs::Dict,
-    scenario_num::Int64,
+    weather_scenarios::Int64,
+    fuel_scenarios::Int64,
+    tdr_exists::Bool
 )
 
     # Hourly capacity factors
     data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-    if setup["TimeDomainReduction"] == 1 &&
-       time_domain_reduced_files_exist(data_directory, scenario_num)
+    if setup["TimeDomainReduction"] == 1 && tdr_exists
         my_dir = joinpath(data_directory, "Generators_variability")
     else
         my_dir = joinpath(path, "Generators_variability")
@@ -36,11 +37,12 @@ function load_generators_variability!(
         end
         # Reorder DataFrame to R_ID order (order provided in Generators_data.csv)
         select!(gen_var[i], [:Time_Index; Symbol.(all_resources)])
-
-        # Maximum power output and variability of each energy resource
-        inputs["pP_Max_scenario_$i"] = transpose(
-            Matrix{Float64}(gen_var[i][1:inputs["T_scenario_$i"], 2:(inputs["G"]+1)]),
-        )
+        for fsc = 1:fuel_scenarios
+            # Maximum power output and variability of each energy resource
+            inputs["pP_Max_scenario_$((fsc-1)*weather_scenarios+i)"] = transpose(
+                Matrix{Float64}(gen_var[i][1:inputs["T_scenario_$((fsc-1)*weather_scenarios+i)"], 2:(inputs["G"]+1)]),
+            )
+        end
     end
 
 
@@ -53,14 +55,13 @@ function load_generators_variability!(
     setup::Dict,
     path::AbstractString,
     inputs::Dict,
-    scenario_num::Int64,
     sc::Int64,
+    tdr_exists::Bool
 )
 
     # Hourly capacity factors
     data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-    if setup["TimeDomainReduction"] == 1 &&
-       time_domain_reduced_files_exist(data_directory, scenario_num)
+    if setup["TimeDomainReduction"] == 1 && tdr_exists
         my_dir = joinpath(data_directory, "Generators_variability")
     else
         my_dir = joinpath(path, "Generators_variability")

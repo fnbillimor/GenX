@@ -7,13 +7,13 @@ function load_fuels_data!(
     setup::Dict,
     path::AbstractString,
     inputs::Dict,
-    scenario_num::Int64,
+    weather_scenarios::Int64,
+    tdr_exists::Bool
 )
 
     # Fuel related inputs - read in different files depending on if time domain reduction is activated or not
     data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-    if setup["TimeDomainReduction"] == 1 &&
-       time_domain_reduced_files_exist(data_directory, scenario_num)
+    if setup["TimeDomainReduction"] == 1 && tdr_exists
         my_dir = joinpath(data_directory, "Fuels_data")
     else
         my_dir = joinpath(path, "Fuels_data")
@@ -45,11 +45,11 @@ function load_fuels_data!(
             # fuel_CO2 is kton/MMBTU with scaling, or ton/MMBTU without scaling.
             fuel_CO2[fuels[j]] = CO2_content[j] / scale_factor
         end
-
-        inputs["fuels_scenario_$i"] = fuels
-        inputs["fuel_costs_scenario_$i"] = fuel_costs
-        inputs["fuel_CO2_scenario_$i"] = fuel_CO2
-
+        for wsc = 1:weather_scenarios
+            inputs["fuels_scenario_$((i-1)*weather_scenarios+wsc)"] = fuels
+            inputs["fuel_costs_scenario_$((i-1)*weather_scenarios+wsc)"] = fuel_costs
+            inputs["fuel_CO2_scenario_$((i-1)*weather_scenarios+wsc)"] = fuel_CO2
+        end
         #return fuel_costs, fuel_CO2
     end
     println(filename * " Successfully Read!")
@@ -61,12 +61,12 @@ function load_fuels_data!(
     inputs::Dict,
     scenario_num::Int64,
     sc::Int64,
+    tdr_exists::Bool
 )
 
     # Fuel related inputs - read in different files depending on if time domain reduction is activated or not
     data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-    if setup["TimeDomainReduction"] == 1 &&
-       time_domain_reduced_files_exist(data_directory, scenario_num)
+    if setup["TimeDomainReduction"] == 1 && tdr_exists
         my_dir = joinpath(data_directory, "Fuels_data")
     else
         my_dir = joinpath(path, "Fuels_data")

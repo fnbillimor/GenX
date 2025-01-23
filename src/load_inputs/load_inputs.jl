@@ -13,7 +13,10 @@ function load_inputs!(
     setup::Dict,
     path::AbstractString,
     scenario_num::Int64,
+    weather_scenarios::Int64,
+    fuel_scenario_num::Int64,
     inputs::Dict,
+    tdr_exists::Bool,
     source_flag = false,
 )
     source_flag = true #flag to indicate which implementation of load_input calls the load_generators_data.jl true for call from the case runner, and false for call from the TDR
@@ -31,15 +34,15 @@ function load_inputs!(
     end
 
     # Read temporal-resolved load data, and clustering information if relevant
-    load_load_data!(setup, path, inputs, scenario_num)
+    load_load_data!(setup, path, inputs, weather_scenarios, fuel_scenario_num, tdr_exists)
     # Read fuel cost data, including time-varying fuel costs
-    load_fuels_data!(setup, path, inputs, scenario_num)
+    load_fuels_data!(setup, path, inputs, weather_scenarios, tdr_exists)
     # Read in generator/resource related inputs
-    load_generators_data!(setup, path, inputs, source_flag, scenario_num)
+    load_generators_data!(setup, path, inputs, source_flag, fuel_scenario_num)
     # Read in generator/resource availability profiles
-    load_generators_variability!(setup, path, inputs, scenario_num)
+    load_generators_variability!(setup, path, inputs, weather_scenarios, fuel_scenario_num, tdr_exists)
 
-    validatetimebasis(inputs, scenario_num)
+    validatetimebasis(inputs, scenario_num, fuel_scenario_num)
 
     if setup["CapacityReserveMargin"] == 1
         load_cap_reserve_margin!(setup, path, inputs)
@@ -77,7 +80,7 @@ function load_inputs!(
         end
     end
 
-    load_probability_distribution!(setup, path, inputs, scenario_num)
+    #load_probability_distribution!(setup, path, inputs, scenario_num)
 
     println("CSV Files Successfully Read In From $path")
 
@@ -90,6 +93,7 @@ function load_inputs!(
     scenario_num::Int64,
     sc::Int64,
     fsc::Int64,
+    tdr_exists::Bool,
     source_flag = false,
 )
     #flag to indicate which implementation of load_input calls the load_generators_data.jl true for call from the case runner, and false for call from the TDR
@@ -106,15 +110,15 @@ function load_inputs!(
     end
 
     # Read temporal-resolved load data, and clustering information if relevant
-    load_load_data!(setup, path, inputs, scenario_num, sc)
+    load_load_data!(setup, path, inputs, sc, tdr_exists)
     # Read fuel cost data, including time-varying fuel costs
-    load_fuels_data!(setup, path, inputs, scenario_num, fsc)
+    load_fuels_data!(setup, path, inputs, scenario_num, fsc, tdr_exists)
     # Read in generator/resource related inputs
     load_generators_data!(setup, path, inputs, source_flag, scenario_num)
     # Read in generator/resource availability profiles
-    load_generators_variability!(setup, path, inputs, scenario_num, sc)
+    load_generators_variability!(setup, path, inputs, sc, tdr_exists)
 
-    validatetimebasis(inputs, scenario_num, sc)
+    validatetimebasis(inputs, sc)
 
     if setup["CapacityReserveMargin"] == 1
         load_cap_reserve_margin!(setup, path, inputs)

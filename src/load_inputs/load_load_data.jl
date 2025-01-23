@@ -7,13 +7,14 @@ function load_load_data!(
     setup::Dict,
     path::AbstractString,
     inputs::Dict,
-    scenario_num::Int64,
+    weather_scenarios::Int64,
+    fuel_scenarios::Int64,
+    tdr_exists::Bool
 )
 
     # Load related inputs
     data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-    if setup["TimeDomainReduction"] == 1 &&
-       time_domain_reduced_files_exist(data_directory, scenario_num)
+    if setup["TimeDomainReduction"] == 1 && tdr_exists
         my_dir = joinpath(data_directory, "Load_data")
     else
         my_dir = joinpath(path, "Load_data")
@@ -21,6 +22,8 @@ function load_load_data!(
     filename = "Load_data_scenario_*.csv"
     load_files = glob(filename, my_dir)
     load_in = DataFrame.(CSV.File.(load_files))
+    println( "From Load database, number of weather year scenarios" * string(length(load_in)))
+    println(length(load_in))
     for i = 1:length(load_in)
         as_vector(col::Symbol) = collect(skipmissing(load_in[i][!, col]))
 
@@ -28,53 +31,54 @@ function load_load_data!(
         T = length(as_vector(:Time_Index))
         # Number of demand curtailment/lost load segments
         SEG = length(as_vector(:Demand_Segment))
+        for fsc = 1:fuel_scenarios
+            ## Set indices for internal use
+            inputs["T_scenario_$((fsc-1)*weather_scenarios+i)"] = T
+            inputs["SEG_scenario_$((fsc-1)*weather_scenarios+i)"] = SEG
+            Z = inputs["Z"]   # Number of zones
 
-        ## Set indices for internal use
-        inputs["T_scenario_$i"] = T
-        inputs["SEG_scenario_$i"] = SEG
-        Z = inputs["Z"]   # Number of zones
+            inputs["omega_scenario_$((fsc-1)*weather_scenarios+i)"] = zeros(Float64, T) # weights associated with operational sub-period in the model - sum of weight = 8760
+            # Weights for each period - assumed same weights for each sub-period within a period
+            inputs["Weights_scenario_$((fsc-1)*weather_scenarios+i)"] = as_vector(:Sub_Weights) # Weights each period
 
-        inputs["omega_scenario_$i"] = zeros(Float64, T) # weights associated with operational sub-period in the model - sum of weight = 8760
-        # Weights for each period - assumed same weights for each sub-period within a period
-        inputs["Weights_scenario_$i"] = as_vector(:Sub_Weights) # Weights each period
+            # Total number of periods and subperiods
+            inputs["REP_PERIOD_scenario_$((fsc-1)*weather_scenarios+i)"] = convert(Int16, as_vector(:Rep_Periods)[1])
+            inputs["H_scenario_$((fsc-1)*weather_scenarios+i)"] = convert(Int64, as_vector(:Timesteps_per_Rep_Period)[1])
 
-        # Total number of periods and subperiods
-        inputs["REP_PERIOD_scenario_$i"] = convert(Int16, as_vector(:Rep_Periods)[1])
-        inputs["H_scenario_$i"] = convert(Int64, as_vector(:Timesteps_per_Rep_Period)[1])
-
-        # Creating sub-period weights from weekly weights
-        for w = 1:inputs["REP_PERIOD_scenario_$i"]
-            for h = 1:inputs["H_scenario_$i"]
-                t = inputs["H_scenario_$i"] * (w - 1) + h
-                inputs["omega_scenario_$i"][t] =
-                    inputs["Weights_scenario_$i"][w] / inputs["H_scenario_$i"]
+            # Creating sub-period weights from weekly weights
+            for w = 1:inputs["REP_PERIOD_scenario_$((fsc-1)*weather_scenarios+i)"]
+                for h = 1:inputs["H_scenario_$((fsc-1)*weather_scenarios+i)"]
+                    t = inputs["H_scenario_$((fsc-1)*weather_scenarios+i)"] * (w - 1) + h
+                    inputs["omega_scenario_$((fsc-1)*weather_scenarios+i)"][t] =
+                        inputs["Weights_scenario_$((fsc-1)*weather_scenarios+i)"][w] / inputs["H_scenario_$((fsc-1)*weather_scenarios+i)"]
+                end
             end
+
+            # Create time set steps indicies
+            inputs["hours_per_subperiod_scenario_$((fsc-1)*weather_scenarios+i)"] =
+                div.(T, inputs["REP_PERIOD_scenario_$((fsc-1)*weather_scenarios+i)"]) # total number of hours per subperiod
+            hours_per_subperiod = inputs["hours_per_subperiod_scenario_$((fsc-1)*weather_scenarios+i)"] # set value for internal use
+
+            inputs["START_SUBPERIODS_scenario_$((fsc-1)*weather_scenarios+i)"] = 1:hours_per_subperiod:T # set of indexes for all time periods that start a subperiod (e.g. sample day/week)
+            inputs["INTERIOR_SUBPERIODS_scenario_$((fsc-1)*weather_scenarios+i)"] =
+                setdiff(1:T, inputs["START_SUBPERIODS_scenario_$((fsc-1)*weather_scenarios+i)"]) # set of indexes for all time periods that do not start a subperiod
+
+            # Demand in MW for each zone
+            #println(names(load_in))
+            start = findall(s -> s == "Load_MW_z1", names(load_in[i]))[1] #gets the starting column number of all the columns, with header "Load_MW_z1"
+            scale_factor = setup["ParameterScale"] == 1 ? ModelScalingFactor : 1
+            # Max value of non-served energy
+            inputs["Voll_scenario_$((fsc-1)*weather_scenarios+i)"] = as_vector(:Voll) / scale_factor # convert from $/MWh $ million/GWh (assuming objective is divided by 1000)
+            # Demand in MW
+            inputs["pD_scenario_$((fsc-1)*weather_scenarios+i)"] = Matrix(load_in[i][1:T, start:start+Z-1]) / scale_factor  # convert to GW
+
+            # Cost of non-served energy/demand curtailment
+            # Cost of each segment reported as a fraction of value of non-served energy - scaled implicitly
+            inputs["pC_D_Curtail_scenario_$((fsc-1)*weather_scenarios+i)"] =
+                as_vector(:Cost_of_Demand_Curtailment_per_MW) * inputs["Voll_scenario_$((fsc-1)*weather_scenarios+i)"][1]
+            # Maximum hourly demand curtailable as % of the max demand (for each segment)
+            inputs["pMax_D_Curtail_scenario_$((fsc-1)*weather_scenarios+i)"] = as_vector(:Max_Demand_Curtailment)
         end
-
-        # Create time set steps indicies
-        inputs["hours_per_subperiod_scenario_$i"] =
-            div.(T, inputs["REP_PERIOD_scenario_$i"]) # total number of hours per subperiod
-        hours_per_subperiod = inputs["hours_per_subperiod_scenario_$i"] # set value for internal use
-
-        inputs["START_SUBPERIODS_scenario_$i"] = 1:hours_per_subperiod:T # set of indexes for all time periods that start a subperiod (e.g. sample day/week)
-        inputs["INTERIOR_SUBPERIODS_scenario_$i"] =
-            setdiff(1:T, inputs["START_SUBPERIODS_scenario_$i"]) # set of indexes for all time periods that do not start a subperiod
-
-        # Demand in MW for each zone
-        #println(names(load_in))
-        start = findall(s -> s == "Load_MW_z1", names(load_in[i]))[1] #gets the starting column number of all the columns, with header "Load_MW_z1"
-        scale_factor = setup["ParameterScale"] == 1 ? ModelScalingFactor : 1
-        # Max value of non-served energy
-        inputs["Voll_scenario_$i"] = as_vector(:Voll) / scale_factor # convert from $/MWh $ million/GWh (assuming objective is divided by 1000)
-        # Demand in MW
-        inputs["pD_scenario_$i"] = Matrix(load_in[i][1:T, start:start+Z-1]) / scale_factor  # convert to GW
-
-        # Cost of non-served energy/demand curtailment
-        # Cost of each segment reported as a fraction of value of non-served energy - scaled implicitly
-        inputs["pC_D_Curtail_scenario_$i"] =
-            as_vector(:Cost_of_Demand_Curtailment_per_MW) * inputs["Voll_scenario_$i"][1]
-        # Maximum hourly demand curtailable as % of the max demand (for each segment)
-        inputs["pMax_D_Curtail_scenario_$i"] = as_vector(:Max_Demand_Curtailment)
     end
 
     println(filename * " Successfully Read!")
@@ -83,15 +87,11 @@ end
 # ensure that the length of load data exactly matches
 # the number of subperiods times their length
 # and that the number of subperiods equals the list of provided weights
-function validatetimebasis(inputs::Dict, SC::Int64)
+function validatetimebasis(inputs::Dict, SC::Int64, fuel_scenarios::Int64)
     println("Validating time basis")
     for i = 1:SC
         demand_length = size(inputs["pD_scenario_$i"], 1)
         generators_variability_length = size(inputs["pP_Max_scenario_$i"], 2)
-
-        typical_fuel = first(inputs["fuels_scenario_$i"])
-        fuel_costs_length = size(inputs["fuel_costs_scenario_$i"][typical_fuel], 1)
-
         T = inputs["T_scenario_$i"]
         hours_per_subperiod = inputs["hours_per_subperiod_scenario_$i"]
         number_of_representative_periods = inputs["REP_PERIOD_scenario_$i"]
@@ -99,55 +99,61 @@ function validatetimebasis(inputs::Dict, SC::Int64)
 
         H = inputs["H_scenario_$i"]
         expected_length_2 = H * number_of_representative_periods
+        for j in 1:fuel_scenarios
+            typical_fuel = first(inputs["fuels_scenario_$j"])
+            fuel_costs_length = size(inputs["fuel_costs_scenario_$j"][typical_fuel], 1)
 
-        check_equal = [
+        
+
+            check_equal = [
             T,
             demand_length,
             generators_variability_length,
             fuel_costs_length,
             expected_length_1,
             expected_length_2,
-        ]
+            ]
 
-        allequal(x) = all(y -> y == x[1], x)
-        ok = allequal(check_equal)
+            allequal(x) = all(y -> y == x[1], x)
+            ok = allequal(check_equal)
 
-        if ~ok
-            error("""Critical error in time series construction:
-          lengths of the various time series, and/or the expected
-          total length based on the number of representative periods and their length,
-          are not all equal.
+            if ~ok
+                error("""Critical error in time series construction:
+                lengths of the various time series, and/or the expected
+                total length based on the number of representative periods and their length,
+                are not all equal.
 
-          Expected length:                    $T
-       (set by the Time index in demand_data.csv [or load_data.csv])
-          Demand series length:               $demand_length
-       (demand_data.csv [or load_data.csv])
-          Resource time profiles length:      $generators_variability_length
-       (generators_variability.csv)
-          Fuel costs length:                  $fuel_costs_length
-       (fuels_data.csv)
+                Expected length:                    $T
+                (set by the Time index in demand_data.csv [or load_data.csv])
+                Demand series length:               $demand_length
+                (demand_data.csv [or load_data.csv])
+                Resource time profiles length:      $generators_variability_length
+                (generators_variability.csv)
+                Fuel costs length:                  $fuel_costs_length
+                (fuels_data.csv)
 
-          Metrics from demand_data.csv [load_data.csv]:
-          Detected time steps:            $T
-          No. of representative periods:  $number_of_representative_periods
-       Euclidean quotient of these:    $hours_per_subperiod
+                Metrics from demand_data.csv [load_data.csv]:
+                Detected time steps:            $T
+                No. of representative periods:  $number_of_representative_periods
+                Euclidean quotient of these:    $hours_per_subperiod
 
-          No. of representative periods:  $number_of_representative_periods
-          Time steps per rep. period:     $H
-       Product of these:               $expected_length_2
-       """)
-        end
+                No. of representative periods:  $number_of_representative_periods
+                Time steps per rep. period:     $H
+                Product of these:               $expected_length_2
+                """)
+            end
 
-        if "Weights" in keys(inputs)
-            weights = inputs["Weights_scenario_$i"]
-            num_weights = length(weights)
-            if num_weights != number_of_representative_periods
-                error(
+            if "Weights" in keys(inputs)
+                weights = inputs["Weights_scenario_$i"]
+                num_weights = length(weights)
+                if num_weights != number_of_representative_periods
+                    error(
                     """Critical error in time series construction:
-              In demand_data.csv [or load_data.csv],
-              the number of subperiod weights ($num_weights) does not match
-              the expected number of representative periods, ($number_of_representative_periods).""",
-                )
+                    In demand_data.csv [or load_data.csv],
+                    the number of subperiod weights ($num_weights) does not match
+                    the expected number of representative periods, ($number_of_representative_periods).""",
+                    )
+                end
             end
         end
     end
@@ -185,14 +191,13 @@ function load_load_data!(
     setup::Dict,
     path::AbstractString,
     inputs::Dict,
-    scenario_num::Int64,
     sc::Int64,
+    tdr_exists::Bool
 )
 
     # Load related inputs
     data_directory = joinpath(path, setup["TimeDomainReductionFolder"])
-    if setup["TimeDomainReduction"] == 1 &&
-        time_domain_reduced_files_exist(data_directory, scenario_num)
+    if setup["TimeDomainReduction"] == 1 && tdr_exists
         my_dir = joinpath(data_directory, "Load_data")
     else
         my_dir = joinpath(path, "Load_data")
@@ -257,7 +262,7 @@ end
 # ensure that the length of load data exactly matches
 # the number of subperiods times their length
 # and that the number of subperiods equals the list of provided weights
-function validatetimebasis(inputs::Dict, SC::Int64, sc::Int64)
+function validatetimebasis(inputs::Dict, sc::Int64)
     println("Validating time basis")
     demand_length = size(inputs["pD"], 1)
     generators_variability_length = size(inputs["pP_Max"], 2)
