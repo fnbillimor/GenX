@@ -38,7 +38,7 @@ function load_inputs!(
     # Read fuel cost data, including time-varying fuel costs
     load_fuels_data!(setup, path, inputs, weather_scenarios, tdr_exists)
     # Read in generator/resource related inputs
-    load_generators_data!(setup, path, inputs, source_flag, fuel_scenario_num)
+    load_generators_data!(setup, path, inputs, source_flag, fuel_scenario_num, weather_scenarios)
     # Read in generator/resource availability profiles
     load_generators_variability!(setup, path, inputs, weather_scenarios, fuel_scenario_num, tdr_exists)
 
