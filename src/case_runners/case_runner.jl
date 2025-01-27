@@ -20,6 +20,18 @@ function run_genx_case!(case::AbstractString)
     mysetup = configure_settings(genx_settings) # mysetup dictionary stores settings and GenX-specific parameters
 
     if mysetup["MultiStage"] == 0
+        if mysetup["ForecastClusterTSData"] == 1
+            generate_timeseries_data(
+                case,
+                get_settings_path(case),
+                mysetup,
+                number_of_scenarios,
+                weather_scenarios,
+                fuel_scenarios,
+                myinputs,
+                tdr_exists,
+            )
+        end
         run_genx_case_simple!(case, mysetup)
     else
         run_genx_case_multistage!(case, mysetup)
@@ -220,4 +232,57 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
     # Step 5) Write DDP summary outputs
 
     write_multi_stage_outputs(mystats_d, outpath, mysetup, inputs_dict)
+end
+
+function generate_timeseries_data(
+    case::AbstractString,
+    settings_path::AbstractString,
+    mysetup::Dict,
+    number_of_scenarios::Int,
+    weather_scenarios::Int,
+    fuel_scenarios::Int,
+    myinputs::Dict,
+    tdr_exists::Bool,
+)
+    filenames = ["data$(i).csv" for i in 1:22] # Create list of filenames
+    try
+        data = read_and_preprocess_data(filenames)
+    catch e
+        println("Error reading data: ", e)
+        exit(1)
+    end
+
+    forecast, decomp = forecast_timeseries(data)
+
+    # Plotting
+    plot(decomp, title = "Time Series Decomposition")
+    savefig("decomposition.png")
+
+    plot(forecast, title = "Forecasted Time Series")
+    savefig("forecast.png")
+
+    #Statistical Analysis
+    println("Mean of Forecast: ", mean(forecast.Value))
+    println("Standard Deviation of Forecast: ", std(forecast.Value))
+
+    # Example of hypothesis testing (comparing last year of historical data to the forecast)
+    last_year_data = last(decomp.seasonal, 8760).Value + last(decomp.trend, 8760).Value + last(decomp.resid, 8760).Value
+    forecast_data = forecast.Value
+    println("Performing a Mann-Whitney U test...")
+    mw_test = MannWhitneyUTest(last_year_data, forecast_data)
+    println(mw_test)
+    if pvalue(mw_test) < 0.05
+        println("The distributions are significantly different.")
+    else
+        println("The distributions are not significantly different.")
+    end
+
+    # Example of calculating prediction intervals (simplified)
+    residuals_std = std(decomp.resid.Value)
+    upper_bound = forecast.Value .+ 1.96 * residuals_std # 95% Confidence
+    lower_bound = forecast.Value .- 1.96 * residuals_std # 95% Confidence
+    plot!(forecast.Time, upper_bound, label="Upper Bound", color="green", linestyle=:dash)
+    plot!(forecast.Time, lower_bound, label="Lower Bound", color="green", linestyle=:dash)
+
+    savefig("forecast_with_intervals.png")
 end
