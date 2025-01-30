@@ -32,7 +32,14 @@ function run_genx_case!(case::AbstractString)
                 tdr_exists,
             )
         end
-        run_genx_case_simple!(case, mysetup)
+        if mysetup["Benders"] == 0
+            run_genx_case_simple!(case, mysetup)
+        else
+            benders_settings_path = get_settings_path(case, "benders_settings.yml")
+            mysetup_benders = configure_benders(benders_settings_path) 
+            mysetup = merge(mysetup,mysetup_benders);
+            run_genx_case_benders!(case, mysetup)
+        end
     else
         run_genx_case_multistage!(case, mysetup)
     end
@@ -232,6 +239,74 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
     # Step 5) Write DDP summary outputs
 
     write_multi_stage_outputs(mystats_d, outpath, mysetup, inputs_dict)
+end
+
+function run_genx_case_benders!(case::AbstractString, mysetup::Dict)
+    settings_path = get_settings_path(case)    
+    ### Cluster time series inputs if necessary and if specified by the user
+    TDRpath = joinpath(case, mysetup["TimeDomainReductionFolder"])
+
+    fuel_scenarios, weather_scenarios, number_of_scenarios, myinputs = generate_scenarios!(case, settings_path, mysetup)
+    tdr_exists = false #default value
+
+    if mysetup["TimeDomainReduction"] == 1
+        for sc = 1:weather_scenarios
+            prevent_doubled_timedomainreduction(case, sc)
+        end
+        tdr_exists = time_domain_reduced_files_exist(TDRpath, number_of_scenarios, weather_scenarios)
+        if !tdr_exists
+            println("Clustering Time Series Data (Grouped)...")
+            for sc = 1:number_of_scenarios
+                j, k = divrem(sc, weather_scenarios)
+                if k != 0
+                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, k, j+1, tdr_exists)
+                else
+                    cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, weather_scenarios, j, tdr_exists)
+                end
+            end
+        else
+            println("Time Series Data Already Clustered.")
+        end
+    end
+
+    mysetup["settings_path"] = settings_path;
+
+    ### Load inputs
+    println("Loading Inputs")
+    myinputs = load_inputs!(mysetup, case, number_of_scenarios, weather_scenarios, fuel_scenarios, myinputs, tdr_exists);
+    for sc in 1:number_of_scenarios
+        myinputs_decomp["inputs_scenario_$sc"] = separate_inputs_subperiods(myinputs);
+    end
+    
+
+    benders_inputs = generate_benders_inputs(mysetup,myinputs,myinputs_decomp)
+
+    planning_problem, planning_sol,LB_hist,UB_hist,cpu_time,feasibility_hist  = benders(benders_inputs,mysetup);
+
+    println("Benders decomposition took $(cpu_time[end]) seconds to run")
+
+    println("Writing Output")
+
+    if mysetup["BD_Stab_Method"]=="int_level_set" 
+        outputs_path = joinpath(case, "results_benders_int_level_set")
+    else
+        outputs_path = joinpath(case, "results_benders")
+    end
+
+    if mysetup["OverwriteResults"] == 1
+		# Overwrite existing results if dir exists
+		# This is the default behaviour when there is no flag, to avoid breaking existing code
+		if !(isdir(outputs_path))
+		    mkdir(outputs_path)
+		end
+	else
+		# Find closest unused ouput directory name and create it
+		outputs_path = choose_output_dir(outputs_path)
+		mkdir(outputs_path)
+	end
+    
+    elapsed_time = @elapsed write_benders_output(LB_hist,UB_hist,cpu_time,feasibility_hist,outputs_path,mysetup,myinputs,planning_problem);
+
 end
 
 function generate_timeseries_data(
