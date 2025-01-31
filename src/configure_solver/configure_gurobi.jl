@@ -38,6 +38,7 @@ function configure_gurobi(solver_settings_path::String)
         "BarConvTol" => 1e-8,
         "NumericFocus" => 0,
         "OutputFlag" => 1,
+        #"ConcurrentMethod" => 3,
     )
 
     attributes = merge(default_settings, solver_settings)

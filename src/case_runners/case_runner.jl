@@ -20,7 +20,7 @@ function run_genx_case!(case::AbstractString)
     mysetup = configure_settings(genx_settings) # mysetup dictionary stores settings and GenX-specific parameters
 
     if mysetup["MultiStage"] == 0
-        if mysetup["ForecastClusterTSData"] == 1
+        #=if mysetup["ForecastClusterTSData"] == 1
             generate_timeseries_data(
                 case,
                 get_settings_path(case),
@@ -31,7 +31,7 @@ function run_genx_case!(case::AbstractString)
                 myinputs,
                 tdr_exists,
             )
-        end
+        end=#
         run_genx_case_simple!(case, mysetup)
     else
         run_genx_case_multistage!(case, mysetup)
@@ -87,6 +87,7 @@ function run_genx_case_simple!(case::AbstractString, mysetup::Dict)
         if !tdr_exists
             println("Clustering Time Series Data (Grouped)...")
             for sc = 1:number_of_scenarios
+                println("Clustering Time Series Data for Scenario $sc")
                 j, k = divrem(sc, weather_scenarios)
                 if k != 0
                     cluster_inputs(case, settings_path, mysetup, number_of_scenarios, weather_scenarios, k, j+1, tdr_exists)
@@ -234,7 +235,7 @@ function run_genx_case_multistage!(case::AbstractString, mysetup::Dict)
     write_multi_stage_outputs(mystats_d, outpath, mysetup, inputs_dict)
 end
 
-function generate_timeseries_data(
+#=function generate_timeseries_data(
     case::AbstractString,
     settings_path::AbstractString,
     mysetup::Dict,
@@ -285,4 +286,4 @@ function generate_timeseries_data(
     plot!(forecast.Time, lower_bound, label="Lower Bound", color="green", linestyle=:dash)
 
     savefig("forecast_with_intervals.png")
-end
+end=#
