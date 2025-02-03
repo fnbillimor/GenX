@@ -275,7 +275,7 @@ function run_genx_case_benders!(case::AbstractString, mysetup::Dict)
     println("Loading Inputs")
     myinputs = load_inputs!(mysetup, case, number_of_scenarios, weather_scenarios, fuel_scenarios, myinputs, tdr_exists);
     for sc in 1:number_of_scenarios
-        myinputs_decomp["inputs_scenario_$sc"] = separate_inputs_subperiods(myinputs);
+        myinputs_decomp["inputs_scenario_$sc"] = separate_inputs_subperiods(myinputs, sc);
     end
     
 
