@@ -16,17 +16,17 @@ function separate_inputs_subperiods(inputs::Dict, scenarios::Int64)
 	    INTERIORS = setdiff(1:hours_per_subperiod,STARTS);   
 	    inputs_all[w]["INTERIOR_SUBPERIODS"] = INTERIORS;
 	    inputs_all[w]["START_SUBPERIODS"] = STARTS;
-	    inputs_all[w]["pP_Max"] = inputs["pP_Max"][:,Tw];
+	    inputs_all[w]["pP_Max"] = inputs["pP_Max_scenario_$scenarios"][:,Tw];
 	    inputs_all[w]["T"] = hours_per_subperiod;
 	    for ks in keys(inputs["fuel_costs"])
-		inputs_all[w]["fuel_costs"][ks] = inputs["fuel_costs"][ks][Tw];
+		inputs_all[w]["fuel_costs"][ks] = inputs["fuel_costs_scenario_$scenarios"][ks][Tw];
 	    end
 	    inputs_all[w]["Weights"] = [inputs["Weights"][w]];
-	    inputs_all[w]["pD"] = inputs["pD"][Tw,:];
-	    inputs_all[w]["C_Start"] = inputs["C_Start"][:,Tw]; 
+	    inputs_all[w]["pD"] = inputs["pD_scenario_$scenarios"][Tw,:];
+	    inputs_all[w]["C_Start"] = inputs["C_Start_scenario_$scenarios"][:,Tw]; 
 	    inputs_all[w]["SubPeriod"] = w;
 		    if haskey(inputs,"Period_Map")
-			    inputs_all[w]["SubPeriod_Index"] = inputs["Period_Map"].Rep_Period[findfirst(inputs["Period_Map"].Rep_Period_Index.==w)];
+			    inputs_all[w]["SubPeriod_Index"] = inputs["Period_Map_scenario_$scenarios"].Rep_Period[findfirst(inputs["Period_Map_scenario_$scenarios"].Rep_Period_Index.==w)];
 		    end
     
 	end
