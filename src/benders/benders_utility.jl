@@ -36,20 +36,23 @@ function separate_inputs_subperiods(inputs::Dict, scenarios::Int64)
     end
     
     
-    function generate_benders_inputs(setup::Dict,inputs::Dict,inputs_decomp::Dict)
+    function generate_benders_inputs(setup::Dict,inputs::Dict,inputs_decomp::Dict, scenarios::Int64)
     
 	planning_problem, planning_variables = init_planning_problem(setup,inputs);
+
+	for sc in scenarios
     
-	subproblems_dist,planning_variables_sub = init_dist_subproblems(setup,inputs_decomp,planning_variables);
-    
-	benders_inputs = Dict();
-	    benders_inputs["planning_problem"] = planning_problem;
-	    benders_inputs["planning_variables"] = planning_variables;
-    
-	benders_inputs["subproblems"] = subproblems_dist;
-	    benders_inputs["planning_variables_sub"] = planning_variables_sub;
-    
-	return benders_inputs
+		subproblems_dist,planning_variables_sub = init_dist_subproblems(setup,inputs_decomp,planning_variables);
+	
+		benders_inputs = Dict();
+		benders_inputs["planning_problem"] = planning_problem;
+		benders_inputs["planning_variables"] = planning_variables;
+	
+		benders_inputs["subproblems"] = subproblems_dist;
+		benders_inputs["planning_variables_sub"] = planning_variables_sub;
+	
+		return benders_inputs
+	end
     
     
     end

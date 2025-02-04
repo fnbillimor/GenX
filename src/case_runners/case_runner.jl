@@ -279,7 +279,7 @@ function run_genx_case_benders!(case::AbstractString, mysetup::Dict)
     end
     
 
-    benders_inputs = generate_benders_inputs(mysetup,myinputs,myinputs_decomp)
+    benders_inputs = generate_benders_inputs(mysetup,myinputs,myinputs_decomp, number_of_scenarios);
 
     planning_problem, planning_sol,LB_hist,UB_hist,cpu_time,feasibility_hist  = benders(benders_inputs,mysetup);
 

@@ -1,0 +1,552 @@
+2025-02-04 14:56:08 [    INFO] powergenome:183 As of version 0.6.2 the --multi-period/-mp flag can be used to format inputs for multi-stage modeling in GenX.
+2025-02-04 14:56:08 [    INFO] powergenome:188 Reading settings file
+2025-02-04 14:56:30 [    INFO] powergenome:183 As of version 0.6.2 the --multi-period/-mp flag can be used to format inputs for multi-stage modeling in GenX.
+2025-02-04 14:56:30 [    INFO] powergenome:188 Reading settings file
+2025-02-04 14:56:30 [   DEBUG] powergenome:199 Initiating PUDL connections
+2025-02-04 14:56:31 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_H-Frame CC" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 14:56:31 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_F-Frame CT" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 14:56:31 [    INFO] powergenome.util:532 The default interest compounding method for calculating annuities has changed from continuous to discrete. This method can be set with the parameter 'interest_compound_method', using values `discrete` or `continuous`.
+This message will be removed after version 0.7.0.
+2025-02-04 14:56:31 [    INFO] powergenome:231 Sorted model regions are TRE, TREW
+2025-02-04 14:56:31 [ WARNING] powergenome.util:1192 The following parameter value(s) in your scenario definitions file are not included in the 'settings_management' dictionary for the specified year(s). Settings will not be modified to reflect these entries:
+
+   case_id  year policies
+stochastic  2025     none
+
+You can place empty entries (~) for these in the settings_management dictionary to avoid this message.
+
+2025-02-04 14:56:31 [    INFO] powergenome:301 
+
+Starting year 2025 scenario stochastic
+
+
+2025-02-04 14:56:39 [   DEBUG] powergenome.generators:2999 Loading map of plants to IPM regions
+2025-02-04 14:56:39 [   DEBUG] powergenome.generators:374 36.8, MW without lat/lon
+2025-02-04 14:56:41 [    INFO] powergenome.generators:3210 Compiling existing generators and their attributes
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 14:56:41 [   DEBUG] powergenome.generators:3251 Loading heat rate data for units and generator/fuel combinations
+2025-02-04 14:56:46 [   DEBUG] powergenome.generators:3273 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 14:56:46 [   DEBUG] powergenome.generators:3279 Assigning technology/fuel heat rates where unit heat rates are not available
+2025-02-04 14:56:46 [   DEBUG] powergenome.generators:3328 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 14:56:46 [   DEBUG] powergenome.generators:3333 Before adding proposed generators, 723 units with 99703.79999999999 MW capacity
+2025-02-04 14:56:46 [ WARNING] powergenome.generators:1825 Some generators do not have lon/lat data. Check the source file to determine if they should be included in results. 
+The affected generators account for 4.5 MW in these balancing authorities: 
+['CISO']
+2025-02-04 14:56:46 [   DEBUG] powergenome.generators:2044 0 generators were added to the planned list based on settings
+2025-02-04 14:56:46 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 14:56:46 [   DEBUG] powergenome.generators:2104 Grouped planned technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 14:56:47 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 14:56:47 [   DEBUG] powergenome.generators:1954 Existing technology groups are ['Onshore Wind Turbine', 'Batteries', 'Natural Gas Internal Combustion Engine', 'Solar Photovoltaic', 'Petroleum Liquids', 'Petroleum Coke', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Flywheels', 'Conventional Hydroelectric', 'Natural Gas Fired Combined Cycle', 'Natural Gas Steam Turbine', 'Conventional Steam Coal']
+2025-02-04 14:56:47 [   DEBUG] powergenome.generators:3361 Proposed gen technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 14:56:47 [   DEBUG] powergenome.generators:3365 17080.9 MW proposed
+2025-02-04 14:56:47 [   DEBUG] powergenome.generators:3419 Calculating plant O&M costs
+2025-02-04 14:56:47 [   DEBUG] powergenome.nrelatb:420 Adding fixed and variable O&M for existing plants
+2025-02-04 14:56:47 [    INFO] powergenome.nrelatb:450 The EIA technologies ['Batteries', 'Solar Photovoltaic', 'Small Hydroelectric', 'Onshore Wind Turbine', 'Conventional Hydroelectric'] do not have an ATB counterpart with a valid heat rate. Not all ATB technologies *should* have a valid heat rate (e.g. wind, solar, and hydro). Check the 'eia_atb_tech_map' parameter in your settings file(s) if you think one of these technologies should be mapped to an ATB technology with a valid heat rate.
+2025-02-04 14:56:47 [   DEBUG] powergenome.generators:3437 After adding proposed generators, 1849 units with 151645.3 MW capacity
+2025-02-04 14:57:43 [    INFO] powergenome:183 As of version 0.6.2 the --multi-period/-mp flag can be used to format inputs for multi-stage modeling in GenX.
+2025-02-04 14:57:43 [    INFO] powergenome:188 Reading settings file
+2025-02-04 14:57:43 [   DEBUG] powergenome:199 Initiating PUDL connections
+2025-02-04 14:57:43 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_H-Frame CC" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 14:57:43 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_F-Frame CT" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 14:57:43 [    INFO] powergenome.util:532 The default interest compounding method for calculating annuities has changed from continuous to discrete. This method can be set with the parameter 'interest_compound_method', using values `discrete` or `continuous`.
+This message will be removed after version 0.7.0.
+2025-02-04 14:57:43 [    INFO] powergenome:231 Sorted model regions are TRE, TREW
+2025-02-04 14:57:43 [ WARNING] powergenome.util:1192 The following parameter value(s) in your scenario definitions file are not included in the 'settings_management' dictionary for the specified year(s). Settings will not be modified to reflect these entries:
+
+   case_id  year policies
+stochastic  2025     none
+
+You can place empty entries (~) for these in the settings_management dictionary to avoid this message.
+
+2025-02-04 14:57:43 [    INFO] powergenome:301 
+
+Starting year 2025 scenario stochastic
+
+
+2025-02-04 14:57:50 [   DEBUG] powergenome.generators:2999 Loading map of plants to IPM regions
+2025-02-04 14:57:50 [   DEBUG] powergenome.generators:374 36.8, MW without lat/lon
+2025-02-04 14:57:52 [    INFO] powergenome.generators:3210 Compiling existing generators and their attributes
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 14:57:52 [   DEBUG] powergenome.generators:3251 Loading heat rate data for units and generator/fuel combinations
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:3273 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:3279 Assigning technology/fuel heat rates where unit heat rates are not available
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:3328 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:3333 Before adding proposed generators, 723 units with 99703.79999999999 MW capacity
+2025-02-04 14:57:57 [ WARNING] powergenome.generators:1825 Some generators do not have lon/lat data. Check the source file to determine if they should be included in results. 
+The affected generators account for 4.5 MW in these balancing authorities: 
+['CISO']
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:2044 0 generators were added to the planned list based on settings
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:2104 Grouped planned technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:1954 Existing technology groups are ['Onshore Wind Turbine', 'Batteries', 'Natural Gas Internal Combustion Engine', 'Solar Photovoltaic', 'Petroleum Liquids', 'Petroleum Coke', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Flywheels', 'Conventional Hydroelectric', 'Natural Gas Fired Combined Cycle', 'Natural Gas Steam Turbine', 'Conventional Steam Coal']
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:3361 Proposed gen technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:3365 17080.9 MW proposed
+2025-02-04 14:57:57 [   DEBUG] powergenome.generators:3419 Calculating plant O&M costs
+2025-02-04 14:57:57 [   DEBUG] powergenome.nrelatb:420 Adding fixed and variable O&M for existing plants
+2025-02-04 14:57:58 [    INFO] powergenome.nrelatb:450 The EIA technologies ['Batteries', 'Solar Photovoltaic', 'Small Hydroelectric', 'Onshore Wind Turbine', 'Conventional Hydroelectric'] do not have an ATB counterpart with a valid heat rate. Not all ATB technologies *should* have a valid heat rate (e.g. wind, solar, and hydro). Check the 'eia_atb_tech_map' parameter in your settings file(s) if you think one of these technologies should be mapped to an ATB technology with a valid heat rate.
+2025-02-04 14:57:58 [   DEBUG] powergenome.generators:3437 After adding proposed generators, 1849 units with 151645.3 MW capacity
+2025-02-04 14:57:58 [    INFO] powergenome.generators:3481 Age-retired gens are included for clustering to keep consistent cluster assignments across periods.
+2025-02-04 14:57:58 [    INFO] powergenome.generators:3509 Creating technology clusters by region
+2025-02-04 14:57:58 [   DEBUG] powergenome.generators:3658 Results technologies are ['Batteries', 'Biomass', 'Conventional Hydroelectric', 'Conventional Steam Coal', 'Natural Gas Fired Combined Cycle', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Internal Combustion Engine', 'Natural Gas Steam Turbine', 'Nuclear', 'Onshore Wind Turbine', 'Petroleum Liquids', 'Small Hydroelectric', 'Solar Photovoltaic']
+2025-02-04 14:58:01 [   DEBUG] powergenome.generators:2299    region                              technology  potential_generation_mwh  net_generation_mwh  capacity_factor
+0     TRE                               All Other              1.779659e+07        3.919573e+07         2.202429
+1     TRE                               Batteries              1.840080e+05        2.636990e+05         1.433084
+2     TRE                                 Biomass              1.982195e+07        3.993746e+06         0.201481
+3     TRE              Conventional Hydroelectric              4.072333e+07        7.065683e+06         0.173505
+4     TRE                 Conventional Steam Coal              3.430294e+09        1.141484e+09         0.332766
+5     TRE        Natural Gas Fired Combined Cycle              7.147578e+09        3.192692e+09         0.446682
+6     TRE    Natural Gas Fired Combustion Turbine              1.442048e+09        9.422581e+08         0.653417
+7     TRE  Natural Gas Internal Combustion Engine              5.059580e+08        4.801568e+07         0.094901
+8     TRE               Natural Gas Steam Turbine              3.111487e+09        6.528626e+08         0.209823
+9     TRE                    Onshore Wind Turbine              2.148789e+08        7.028816e+07         0.327106
+10    TRE                             Other Gases              3.524591e+07        2.465006e+07         0.699374
+11    TRE                       Petroleum Liquids              1.437653e+07        1.106983e+07         0.769993
+12    TRE                     Small Hydroelectric              2.437006e+06        9.414479e+05         0.386313
+13    TRE                      Solar Photovoltaic              1.471233e+07        2.562082e+06         0.174145
+14   TREW                               Batteries              1.119090e+07        1.650322e+07         1.474700
+15   TREW        Natural Gas Fired Combined Cycle              3.807651e+08        1.840515e+08         0.483373
+16   TREW    Natural Gas Fired Combustion Turbine              3.598595e+08        7.179482e+06         0.019951
+17   TREW  Natural Gas Internal Combustion Engine              2.348928e+05        2.142240e+05         0.912008
+18   TREW               Natural Gas Steam Turbine              7.658726e+07        1.206586e+06         0.015754
+19   TREW                    Onshore Wind Turbine              7.663299e+08        2.542379e+08         0.331760
+20   TREW                       Petroleum Liquids              5.733360e+05        1.536000e+03         0.002679
+21   TREW                      Solar Photovoltaic              4.733129e+07        8.596788e+06         0.181630
+2025-02-04 14:58:01 [   DEBUG] powergenome.generators:245 Adding non-fuel startup costs
+2025-02-04 14:58:01 [   DEBUG] powergenome.generators:252 Changing non-fuel VOM costs from 2011 to 2020
+2025-02-04 14:58:01 [   DEBUG] powergenome.generators:265 Changing non-fuel startup costs from 2011 to 2020
+2025-02-04 14:58:01 [    INFO] powergenome.generators:3879 Finished creating existing generator clusters
+2025-02-04 14:58:01 [    INFO] powergenome.generators:3884 Starting to build new generation resources
+2025-02-04 14:58:02 [   DEBUG] powergenome.nrelatb:76 Loading NREL ATB data
+2025-02-04 14:58:02 [   DEBUG] powergenome.nrelatb:182 Using UtilityPV Market WACC for Battery storage.
+2025-02-04 14:58:02 [   DEBUG] powergenome.nrelatb:267 PV costs are already in AC units, not inflating the cost.
+2025-02-04 14:58:02 [   DEBUG] powergenome.nrelatb:1121 Creating new resources for each region.
+2025-02-04 14:58:09 [   DEBUG] powergenome.generators:245 Adding non-fuel startup costs
+2025-02-04 14:58:09 [   DEBUG] powergenome.generators:252 Changing non-fuel VOM costs from 2011 to 2020
+2025-02-04 14:58:09 [   DEBUG] powergenome.generators:265 Changing non-fuel startup costs from 2011 to 2020
+2025-02-04 14:58:09 [    INFO] powergenome.external_data:173 Inflating external interconnect annuity costs from 2017 to 2020
+2025-02-04 14:58:09 [ WARNING] powergenome.generators:2649 Transmission investment costs are missing or zero for some resources and will not be included in the total investment costs.
+2025-02-04 14:58:09 [    INFO] powergenome.generators:3081 Creating flexible demand resources
+2025-02-04 14:58:10 [    INFO] powergenome.load_construction:293 Building demand profiles of electrified end-use technologies
+2025-02-04 14:58:12 [    INFO] powergenome.generators:3946 Finished creating new generation resources
+2025-02-04 14:58:12 [   DEBUG] powergenome.generators:3994 Capacity of 147622.127 MW in final clusters
+2025-02-04 14:58:13 [   DEBUG] powergenome.GenX:941 1 resources have Min_Power larger than hourly generation.
+2025-02-04 14:58:13 [    INFO] powergenome.load_profiles:636 Creating hourly demand profiles
+2025-02-04 14:58:13 [    INFO] powergenome.load_profiles:651 Regional load data sources have not been specified. Defaulting to EFS load data. See documentation of the parameter 'regional_load_source' to use other data.
+2025-02-04 14:58:13 [   DEBUG] powergenome.load_profiles:159 Loading demand profiles from the database
+2025-02-04 14:58:13 [   DEBUG] powergenome.load_profiles:205 Aggregating load curves in grouped regions
+2025-02-04 14:58:13 [    INFO] powergenome.load_construction:293 Building demand profiles of electrified end-use technologies
+2025-02-04 14:58:16 [    INFO] powergenome.load_profiles:769 Creating distributed generation profiles
+2025-02-04 14:58:16 [    INFO] powergenome.distributed_gen:187 Distributed generation profiles are not available for the year 2025. Using a linear interpolation between 2024 and 2026.
+2025-02-04 14:58:16 [    INFO] powergenome.time_reduction:131 Reducing time domain from 8760 hours to representative periods
+2025-02-04 14:58:18 [ WARNING] powergenome.transmission:66 No transmission value column (e.g. firm vs non-firm) was specified in the settings. The column 'firm_ttc_mw' will be used as a default. This is a change from previous versions of PG, where 'nonfirm_ttc_mw' was used. Firm transmission capacity is lower or equal to non-firm capacity.
+2025-02-04 14:58:18 [   DEBUG] powergenome.transmission:81 Loading transmission constraints from the database
+2025-02-04 14:58:18 [   DEBUG] powergenome.transmission:103 Adding user-supplied transmission constraint data
+2025-02-04 14:58:18 [ WARNING] powergenome.transmission:137 The user transmission capacity table duplicates some values from the database. Database values will be discarded in these cases.
+2025-02-04 14:58:18 [   DEBUG] powergenome.transmission:166 Map and aggregate region names for transmission constraints
+2025-02-04 14:58:18 [   DEBUG] powergenome.transmission:187 Build a new transmission constraints dataframe with a single line between regions
+2025-02-04 14:59:03 [    INFO] powergenome:183 As of version 0.6.2 the --multi-period/-mp flag can be used to format inputs for multi-stage modeling in GenX.
+2025-02-04 14:59:03 [    INFO] powergenome:188 Reading settings file
+2025-02-04 14:59:03 [   DEBUG] powergenome:199 Initiating PUDL connections
+2025-02-04 14:59:03 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_H-Frame CC" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 14:59:03 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_F-Frame CT" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 14:59:04 [    INFO] powergenome.util:532 The default interest compounding method for calculating annuities has changed from continuous to discrete. This method can be set with the parameter 'interest_compound_method', using values `discrete` or `continuous`.
+This message will be removed after version 0.7.0.
+2025-02-04 14:59:04 [    INFO] powergenome:231 Sorted model regions are TRE, TREW
+2025-02-04 14:59:04 [ WARNING] powergenome.util:1192 The following parameter value(s) in your scenario definitions file are not included in the 'settings_management' dictionary for the specified year(s). Settings will not be modified to reflect these entries:
+
+   case_id  year policies
+stochastic  2025     none
+
+You can place empty entries (~) for these in the settings_management dictionary to avoid this message.
+
+2025-02-04 14:59:04 [    INFO] powergenome:301 
+
+Starting year 2025 scenario stochastic
+
+
+2025-02-04 14:59:10 [   DEBUG] powergenome.generators:2999 Loading map of plants to IPM regions
+2025-02-04 14:59:11 [   DEBUG] powergenome.generators:374 36.8, MW without lat/lon
+2025-02-04 14:59:12 [    INFO] powergenome.generators:3210 Compiling existing generators and their attributes
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 14:59:13 [   DEBUG] powergenome.generators:3251 Loading heat rate data for units and generator/fuel combinations
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:3273 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:3279 Assigning technology/fuel heat rates where unit heat rates are not available
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:3328 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:3333 Before adding proposed generators, 723 units with 99703.79999999999 MW capacity
+2025-02-04 14:59:18 [ WARNING] powergenome.generators:1825 Some generators do not have lon/lat data. Check the source file to determine if they should be included in results. 
+The affected generators account for 4.5 MW in these balancing authorities: 
+['CISO']
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:2044 0 generators were added to the planned list based on settings
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:2104 Grouped planned technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:1954 Existing technology groups are ['Onshore Wind Turbine', 'Batteries', 'Natural Gas Internal Combustion Engine', 'Solar Photovoltaic', 'Petroleum Liquids', 'Petroleum Coke', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Flywheels', 'Conventional Hydroelectric', 'Natural Gas Fired Combined Cycle', 'Natural Gas Steam Turbine', 'Conventional Steam Coal']
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:3361 Proposed gen technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:3365 17080.9 MW proposed
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:3419 Calculating plant O&M costs
+2025-02-04 14:59:18 [   DEBUG] powergenome.nrelatb:420 Adding fixed and variable O&M for existing plants
+2025-02-04 14:59:18 [    INFO] powergenome.nrelatb:450 The EIA technologies ['Batteries', 'Solar Photovoltaic', 'Small Hydroelectric', 'Onshore Wind Turbine', 'Conventional Hydroelectric'] do not have an ATB counterpart with a valid heat rate. Not all ATB technologies *should* have a valid heat rate (e.g. wind, solar, and hydro). Check the 'eia_atb_tech_map' parameter in your settings file(s) if you think one of these technologies should be mapped to an ATB technology with a valid heat rate.
+2025-02-04 14:59:18 [   DEBUG] powergenome.generators:3437 After adding proposed generators, 1849 units with 151645.3 MW capacity
+2025-02-04 14:59:18 [    INFO] powergenome.generators:3481 Age-retired gens are included for clustering to keep consistent cluster assignments across periods.
+2025-02-04 14:59:18 [    INFO] powergenome.generators:3509 Creating technology clusters by region
+2025-02-04 14:59:19 [   DEBUG] powergenome.generators:3658 Results technologies are ['Batteries', 'Biomass', 'Conventional Hydroelectric', 'Conventional Steam Coal', 'Natural Gas Fired Combined Cycle', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Internal Combustion Engine', 'Natural Gas Steam Turbine', 'Nuclear', 'Onshore Wind Turbine', 'Petroleum Liquids', 'Small Hydroelectric', 'Solar Photovoltaic']
+2025-02-04 14:59:21 [   DEBUG] powergenome.generators:2299    region                              technology  potential_generation_mwh  net_generation_mwh  capacity_factor
+0     TRE                               All Other              1.779659e+07        3.919573e+07         2.202429
+1     TRE                               Batteries              1.840080e+05        2.636990e+05         1.433084
+2     TRE                                 Biomass              1.982195e+07        3.993746e+06         0.201481
+3     TRE              Conventional Hydroelectric              4.072333e+07        7.065683e+06         0.173505
+4     TRE                 Conventional Steam Coal              3.430294e+09        1.141484e+09         0.332766
+5     TRE        Natural Gas Fired Combined Cycle              7.147578e+09        3.192692e+09         0.446682
+6     TRE    Natural Gas Fired Combustion Turbine              1.442048e+09        9.422581e+08         0.653417
+7     TRE  Natural Gas Internal Combustion Engine              5.059580e+08        4.801568e+07         0.094901
+8     TRE               Natural Gas Steam Turbine              3.111487e+09        6.528626e+08         0.209823
+9     TRE                    Onshore Wind Turbine              2.148789e+08        7.028816e+07         0.327106
+10    TRE                             Other Gases              3.524591e+07        2.465006e+07         0.699374
+11    TRE                       Petroleum Liquids              1.437653e+07        1.106983e+07         0.769993
+12    TRE                     Small Hydroelectric              2.437006e+06        9.414479e+05         0.386313
+13    TRE                      Solar Photovoltaic              1.471233e+07        2.562082e+06         0.174145
+14   TREW                               Batteries              1.119090e+07        1.650322e+07         1.474700
+15   TREW        Natural Gas Fired Combined Cycle              3.807651e+08        1.840515e+08         0.483373
+16   TREW    Natural Gas Fired Combustion Turbine              3.598595e+08        7.179482e+06         0.019951
+17   TREW  Natural Gas Internal Combustion Engine              2.348928e+05        2.142240e+05         0.912008
+18   TREW               Natural Gas Steam Turbine              7.658726e+07        1.206586e+06         0.015754
+19   TREW                    Onshore Wind Turbine              7.663299e+08        2.542379e+08         0.331760
+20   TREW                       Petroleum Liquids              5.733360e+05        1.536000e+03         0.002679
+21   TREW                      Solar Photovoltaic              4.733129e+07        8.596788e+06         0.181630
+2025-02-04 14:59:21 [   DEBUG] powergenome.generators:245 Adding non-fuel startup costs
+2025-02-04 14:59:21 [   DEBUG] powergenome.generators:252 Changing non-fuel VOM costs from 2011 to 2020
+2025-02-04 14:59:21 [   DEBUG] powergenome.generators:265 Changing non-fuel startup costs from 2011 to 2020
+2025-02-04 14:59:22 [    INFO] powergenome.generators:3879 Finished creating existing generator clusters
+2025-02-04 14:59:22 [    INFO] powergenome.generators:3884 Starting to build new generation resources
+2025-02-04 14:59:22 [   DEBUG] powergenome.nrelatb:76 Loading NREL ATB data
+2025-02-04 14:59:22 [   DEBUG] powergenome.nrelatb:182 Using UtilityPV Market WACC for Battery storage.
+2025-02-04 14:59:22 [   DEBUG] powergenome.nrelatb:267 PV costs are already in AC units, not inflating the cost.
+2025-02-04 14:59:22 [   DEBUG] powergenome.nrelatb:1121 Creating new resources for each region.
+2025-02-04 14:59:22 [   DEBUG] powergenome.generators:245 Adding non-fuel startup costs
+2025-02-04 14:59:22 [   DEBUG] powergenome.generators:252 Changing non-fuel VOM costs from 2011 to 2020
+2025-02-04 14:59:22 [   DEBUG] powergenome.generators:265 Changing non-fuel startup costs from 2011 to 2020
+2025-02-04 14:59:23 [    INFO] powergenome.external_data:173 Inflating external interconnect annuity costs from 2017 to 2020
+2025-02-04 14:59:23 [ WARNING] powergenome.generators:2649 Transmission investment costs are missing or zero for some resources and will not be included in the total investment costs.
+2025-02-04 14:59:23 [    INFO] powergenome.generators:3081 Creating flexible demand resources
+2025-02-04 14:59:23 [    INFO] powergenome.load_construction:293 Building demand profiles of electrified end-use technologies
+2025-02-04 14:59:25 [    INFO] powergenome.generators:3946 Finished creating new generation resources
+2025-02-04 14:59:25 [   DEBUG] powergenome.generators:3994 Capacity of 147622.127 MW in final clusters
+2025-02-04 14:59:26 [   DEBUG] powergenome.GenX:941 1 resources have Min_Power larger than hourly generation.
+2025-02-04 14:59:26 [    INFO] powergenome.load_profiles:636 Creating hourly demand profiles
+2025-02-04 14:59:26 [    INFO] powergenome.load_profiles:651 Regional load data sources have not been specified. Defaulting to EFS load data. See documentation of the parameter 'regional_load_source' to use other data.
+2025-02-04 14:59:26 [   DEBUG] powergenome.load_profiles:159 Loading demand profiles from the database
+2025-02-04 14:59:26 [   DEBUG] powergenome.load_profiles:205 Aggregating load curves in grouped regions
+2025-02-04 14:59:26 [    INFO] powergenome.load_construction:293 Building demand profiles of electrified end-use technologies
+2025-02-04 14:59:29 [    INFO] powergenome.load_profiles:769 Creating distributed generation profiles
+2025-02-04 14:59:29 [    INFO] powergenome.distributed_gen:187 Distributed generation profiles are not available for the year 2025. Using a linear interpolation between 2024 and 2026.
+2025-02-04 14:59:29 [    INFO] powergenome.time_reduction:131 Reducing time domain from 8760 hours to representative periods
+2025-02-04 14:59:31 [ WARNING] powergenome.transmission:66 No transmission value column (e.g. firm vs non-firm) was specified in the settings. The column 'firm_ttc_mw' will be used as a default. This is a change from previous versions of PG, where 'nonfirm_ttc_mw' was used. Firm transmission capacity is lower or equal to non-firm capacity.
+2025-02-04 14:59:31 [   DEBUG] powergenome.transmission:81 Loading transmission constraints from the database
+2025-02-04 14:59:31 [   DEBUG] powergenome.transmission:103 Adding user-supplied transmission constraint data
+2025-02-04 14:59:31 [ WARNING] powergenome.transmission:137 The user transmission capacity table duplicates some values from the database. Database values will be discarded in these cases.
+2025-02-04 14:59:31 [   DEBUG] powergenome.transmission:166 Map and aggregate region names for transmission constraints
+2025-02-04 14:59:31 [   DEBUG] powergenome.transmission:187 Build a new transmission constraints dataframe with a single line between regions
+2025-02-04 15:00:38 [    INFO] powergenome:183 As of version 0.6.2 the --multi-period/-mp flag can be used to format inputs for multi-stage modeling in GenX.
+2025-02-04 15:00:38 [    INFO] powergenome:188 Reading settings file
+2025-02-04 15:00:38 [   DEBUG] powergenome:199 Initiating PUDL connections
+2025-02-04 15:00:38 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_H-Frame CC" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 15:00:38 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_F-Frame CT" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 15:00:38 [    INFO] powergenome.util:532 The default interest compounding method for calculating annuities has changed from continuous to discrete. This method can be set with the parameter 'interest_compound_method', using values `discrete` or `continuous`.
+This message will be removed after version 0.7.0.
+2025-02-04 15:00:38 [    INFO] powergenome:231 Sorted model regions are TRE, TREW
+2025-02-04 15:00:38 [ WARNING] powergenome.util:1192 The following parameter value(s) in your scenario definitions file are not included in the 'settings_management' dictionary for the specified year(s). Settings will not be modified to reflect these entries:
+
+   case_id  year policies
+stochastic  2025     none
+
+You can place empty entries (~) for these in the settings_management dictionary to avoid this message.
+
+2025-02-04 15:00:38 [    INFO] powergenome:301 
+
+Starting year 2025 scenario stochastic
+
+
+2025-02-04 15:00:45 [   DEBUG] powergenome.generators:2999 Loading map of plants to IPM regions
+2025-02-04 15:00:45 [   DEBUG] powergenome.generators:374 36.8, MW without lat/lon
+2025-02-04 15:00:47 [    INFO] powergenome.generators:3210 Compiling existing generators and their attributes
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 15:00:47 [   DEBUG] powergenome.generators:3251 Loading heat rate data for units and generator/fuel combinations
+2025-02-04 15:00:52 [   DEBUG] powergenome.generators:3273 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 15:00:52 [   DEBUG] powergenome.generators:3279 Assigning technology/fuel heat rates where unit heat rates are not available
+2025-02-04 15:00:52 [   DEBUG] powergenome.generators:3328 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 15:00:52 [   DEBUG] powergenome.generators:3333 Before adding proposed generators, 723 units with 99703.79999999999 MW capacity
+2025-02-04 15:00:52 [ WARNING] powergenome.generators:1825 Some generators do not have lon/lat data. Check the source file to determine if they should be included in results. 
+The affected generators account for 4.5 MW in these balancing authorities: 
+['CISO']
+2025-02-04 15:00:52 [   DEBUG] powergenome.generators:2044 0 generators were added to the planned list based on settings
+2025-02-04 15:00:52 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 15:00:52 [   DEBUG] powergenome.generators:2104 Grouped planned technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 15:00:53 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 15:00:53 [   DEBUG] powergenome.generators:1954 Existing technology groups are ['Onshore Wind Turbine', 'Batteries', 'Natural Gas Internal Combustion Engine', 'Solar Photovoltaic', 'Petroleum Liquids', 'Petroleum Coke', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Flywheels', 'Conventional Hydroelectric', 'Natural Gas Fired Combined Cycle', 'Natural Gas Steam Turbine', 'Conventional Steam Coal']
+2025-02-04 15:00:53 [   DEBUG] powergenome.generators:3361 Proposed gen technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 15:00:53 [   DEBUG] powergenome.generators:3365 17080.9 MW proposed
+2025-02-04 15:00:53 [   DEBUG] powergenome.generators:3419 Calculating plant O&M costs
+2025-02-04 15:00:53 [   DEBUG] powergenome.nrelatb:420 Adding fixed and variable O&M for existing plants
+2025-02-04 15:00:53 [    INFO] powergenome.nrelatb:450 The EIA technologies ['Batteries', 'Solar Photovoltaic', 'Small Hydroelectric', 'Onshore Wind Turbine', 'Conventional Hydroelectric'] do not have an ATB counterpart with a valid heat rate. Not all ATB technologies *should* have a valid heat rate (e.g. wind, solar, and hydro). Check the 'eia_atb_tech_map' parameter in your settings file(s) if you think one of these technologies should be mapped to an ATB technology with a valid heat rate.
+2025-02-04 15:00:53 [   DEBUG] powergenome.generators:3437 After adding proposed generators, 1849 units with 151645.3 MW capacity
+2025-02-04 15:00:53 [    INFO] powergenome.generators:3481 Age-retired gens are included for clustering to keep consistent cluster assignments across periods.
+2025-02-04 15:00:53 [    INFO] powergenome.generators:3509 Creating technology clusters by region
+2025-02-04 15:00:54 [   DEBUG] powergenome.generators:3658 Results technologies are ['Batteries', 'Biomass', 'Conventional Hydroelectric', 'Conventional Steam Coal', 'Natural Gas Fired Combined Cycle', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Internal Combustion Engine', 'Natural Gas Steam Turbine', 'Nuclear', 'Onshore Wind Turbine', 'Petroleum Liquids', 'Small Hydroelectric', 'Solar Photovoltaic']
+2025-02-04 15:00:56 [   DEBUG] powergenome.generators:2299    region                              technology  potential_generation_mwh  net_generation_mwh  capacity_factor
+0     TRE                               All Other              1.779659e+07        3.919573e+07         2.202429
+1     TRE                               Batteries              1.840080e+05        2.636990e+05         1.433084
+2     TRE                                 Biomass              1.982195e+07        3.993746e+06         0.201481
+3     TRE              Conventional Hydroelectric              4.072333e+07        7.065683e+06         0.173505
+4     TRE                 Conventional Steam Coal              3.430294e+09        1.141484e+09         0.332766
+5     TRE        Natural Gas Fired Combined Cycle              7.147578e+09        3.192692e+09         0.446682
+6     TRE    Natural Gas Fired Combustion Turbine              1.442048e+09        9.422581e+08         0.653417
+7     TRE  Natural Gas Internal Combustion Engine              5.059580e+08        4.801568e+07         0.094901
+8     TRE               Natural Gas Steam Turbine              3.111487e+09        6.528626e+08         0.209823
+9     TRE                    Onshore Wind Turbine              2.148789e+08        7.028816e+07         0.327106
+10    TRE                             Other Gases              3.524591e+07        2.465006e+07         0.699374
+11    TRE                       Petroleum Liquids              1.437653e+07        1.106983e+07         0.769993
+12    TRE                     Small Hydroelectric              2.437006e+06        9.414479e+05         0.386313
+13    TRE                      Solar Photovoltaic              1.471233e+07        2.562082e+06         0.174145
+14   TREW                               Batteries              1.119090e+07        1.650322e+07         1.474700
+15   TREW        Natural Gas Fired Combined Cycle              3.807651e+08        1.840515e+08         0.483373
+16   TREW    Natural Gas Fired Combustion Turbine              3.598595e+08        7.179482e+06         0.019951
+17   TREW  Natural Gas Internal Combustion Engine              2.348928e+05        2.142240e+05         0.912008
+18   TREW               Natural Gas Steam Turbine              7.658726e+07        1.206586e+06         0.015754
+19   TREW                    Onshore Wind Turbine              7.663299e+08        2.542379e+08         0.331760
+20   TREW                       Petroleum Liquids              5.733360e+05        1.536000e+03         0.002679
+21   TREW                      Solar Photovoltaic              4.733129e+07        8.596788e+06         0.181630
+2025-02-04 15:00:57 [   DEBUG] powergenome.generators:245 Adding non-fuel startup costs
+2025-02-04 15:00:57 [   DEBUG] powergenome.generators:252 Changing non-fuel VOM costs from 2011 to 2020
+2025-02-04 15:00:57 [   DEBUG] powergenome.generators:265 Changing non-fuel startup costs from 2011 to 2020
+2025-02-04 15:00:57 [    INFO] powergenome.generators:3879 Finished creating existing generator clusters
+2025-02-04 15:00:57 [    INFO] powergenome.generators:3884 Starting to build new generation resources
+2025-02-04 15:00:57 [   DEBUG] powergenome.nrelatb:76 Loading NREL ATB data
+2025-02-04 15:00:57 [   DEBUG] powergenome.nrelatb:182 Using UtilityPV Market WACC for Battery storage.
+2025-02-04 15:00:57 [   DEBUG] powergenome.nrelatb:267 PV costs are already in AC units, not inflating the cost.
+2025-02-04 15:00:57 [   DEBUG] powergenome.nrelatb:1121 Creating new resources for each region.
+2025-02-04 15:00:58 [   DEBUG] powergenome.generators:245 Adding non-fuel startup costs
+2025-02-04 15:00:58 [   DEBUG] powergenome.generators:252 Changing non-fuel VOM costs from 2011 to 2020
+2025-02-04 15:00:58 [   DEBUG] powergenome.generators:265 Changing non-fuel startup costs from 2011 to 2020
+2025-02-04 15:00:58 [    INFO] powergenome.external_data:173 Inflating external interconnect annuity costs from 2017 to 2020
+2025-02-04 15:00:58 [ WARNING] powergenome.generators:2649 Transmission investment costs are missing or zero for some resources and will not be included in the total investment costs.
+2025-02-04 15:00:58 [    INFO] powergenome.generators:3946 Finished creating new generation resources
+2025-02-04 15:00:58 [   DEBUG] powergenome.generators:3994 Capacity of 142830.684 MW in final clusters
+2025-02-04 15:00:58 [   DEBUG] powergenome.GenX:941 1 resources have Min_Power larger than hourly generation.
+2025-02-04 15:00:58 [    INFO] powergenome.load_profiles:636 Creating hourly demand profiles
+2025-02-04 15:00:58 [    INFO] powergenome.load_profiles:651 Regional load data sources have not been specified. Defaulting to EFS load data. See documentation of the parameter 'regional_load_source' to use other data.
+2025-02-04 15:00:58 [   DEBUG] powergenome.load_profiles:159 Loading demand profiles from the database
+2025-02-04 15:00:59 [   DEBUG] powergenome.load_profiles:205 Aggregating load curves in grouped regions
+2025-02-04 15:00:59 [    INFO] powergenome.load_profiles:769 Creating distributed generation profiles
+2025-02-04 15:00:59 [    INFO] powergenome.distributed_gen:187 Distributed generation profiles are not available for the year 2025. Using a linear interpolation between 2024 and 2026.
+2025-02-04 15:00:59 [    INFO] powergenome.time_reduction:131 Reducing time domain from 8760 hours to representative periods
+2025-02-04 15:01:00 [ WARNING] powergenome.transmission:66 No transmission value column (e.g. firm vs non-firm) was specified in the settings. The column 'firm_ttc_mw' will be used as a default. This is a change from previous versions of PG, where 'nonfirm_ttc_mw' was used. Firm transmission capacity is lower or equal to non-firm capacity.
+2025-02-04 15:01:00 [   DEBUG] powergenome.transmission:81 Loading transmission constraints from the database
+2025-02-04 15:01:00 [   DEBUG] powergenome.transmission:103 Adding user-supplied transmission constraint data
+2025-02-04 15:01:00 [ WARNING] powergenome.transmission:137 The user transmission capacity table duplicates some values from the database. Database values will be discarded in these cases.
+2025-02-04 15:01:00 [   DEBUG] powergenome.transmission:166 Map and aggregate region names for transmission constraints
+2025-02-04 15:01:00 [   DEBUG] powergenome.transmission:187 Build a new transmission constraints dataframe with a single line between regions
+2025-02-04 15:04:47 [    INFO] powergenome:183 As of version 0.6.2 the --multi-period/-mp flag can be used to format inputs for multi-stage modeling in GenX.
+2025-02-04 15:04:47 [    INFO] powergenome:188 Reading settings file
+2025-02-04 15:04:47 [   DEBUG] powergenome:199 Initiating PUDL connections
+2025-02-04 15:04:47 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_H-Frame CC" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 15:04:47 [ WARNING] powergenome.util:444 
+    *****************************
+    The ATB technology "NaturalGas_F-Frame CT" listed in your settings file under 'atb_new_gen'
+    is not fully specified in the 'cost_multiplier_technology_map' settings parameter.
+    Part of the <tech>_<tech_detail> string might be included, but it is best practice to
+    include the full name in this format. Check your settings file.
+        
+2025-02-04 15:04:47 [    INFO] powergenome.util:532 The default interest compounding method for calculating annuities has changed from continuous to discrete. This method can be set with the parameter 'interest_compound_method', using values `discrete` or `continuous`.
+This message will be removed after version 0.7.0.
+2025-02-04 15:04:47 [    INFO] powergenome:231 Sorted model regions are TRE, TREW
+2025-02-04 15:04:47 [ WARNING] powergenome.util:1192 The following parameter value(s) in your scenario definitions file are not included in the 'settings_management' dictionary for the specified year(s). Settings will not be modified to reflect these entries:
+
+   case_id  year policies
+stochastic  2025     none
+
+You can place empty entries (~) for these in the settings_management dictionary to avoid this message.
+
+2025-02-04 15:04:47 [    INFO] powergenome:301 
+
+Starting year 2025 scenario stochastic
+
+
+2025-02-04 15:04:55 [   DEBUG] powergenome.generators:2999 Loading map of plants to IPM regions
+2025-02-04 15:04:55 [   DEBUG] powergenome.generators:374 36.8, MW without lat/lon
+2025-02-04 15:04:57 [    INFO] powergenome.generators:3210 Compiling existing generators and their attributes
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:535 Changing retirement dates based on settings file
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:540 Starting retirement capacity is 8224.3 MW
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:562 Ending retirement capacity is 8224.3 MW
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:564 Adding retirements from settings didn't change the retiring capacity.
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:572 The retirement year for 162 plants, totaling 0.0 MW, was changed based on settings file parameters
+2025-02-04 15:04:57 [   DEBUG] powergenome.generators:3251 Loading heat rate data for units and generator/fuel combinations
+2025-02-04 15:05:02 [   DEBUG] powergenome.generators:3273 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 15:05:02 [   DEBUG] powergenome.generators:3279 Assigning technology/fuel heat rates where unit heat rates are not available
+2025-02-04 15:05:02 [   DEBUG] powergenome.generators:3328 Units model technologies are ['Batteries', 'Small Hydroelectric', 'Natural Gas Fired Combustion Turbine', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combined Cycle', 'Natural Gas Internal Combustion Engine', 'Biomass', 'Natural Gas Steam Turbine', 'Conventional Steam Coal', 'Petroleum Liquids', 'Other Gases', 'Petroleum Coke', 'Conventional Hydroelectric', 'Nuclear']
+2025-02-04 15:05:02 [   DEBUG] powergenome.generators:3333 Before adding proposed generators, 723 units with 99703.79999999999 MW capacity
+2025-02-04 15:05:02 [ WARNING] powergenome.generators:1825 Some generators do not have lon/lat data. Check the source file to determine if they should be included in results. 
+The affected generators account for 4.5 MW in these balancing authorities: 
+['CISO']
+2025-02-04 15:05:03 [   DEBUG] powergenome.generators:2044 0 generators were added to the planned list based on settings
+2025-02-04 15:05:03 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 15:05:03 [   DEBUG] powergenome.generators:2104 Grouped planned technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 15:05:03 [   DEBUG] powergenome.generators:577 No retirement dates changed based on the settings file
+2025-02-04 15:05:03 [   DEBUG] powergenome.generators:1954 Existing technology groups are ['Onshore Wind Turbine', 'Batteries', 'Natural Gas Internal Combustion Engine', 'Solar Photovoltaic', 'Petroleum Liquids', 'Petroleum Coke', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Flywheels', 'Conventional Hydroelectric', 'Natural Gas Fired Combined Cycle', 'Natural Gas Steam Turbine', 'Conventional Steam Coal']
+2025-02-04 15:05:03 [   DEBUG] powergenome.generators:3361 Proposed gen technologies are ['Batteries', 'Solar Photovoltaic', 'Onshore Wind Turbine', 'All Other', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Fired Combined Cycle']
+2025-02-04 15:05:03 [   DEBUG] powergenome.generators:3365 17080.9 MW proposed
+2025-02-04 15:05:03 [   DEBUG] powergenome.generators:3419 Calculating plant O&M costs
+2025-02-04 15:05:03 [   DEBUG] powergenome.nrelatb:420 Adding fixed and variable O&M for existing plants
+2025-02-04 15:05:03 [    INFO] powergenome.nrelatb:450 The EIA technologies ['Batteries', 'Solar Photovoltaic', 'Small Hydroelectric', 'Onshore Wind Turbine', 'Conventional Hydroelectric'] do not have an ATB counterpart with a valid heat rate. Not all ATB technologies *should* have a valid heat rate (e.g. wind, solar, and hydro). Check the 'eia_atb_tech_map' parameter in your settings file(s) if you think one of these technologies should be mapped to an ATB technology with a valid heat rate.
+2025-02-04 15:05:03 [   DEBUG] powergenome.generators:3437 After adding proposed generators, 1849 units with 151645.3 MW capacity
+2025-02-04 15:05:03 [    INFO] powergenome.generators:3481 Age-retired gens are included for clustering to keep consistent cluster assignments across periods.
+2025-02-04 15:05:03 [    INFO] powergenome.generators:3509 Creating technology clusters by region
+2025-02-04 15:05:04 [   DEBUG] powergenome.generators:3658 Results technologies are ['Batteries', 'Biomass', 'Conventional Hydroelectric', 'Conventional Steam Coal', 'Natural Gas Fired Combined Cycle', 'Natural Gas Fired Combustion Turbine', 'Natural Gas Internal Combustion Engine', 'Natural Gas Steam Turbine', 'Nuclear', 'Onshore Wind Turbine', 'Petroleum Liquids', 'Small Hydroelectric', 'Solar Photovoltaic']
+2025-02-04 15:05:07 [   DEBUG] powergenome.generators:2299    region                              technology  potential_generation_mwh  net_generation_mwh  capacity_factor
+0     TRE                               All Other              1.779659e+07        3.919573e+07         2.202429
+1     TRE                               Batteries              1.840080e+05        2.636990e+05         1.433084
+2     TRE                                 Biomass              1.982195e+07        3.993746e+06         0.201481
+3     TRE              Conventional Hydroelectric              4.072333e+07        7.065683e+06         0.173505
+4     TRE                 Conventional Steam Coal              3.430294e+09        1.141484e+09         0.332766
+5     TRE        Natural Gas Fired Combined Cycle              7.147578e+09        3.192692e+09         0.446682
+6     TRE    Natural Gas Fired Combustion Turbine              1.442048e+09        9.422581e+08         0.653417
+7     TRE  Natural Gas Internal Combustion Engine              5.059580e+08        4.801568e+07         0.094901
+8     TRE               Natural Gas Steam Turbine              3.111487e+09        6.528626e+08         0.209823
+9     TRE                    Onshore Wind Turbine              2.148789e+08        7.028816e+07         0.327106
+10    TRE                             Other Gases              3.524591e+07        2.465006e+07         0.699374
+11    TRE                       Petroleum Liquids              1.437653e+07        1.106983e+07         0.769993
+12    TRE                     Small Hydroelectric              2.437006e+06        9.414479e+05         0.386313
+13    TRE                      Solar Photovoltaic              1.471233e+07        2.562082e+06         0.174145
+14   TREW                               Batteries              1.119090e+07        1.650322e+07         1.474700
+15   TREW        Natural Gas Fired Combined Cycle              3.807651e+08        1.840515e+08         0.483373
+16   TREW    Natural Gas Fired Combustion Turbine              3.598595e+08        7.179482e+06         0.019951
+17   TREW  Natural Gas Internal Combustion Engine              2.348928e+05        2.142240e+05         0.912008
+18   TREW               Natural Gas Steam Turbine              7.658726e+07        1.206586e+06         0.015754
+19   TREW                    Onshore Wind Turbine              7.663299e+08        2.542379e+08         0.331760
+20   TREW                       Petroleum Liquids              5.733360e+05        1.536000e+03         0.002679
+21   TREW                      Solar Photovoltaic              4.733129e+07        8.596788e+06         0.181630
+2025-02-04 15:05:07 [   DEBUG] powergenome.generators:245 Adding non-fuel startup costs
+2025-02-04 15:05:07 [   DEBUG] powergenome.generators:252 Changing non-fuel VOM costs from 2011 to 2020
+2025-02-04 15:05:07 [   DEBUG] powergenome.generators:265 Changing non-fuel startup costs from 2011 to 2020
+2025-02-04 15:05:07 [    INFO] powergenome.generators:3879 Finished creating existing generator clusters
+2025-02-04 15:05:07 [    INFO] powergenome.generators:3884 Starting to build new generation resources
+2025-02-04 15:05:07 [   DEBUG] powergenome.nrelatb:76 Loading NREL ATB data
+2025-02-04 15:05:08 [   DEBUG] powergenome.nrelatb:182 Using UtilityPV Market WACC for Battery storage.
+2025-02-04 15:05:08 [   DEBUG] powergenome.nrelatb:267 PV costs are already in AC units, not inflating the cost.
+2025-02-04 15:05:08 [   DEBUG] powergenome.nrelatb:1121 Creating new resources for each region.
+2025-02-04 15:05:08 [   DEBUG] powergenome.generators:245 Adding non-fuel startup costs
+2025-02-04 15:05:08 [   DEBUG] powergenome.generators:252 Changing non-fuel VOM costs from 2011 to 2020
+2025-02-04 15:05:08 [   DEBUG] powergenome.generators:265 Changing non-fuel startup costs from 2011 to 2020
+2025-02-04 15:05:09 [    INFO] powergenome.external_data:173 Inflating external interconnect annuity costs from 2017 to 2020
+2025-02-04 15:05:09 [ WARNING] powergenome.generators:2649 Transmission investment costs are missing or zero for some resources and will not be included in the total investment costs.
+2025-02-04 15:05:09 [    INFO] powergenome.generators:3946 Finished creating new generation resources
+2025-02-04 15:05:09 [   DEBUG] powergenome.generators:3994 Capacity of 142830.685 MW in final clusters
+2025-02-04 15:05:09 [   DEBUG] powergenome.GenX:941 1 resources have Min_Power larger than hourly generation.
+2025-02-04 15:05:09 [    INFO] powergenome.load_profiles:636 Creating hourly demand profiles
+2025-02-04 15:05:09 [    INFO] powergenome.load_profiles:651 Regional load data sources have not been specified. Defaulting to EFS load data. See documentation of the parameter 'regional_load_source' to use other data.
+2025-02-04 15:05:09 [   DEBUG] powergenome.load_profiles:159 Loading demand profiles from the database
+2025-02-04 15:05:10 [   DEBUG] powergenome.load_profiles:205 Aggregating load curves in grouped regions
+2025-02-04 15:05:10 [    INFO] powergenome.load_profiles:769 Creating distributed generation profiles
+2025-02-04 15:05:10 [    INFO] powergenome.distributed_gen:187 Distributed generation profiles are not available for the year 2025. Using a linear interpolation between 2024 and 2026.
+2025-02-04 15:05:10 [    INFO] powergenome.time_reduction:131 Reducing time domain from 8760 hours to representative periods
+2025-02-04 15:05:11 [ WARNING] powergenome.transmission:66 No transmission value column (e.g. firm vs non-firm) was specified in the settings. The column 'firm_ttc_mw' will be used as a default. This is a change from previous versions of PG, where 'nonfirm_ttc_mw' was used. Firm transmission capacity is lower or equal to non-firm capacity.
+2025-02-04 15:05:11 [   DEBUG] powergenome.transmission:81 Loading transmission constraints from the database
+2025-02-04 15:05:11 [   DEBUG] powergenome.transmission:103 Adding user-supplied transmission constraint data
+2025-02-04 15:05:11 [ WARNING] powergenome.transmission:137 The user transmission capacity table duplicates some values from the database. Database values will be discarded in these cases.
+2025-02-04 15:05:11 [   DEBUG] powergenome.transmission:166 Map and aggregate region names for transmission constraints
+2025-02-04 15:05:11 [   DEBUG] powergenome.transmission:187 Build a new transmission constraints dataframe with a single line between regions
