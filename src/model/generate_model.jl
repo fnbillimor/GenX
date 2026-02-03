@@ -71,6 +71,8 @@ The power balance constraint of the model ensures that electricity demand is met
 ## returns: Model EP object containing the entire optimization problem model to be solved by SolveModel.jl
 ##
 ################################################################################
+using MacroEnergySolvers
+
 function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAttributes, number_of_scenarios::Int64)
 
 	T = inputs["T_scenario_1"]     # Number of time steps (hours)
@@ -83,6 +85,14 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	# Generate Energy Portfolio (EP) Model
 	EP = Model(OPTIMIZER)
 	set_string_names_on_creation(EP, Bool(setup["EnableJuMPStringNames"]))
+	
+	# Enable Benders decomposition if specified
+	if get(setup, "BendersDecomposition", 0) == 1
+		set_benders_solver!(EP, optimizer = OPTIMIZER, 
+							max_iterations = get(setup, "BendersMaxIterations", 100),
+							tol = get(setup, "BendersTolerance", 1e-4))
+	end
+	
 	# Introduce dummy variable fixed to zero to ensure that expressions like eTotalCap,
 	# eTotalCapCharge, eTotalCapEnergy and eAvail_Trans_Cap all have a JuMP variable
 	@variable(EP, vZERO == 0);
@@ -98,6 +108,8 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	@variable(EP, vVAR)
 	@variable(EP, vCVARaux[sc=1:SC] >= 0)
 	@expression(EP, eSCS[sc=1:SC], 0) #system cost per scenario. This would equate to the summation of total system
+	
+	# Mark investment cost expression for master problem
 	@expression(EP, sSIC, 0) #System Investment cost
 
 
@@ -215,17 +227,58 @@ function generate_model(setup::Dict,inputs::Dict,OPTIMIZER::MOI.OptimizerWithAtt
 	if setup["MaxCapReq"] == 1
 		maximum_capacity_requirement!(EP, inputs, setup)
 	end
+	
 	###costs for the scenario.  I.e. it would sum generation varaible costs + capital costs + network investment costs + etc for each scenario.
 	@expression(EP, eMSC, sum(inputs["scenprob"][sc]*EP[:eSCS][sc] for sc in 1:SC) ) #the mean system cost
 	@expression(EP, eCVARSC, vVAR + (1/setup["Alpha"])sum(inputs["scenprob"][sc]*EP[:vCVARaux][sc] for sc in 1:SC)) #the CVAR of system costs
 
-	## The objective function is defined as weighted combination of eMSC and eCVARSC
-	@objective(EP,Min,EP[:sSIC]+(1-setup["Beta"])*EP[:eMSC] + setup["Beta"]*EP[:eCVARSC] )
-	## Power balance constraints
+	## The objective function: separate master (investment) and subproblem (operational) costs
+	if get(setup, "BendersDecomposition", 0) == 1
+		# Master problem: investment costs only
+		planning_problem = @benders_master(EP, begin
+			@objective(EP, Min, EP[:sSIC])
+		end)
+		
+		# Subproblems: operational costs for each scenario
+		subproblems = Dict{Int64,JuMP.Model}()
+		linking_variables_sub = Dict{Int64,Vector{JuMP.VariableRef}}()
+		for sc in 1:SC
+			@benders_sub(EP, sc, begin
+				@objective(EP, Min, (1-setup["Beta"])*inputs["scenprob"][sc]*EP[:eSCS][sc] + 
+								   setup["Beta"]*inputs["scenprob"][sc]*(EP[:vVAR] + (1/setup["Alpha"])*EP[:vCVARaux][sc]))
+			end)
+		end
+
+		results = benders(planning_problem, subproblems, linking_variables_sub, setup)
+	else
+		# Standard formulation without Benders decomposition
+		@objective(EP,Min,EP[:sSIC]+(1-setup["Beta"])*EP[:eMSC] + setup["Beta"]*EP[:eCVARSC] )
+	end
+	
+	## Power balance constraints - these are subproblem constraints
 	# demand = generation + storage discharge - storage charge - demand deferral + deferred demand satisfaction - demand curtailment (NSE)
 	#          + incoming power flows - outgoing power flows - flow losses - charge of heat storage + generation from NACC
-	@constraint(EP, cPowerBalance[t=1:T, z=1:Z, sc=1:SC], EP[:ePowerBalance][t,z,sc] == inputs["pD_scenario_$sc"][t,z])
-	@constraint(EP,cCVAR2[sc=1:SC],EP[:vCVARaux][sc]>= EP[:eSCS][sc] - EP[:vVAR])
+	if get(setup, "BendersDecomposition", 0) == 1
+		for sc in 1:SC
+			@benders_sub(EP, sc, begin
+				@constraint(EP, cPowerBalance[t=1:T, z=1:Z], EP[:ePowerBalance][t,z,sc] == inputs["pD_scenario_$sc"][t,z])
+			end)
+		end
+	else
+		@constraint(EP, cPowerBalance[t=1:T, z=1:Z, sc=1:SC], EP[:ePowerBalance][t,z,sc] == inputs["pD_scenario_$sc"][t,z])
+	end
+	
+	# CVAR constraints - these are subproblem constraints
+	if get(setup, "BendersDecomposition", 0) == 1
+		for sc in 1:SC
+			@benders_sub(EP, sc, begin
+				@constraint(EP, cCVAR2, EP[:vCVARaux][sc] >= EP[:eSCS][sc] - EP[:vVAR])
+			end)
+		end
+	else
+		@constraint(EP,cCVAR2[sc=1:SC],EP[:vCVARaux][sc]>= EP[:eSCS][sc] - EP[:vVAR])
+	end
+	
 	## Record pre-solver time
 	presolver_time = time() - presolver_start_time
 	if setup["PrintModel"] == 1

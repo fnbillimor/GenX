@@ -34,6 +34,7 @@ using Clustering
 using Distances
 using Combinatorics
 using Glob
+using MacroEnergySolvers
 
 using Random
 using RecursiveArrayTools
